@@ -1,1 +1,1 @@
-pyparsing>=2.0.7
+ply>=3.0
