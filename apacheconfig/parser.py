@@ -4,90 +4,90 @@
 # Copyright (c) 2018, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
-import functools
+import logging
+import ply.yacc as yacc
 
-from pyparsing import *
+from apacheconfig.error import ApacheConfigError
 
-__all__ = ['Parser']
+log = logging.getLogger(__name__)
 
-WHITE = White(ws=' \t')
 
-# For tags that have an argument in the form of
-# a conditional expression. The reason this is done
-# is so that a tag with the ">" operator in the
-# arguments will parse correctly.
-OPERAND = Word(alphanums + "." + '"' + '/-' + "*:^_![]?$%@)(#=`" + '\\')
-OPERATOR = oneOf(["<=", ">=", "==", "!=", "<", ">", "~"], useRegex=False)
-EXPRESSION_TAG = OPERAND + Suppress(ZeroOrMore(WHITE)) + OPERATOR + Suppress(ZeroOrMore(WHITE)) + OPERAND
+class ApacheConfigParser(object):
 
-def handle_one_option(*args):
-    pass
+    def __init__(self, lexer, start='config', tempdir=None, debug=False):
+        self._lexer = lexer
+        self.tokens = lexer.tokens  # parser needs this implicitly
+        self._tempdir = tempdir
+        self._debug = debug
+        self._start = start
+        self.engine = None
+        self.reset()
 
-# LITERAL_TAG will match tags that do not have
-# a conditional expression. So any other tag
-# with arguments that don't contain OPERATORs
-LITERAL_TAG = Suppress(ZeroOrMore(WHITE)) + OneOrMore(Word(alphanums)) + Suppress(ZeroOrMore(WHITE))
+    def reset(self):
+        self.engine = yacc.yacc(
+            module=self,
+            start=self._start,
+            outputdir=self._tempdir,
+            write_tables=bool(self._tempdir),
+            debug=False,
+            debuglog=log if self._debug else None,
+            errorlog=log if self._debug else None
+        )
 
-# Will match the start of any tag
-OPEN_TAG = (
-    Suppress(Literal("<")) +
-    (LITERAL_TAG) +
-    Suppress(Literal(">")) +
-    Suppress(LineEnd())
-)
+    def parse(self, text):
+        self.reset()
+        return self.engine.parse(text)
 
-# Will match the end of any tag
-CLOSE_TAG = (
-    Suppress(Literal("</")) +
-    Suppress(ZeroOrMore(WHITE)) + (LITERAL_TAG) + Suppress(ZeroOrMore(WHITE)) +
-    Suppress(Literal(">")) +
-    Suppress(LineEnd())
-)
+    # Parsing rules
 
-OPTION_NAME = Word(alphanums)
-OPTION_VALUE = QuotedString('"', escChar='\\') ^ Word(printables)
-OPTION_AND_VALUE = Group(OPTION_NAME + Suppress(OneOrMore(WHITE | Literal('='))) + OPTION_VALUE)
+    def p_comment(self, p):
+        """comment : COMMENT
+        """
+        p[0] = ('comment', p[1])
 
-OPTION_AND_VALUE_SET = (OPTION_AND_VALUE + OneOrMore(Suppress(LineEnd()) + OPTION_AND_VALUE)) | OPTION_AND_VALUE
+    def p_statement(self, p):
+        """statement : STRING '=' STRING
+                     | STRING STRING
+        """
+        if len(p) == 4:
+            p[0] = ('option', p[1], p[3])
+        else:
+            p[0] = ('option', p[1],  p[2])
 
-# TODO: RegExp comments
-COMMENT = Group(
-    Suppress(LineStart() + ZeroOrMore(WHITE) + Literal("#")) +
-    ZeroOrMore(Word(alphanums) | WHITE) +
-    Suppress(LineEnd())
-)
+    def p_statements(self, p):
+        """statements : statements statement
+                      | statements comment
+                      | statement
+                      | comment
+        """
+        n = len(p)
+        if n == 3:
+            p[0] = p[1] + [p[2]]
+        elif n == 2:
+            p[0] = [p[1]]
 
-COMMENTS = (COMMENT + COMMENT) | COMMENT
+    def p_block(self, p):
+        """block : OPEN_TAG statements CLOSE_TAG
+                 | OPEN_TAG CLOSE_TAG
+        """
+        if len(p) == 4:
+            p[0] = ('block', p[1], p[2], p[3])
+        else:
+            p[0] = ('block', p[1],  (), p[2])
 
-BLANK_LINE = OneOrMore(Suppress(LineEnd()))
+    def p_config(self, p):
+        """config : config statements
+                  | config comment
+                  | config block
+                  | statements
+                  | comment
+                  | block
+        """
+        n = len(p)
+        if n == 3:
+            p[0] = p[1] + [p[2]]
+        elif n == 2:
+            p[0] = [p[1]]
 
-BLOCK_CONTENTS = OPTION_AND_VALUE_SET | COMMENTS | BLANK_LINE
-
-BLOCK = (BLOCK_CONTENTS + BLOCK_CONTENTS) | BLOCK_CONTENTS
-
-TAGGED_BLOCK_CONTENTS = OPEN_TAG + BLOCK + CLOSE_TAG | COMMENTS | BLANK_LINE
-
-TAGGED_BLOCK = (TAGGED_BLOCK_CONTENTS + TAGGED_BLOCK_CONTENTS) | TAGGED_BLOCK_CONTENTS
-
-BODY_CONTENTS = BLOCK | TAGGED_BLOCK
-
-BODY = (BODY_CONTENTS + BODY_CONTENTS) | BODY_CONTENTS
-
-CONFIGURATION = BODY
-
-context = {1: 2}
-
-def handle_option(context, *args):
-    pass
-
-def handle_literal_tag(context, *args):
-    pass
-
-#LITERAL_TAG.setParseAction(functools.partial(handle_option, context))
-
-class Parser(object):
-
-    def parse_file(self, filename):
-
-        with open(filename) as config_file:
-            return CONFIGURATION.parseString(config_file.read())
+    def p_error(self, p):
+        raise ApacheConfigError("Parser error at '%s'" % p.value)

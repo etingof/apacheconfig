@@ -19,20 +19,8 @@ class LexerTestCase(unittest.TestCase):
     def setUp(self):
         self.lexer = lexer.ApacheConfigLexer()
 
-    def tokenize(self, text):
-        self.lexer.engine.input(text)
-
-        tokens = []
-        while True:
-            token = self.lexer.engine.token()
-            if not token:
-                break
-            tokens.append(token.value)
-
-        return tokens
-
     def test_whitespace(self):
-        tokens = self.tokenize('   \t\t  \t \r  \n\n')
+        tokens = self.lexer.tokenize('   \t\t  \t \r  \n\n')
         self.assertFalse(tokens)
 
     def testOptionAndValueSet(self):
@@ -46,7 +34,7 @@ a   b
 a "b"
 a = "b"
 """
-        tokens = self.tokenize(text)
+        tokens = self.lexer.tokenize(text)
         self.assertEqual(tokens, ['a', 'b', 'a', '=', 'b', 'a', 'b',
                                   'a', '=', 'b', 'a', '=', 'b',
                                   'a', 'b', 'a', 'b', 'a', '=', 'b'])
@@ -56,7 +44,7 @@ a = "b"
 <a>
 </a>
 """
-        tokens = self.tokenize(text)
+        tokens = self.lexer.tokenize(text)
         self.assertEqual(tokens, ['a', 'a'])
 
     def testExpressionTags(self):
@@ -64,7 +52,7 @@ a = "b"
     <if a == 1>
     </if>
     """
-        tokens = self.tokenize(text)
+        tokens = self.lexer.tokenize(text)
         self.assertEqual(tokens, ['if a == 1', 'if'])
 
     def testComments(self):
@@ -74,7 +62,7 @@ a = "b"
 #a
 # a b
 """
-        tokens = self.tokenize(text)
+        tokens = self.lexer.tokenize(text)
         self.assertEqual(tokens, ['', ' a', 'a', ' a b'])
 
     def testBlockOptionsAndValues(self):
@@ -87,7 +75,7 @@ a = "b"
 a "b"
 </a>
 """
-        tokens = self.tokenize(text)
+        tokens = self.lexer.tokenize(text)
         self.assertEqual(tokens, ['a', 'a', 'b', 'a', '=', 'b', 'a', '=', 'b', 'a', '=', 'b', 'a', 'b', 'a'])
 
     def testBlockComments(self):
@@ -98,7 +86,7 @@ a "b"
 # a b
 </a>
 """
-        tokens = self.tokenize(text)
+        tokens = self.lexer.tokenize(text)
         self.assertEqual(tokens, ['a', '', ' a', ' a b', 'a'])
 
     def testBlockBlankLines(self):
@@ -108,7 +96,7 @@ a "b"
 
 </a>
 """
-        tokens = self.tokenize(text)
+        tokens = self.lexer.tokenize(text)
         self.assertEqual(tokens, ['a', 'a'])
 
     def testConfiguration(self):
@@ -119,7 +107,7 @@ a = b
   a b
 </a>
 """
-        tokens = self.tokenize(text)
+        tokens = self.lexer.tokenize(text)
         self.assertEqual(tokens, [' h', 'a', '=', 'b', 'a', 'a', 'b', 'a'])
 
 

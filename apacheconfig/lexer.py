@@ -26,19 +26,38 @@ class ApacheConfigLexer(object):
 
     literals = '='
 
-    def __init__(self, tempdir=''):
+    def __init__(self, tempdir=None, debug=False):
         self._tempdir = tempdir
+        self._debug = debug
         self.engine = None
         self.reset()
 
     def reset(self):
         self.engine = lex.lex(
-            module=self, reflags=re.DOTALL, outputdir=self._tempdir,
-            debuglog=log, errorlog=log
+            module=self,
+            reflags=re.DOTALL,
+            outputdir=self._tempdir,
+            debuglog=log if self._debug else None,
+            errorlog=log if self._debug else None
         )
 
+    def tokenize(self, text):
+        self.engine.input(text)
+
+        tokens = []
+
+        while True:
+            token = self.engine.token()
+            if not token:
+                break
+            tokens.append(token.value)
+
+        return tokens
+
+    # Tokenizer rules
+
     def t_COMMENT(self, t):
-        r'\#[^\n\r]*'
+        r'(?<!\\)\#[^\n\r]*'
         t.value = t.value[1:]
         return t
 
@@ -53,7 +72,7 @@ class ApacheConfigLexer(object):
         return t
 
     def t_STRING(self, t):
-        r'\"[^\"]*\"|[a-zA-Z0-9_\-]+'
+        r'\"[^\"]*\"|[a-zA-Z0-9_\\\-\#]+'
         if t.value[0] == '"':
             t.value = t.value[1:-1]
         t.lexer.lineno += len(re.findall(r'\r\n|\n|\r', t.value))

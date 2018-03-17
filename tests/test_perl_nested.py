@@ -7,7 +7,8 @@
 import sys
 import os
 
-from apacheconfig.parser import Parser
+from apacheconfig.lexer import ApacheConfigLexer
+from apacheconfig.parser import ApacheConfigParser
 
 try:
     import unittest2 as unittest
@@ -17,16 +18,22 @@ except ImportError:
 
 
 class PerlNestedBlocksTestCase(unittest.TestCase):
-    def skip_testParseFile(self):
+    def testParseFile(self):
         sample = os.path.join(
             os.path.dirname(__file__),
             'samples', 'perl-config-general', 'nested-block-test.conf'
         )
 
-        parser = Parser()
-        config = parser.parse_file(sample)
+        parser = ApacheConfigParser(ApacheConfigLexer())
+        with open(sample) as f:
+            ast = parser.parse(f.read())
 
-        self.assertTrue(config)
+        self.assertEqual(ast, [[('comment', ' Nested block test')],
+                               ('block', 'cops',
+                                    [('option', 'name', 'stein'),
+                                     ('option', 'age', '25'),
+                                     ('option', 'color', '\\#000000')],
+                                'cops')])
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
