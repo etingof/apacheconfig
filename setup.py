@@ -9,7 +9,7 @@ import os
 import sys
 
 classifiers = """\
-Development Status :: 5 - Production/Stable
+Development Status :: 3 - Alpha Development Status
 Environment :: Console
 Intended Audience :: Developers
 Intended Audience :: Education
