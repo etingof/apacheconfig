@@ -19,8 +19,8 @@ class ApacheConfigLexer(object):
         'COMMENT',
         'OPEN_TAG',
         'CLOSE_TAG',
+        'OPEN_CLOSE_TAG',
         'STRING',
-        'WHITESPACE',
         'NEWLINE',
     )
 
@@ -66,13 +66,18 @@ class ApacheConfigLexer(object):
         t.value = t.value[2:-1]
         return t
 
+    def t_OPEN_CLOSE_TAG(self, t):
+        r'<[^\n\r\t/]+/>'
+        t.value = t.value[1:-2]
+        return t
+
     def t_OPEN_TAG(self, t):
         r'<[^\n\r\t]+>'
         t.value = t.value[1:-1]
         return t
 
     def t_STRING(self, t):
-        r'\"[^\"]*\"|[a-zA-Z0-9_\\\-\#]+'
+        r'\"[^\"]*\"|[a-zA-Z0-9!"#$%&()*+,.\/:;?@\[\]^_`{\\}~-]+'
         if t.value[0] == '"':
             t.value = t.value[1:-1]
         t.value = t.value.replace('\\#', '#')

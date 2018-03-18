@@ -56,9 +56,7 @@ class ApacheConfigParser(object):
 
     def p_statements(self, p):
         """statements : statements statement
-                      | statements comment
                       | statement
-                      | comment
         """
         n = len(p)
         if n == 3:
@@ -66,22 +64,36 @@ class ApacheConfigParser(object):
         elif n == 2:
             p[0] = ['statements', p[1]]
 
-    def p_block(self, p):
-        """block : OPEN_TAG statements CLOSE_TAG
-                 | OPEN_TAG CLOSE_TAG
+    def p_contents(self, p):
+        """contents : contents statements
+                    | contents comment
+                    | contents block
+                    | statements
+                    | comment
+                    | block
         """
-        if len(p) == 4:
-            p[0] = ['block', p[1], p[2], p[3]]
+        n = len(p)
+        if n == 3:
+            p[0] = p[1] + [p[2]]
         else:
+            p[0] = ['contents', p[1]]
+
+    def p_block(self, p):
+        """block : OPEN_TAG contents CLOSE_TAG
+                 | OPEN_TAG CLOSE_TAG
+                 | OPEN_CLOSE_TAG
+        """
+        n = len(p)
+        if n == 4:
+            p[0] = ['block', p[1], p[2], p[3]]
+        elif n == 3:
             p[0] = ['block', p[1],  [], p[2]]
+        else:
+            p[0] = ['block', p[1], [], p[1]]
 
     def p_config(self, p):
-        """config : config statements
-                  | config comment
-                  | config block
-                  | statements
-                  | comment
-                  | block
+        """config : config contents
+                  | contents
         """
         n = len(p)
         if n == 3:
@@ -90,4 +102,4 @@ class ApacheConfigParser(object):
             p[0] = ['config', p[1]]
 
     def p_error(self, p):
-        raise ApacheConfigError("Parser error at '%s'" % p.value)
+        raise ApacheConfigError("Parser error at '%s'" % p.value if p else '?')

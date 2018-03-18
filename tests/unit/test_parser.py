@@ -54,26 +54,6 @@ a = "b"
                                ['statement', 'a', 'b'],
                                ['statement', 'a', 'b']])
 
-    def testCommentsAndOptions(self):
-        text = """\
-#
-# a
-#a
-a = "b b"
-# a b
-a = "b b"
-"""
-        parser = ApacheConfigParser(ApacheConfigLexer(), start='statements')
-
-        ast = parser.parse(text)
-        self.assertEqual(ast, ['statements',
-                               ['comment', ''],
-                               ['comment', ' a'],
-                               ['comment', 'a'],
-                               ['statement', 'a', 'b b'],
-                               ['comment', ' a b'],
-                               ['statement', 'a', 'b b']])
-
     def testBlockWithOptions(self):
         text = """\
 <a>
@@ -87,9 +67,43 @@ a = "b b"
 
         ast = parser.parse(text)
         self.assertEqual(ast, ['block', 'a',
-                               ['statements', ['comment', 'a'],
-                                ['statement', 'a', 'b b'], ['comment', ' a b'],
-                                ['statement', 'a', 'b b']], 'a'])
+                               ['contents',
+                                ['comment', 'a'],
+                                ['statements',
+                                 ['statement', 'a', 'b b']],
+                                ['comment', ' a b'],
+                                ['statements',
+                                 ['statement', 'a', 'b b']]], 'a'])
+
+    def testNestedBlock(self):
+            text = """\
+<a>
+  <b>
+     <c>
+     </c>
+  </b>
+</a>
+"""
+            parser = ApacheConfigParser(ApacheConfigLexer(), start='block')
+
+            ast = parser.parse(text)
+            self.assertEqual(ast, ['block', 'a',
+                                   ['contents',
+                                    ['block', 'b',
+                                     ['contents',
+                                      ['block', 'c', [], 'c']], 'b']], 'a'])
+
+    def testEmptyBlocks(self):
+        text = """\
+    <a/>
+    <b/>
+"""
+        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+
+        ast = parser.parse(text)
+        self.assertEqual(ast, ['contents',
+                               ['block', 'a', [], 'a'],
+                               ['block', 'b', [], 'b']])
 
     def testWholeConfig(self):
         text = """\
@@ -100,26 +114,30 @@ a = b
   a = b
 </a>
 a b
-<a a>
-a b
-</a a>
+ <a a>
+  a b
+ </a a>
 # a
 """
         parser = ApacheConfigParser(ApacheConfigLexer(), start='config')
 
         ast = parser.parse(text)
         self.assertEqual(ast, ['config',
-                               ['statements', ['comment', ' a'],
-                                ['statement', 'a', 'b']],
-                                ['block', 'a',
-                                 ['statements',
-                                  ['statement', 'a', 'b']], 'a'],
+                               ['contents',
+                                ['comment', ' a'],
                                 ['statements',
                                  ['statement', 'a', 'b']],
-                               ['block', 'a a',
+                                ['block', 'a',
+                                 ['contents',
+                                  ['statements',
+                                   ['statement', 'a', 'b']]], 'a'],
                                 ['statements',
-                                 ['statement', 'a', 'b']], 'a a'],
-                               ['statements', ['comment', ' a']]])
+                                 ['statement', 'a', 'b']],
+                                ['block', 'a a',
+                                 ['contents',
+                                  ['statements',
+                                   ['statement', 'a', 'b']]], 'a a'],
+                                ['comment', ' a']]])
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])

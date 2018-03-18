@@ -11,8 +11,7 @@ except ImportError:
     import unittest
 
 suite = unittest.TestLoader().loadTestsFromNames(
-    ['tests.integration.test_perl_samples.suite',
-     'tests.unit.suite']
+    ['tests.integration.test_perl_samples.suite']
 )
 
 

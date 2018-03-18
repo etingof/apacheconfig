@@ -41,13 +41,28 @@ class ApacheConfigLoader(object):
 
         return block
 
+    def g_contents(self, ast):
+        contents = {}
+
+        for subtree in ast:
+            items = self._walkast(subtree)
+            if items:
+                contents.update(items)
+
+        return contents
+
     def g_statements(self, ast):
         statements = {}
 
         for subtree in ast:
             items = self._walkast(subtree)
-            if items:
-                statements.update(items)
+            for item in items:
+                if item in statements:
+                    if not isinstance(statements[item], list):
+                        statements[item] = [statements[item]]
+                    statements[item].append(items[item])
+                else:
+                    statements[item] = items[item]
 
         return statements
 
@@ -61,6 +76,9 @@ class ApacheConfigLoader(object):
         return []
 
     def _walkast(self, ast):
+        if not ast:
+            return
+
         node_type = ast[0]
 
         try:
