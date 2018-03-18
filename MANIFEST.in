@@ -1,0 +1,4 @@
+include *.rst *.md
+recursive-include tests *.py *.conf
+prune docs/build
+prune docs/source/.templates
