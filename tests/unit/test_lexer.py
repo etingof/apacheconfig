@@ -6,7 +6,7 @@
 #
 import sys
 
-from apacheconfig import lexer
+from apacheconfig import *
 
 try:
     import unittest2 as unittest
@@ -17,7 +17,7 @@ except ImportError:
 
 class LexerTestCase(unittest.TestCase):
     def setUp(self):
-        self.lexer = lexer.ApacheConfigLexer()
+        self.lexer = ApacheConfigLexer()
 
     def test_whitespace(self):
         tokens = self.lexer.tokenize('   \t\t  \t \r  \n\n')

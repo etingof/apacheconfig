@@ -6,8 +6,7 @@
 #
 import sys
 
-from apacheconfig.lexer import ApacheConfigLexer
-from apacheconfig.parser import ApacheConfigParser
+from apacheconfig import *
 
 try:
     import unittest2 as unittest

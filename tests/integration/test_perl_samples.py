@@ -7,10 +7,7 @@
 import sys
 import os
 
-from apacheconfig.lexer import ApacheConfigLexer
-from apacheconfig.parser import ApacheConfigParser
-from apacheconfig.loader import ApacheConfigLoader
-from apacheconfig.error import ApacheConfigError
+from apacheconfig import *
 
 try:
     import unittest2 as unittest
