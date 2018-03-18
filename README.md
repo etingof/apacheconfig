@@ -1,7 +1,7 @@
 
 Apache config parser
 --------------------
-[![PyPI](https://img.shields.io/pypi/v/apacheconfig.svg?maxAge=2592000)](https://pypi.python.org/pypi/apacheconfig)
+[![PyPI](https://img.shields.io/pypi/v/apacheconfig.svg?maxAge=1800)](https://pypi.python.org/pypi/apacheconfig)
 [![Python Versions](https://img.shields.io/pypi/pyversions/apacheconfig.svg)](https://pypi.python.org/pypi/apacheconfig/)
 [![Build status](https://travis-ci.org/etingof/apacheconfig.svg?branch=master)](https://secure.travis-ci.org/etingof/apacheconfig)
 [![Coverage Status](https://img.shields.io/codecov/c/github/etingof/apacheconfig.svg)](https://codecov.io/github/etingof/apacheconfig)
