@@ -11,7 +11,8 @@ except ImportError:
     import unittest
 
 suite = unittest.TestLoader().loadTestsFromNames(
-    ['tests.unit.test_parser.suite',
+    ['tests.unit.test_loader.suite',
+     'tests.unit.test_parser.suite',
      'tests.unit.test_lexer.suite']
 )
 

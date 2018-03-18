@@ -5,12 +5,10 @@
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
 import sys
-import os
 
 from apacheconfig.lexer import ApacheConfigLexer
 from apacheconfig.parser import ApacheConfigParser
 from apacheconfig.loader import ApacheConfigLoader
-
 
 try:
     import unittest2 as unittest
@@ -19,23 +17,34 @@ except ImportError:
     import unittest
 
 
-class PerlNestedBlocksTestCase(unittest.TestCase):
-    def testParseFile(self):
-        sample = os.path.join(
-            os.path.dirname(__file__),
-            'samples', 'perl-config-general', 'nested-block-test.conf'
-        )
+class LoaderTestCase(unittest.TestCase):
 
+    def testWholeConfig(self):
+        text = """\
+
+# a
+a = b
+
+<a block>
+  a = b
+</a>
+a b
+<a a block>
+c "d d"
+</a>
+# a
+"""
         loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
 
-        with open(sample) as f:
-            config = loader.loads(f.read())
+        config = loader.loads(text)
 
-        self.assertEqual(config,  {'cops':
-                                       {'color': '#000000',
-                                        'age': '25',
-                                        'name': 'stein'}
-                                   })
+        self.assertEqual(config, {'a': 'b',
+                                  'a a block': {
+                                      'c': 'd d'
+                                  },
+                                  'a block': {
+                                      'a': 'b'
+                                  }})
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])

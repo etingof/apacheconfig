@@ -75,6 +75,7 @@ class ApacheConfigLexer(object):
         r'\"[^\"]*\"|[a-zA-Z0-9_\\\-\#]+'
         if t.value[0] == '"':
             t.value = t.value[1:-1]
+        t.value = t.value.replace('\\#', '#')
         t.lexer.lineno += len(re.findall(r'\r\n|\n|\r', t.value))
         return t
 

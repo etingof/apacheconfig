@@ -43,16 +43,16 @@ class ApacheConfigParser(object):
     def p_comment(self, p):
         """comment : COMMENT
         """
-        p[0] = ('comment', p[1])
+        p[0] = ['comment', p[1]]
 
     def p_statement(self, p):
         """statement : STRING '=' STRING
                      | STRING STRING
         """
         if len(p) == 4:
-            p[0] = ('option', p[1], p[3])
+            p[0] = ['statement', p[1], p[3]]
         else:
-            p[0] = ('option', p[1],  p[2])
+            p[0] = ['statement', p[1], p[2]]
 
     def p_statements(self, p):
         """statements : statements statement
@@ -64,16 +64,16 @@ class ApacheConfigParser(object):
         if n == 3:
             p[0] = p[1] + [p[2]]
         elif n == 2:
-            p[0] = [p[1]]
+            p[0] = ['statements', p[1]]
 
     def p_block(self, p):
         """block : OPEN_TAG statements CLOSE_TAG
                  | OPEN_TAG CLOSE_TAG
         """
         if len(p) == 4:
-            p[0] = ('block', p[1], p[2], p[3])
+            p[0] = ['block', p[1], p[2], p[3]]
         else:
-            p[0] = ('block', p[1],  (), p[2])
+            p[0] = ['block', p[1],  [], p[2]]
 
     def p_config(self, p):
         """config : config statements
@@ -87,7 +87,7 @@ class ApacheConfigParser(object):
         if n == 3:
             p[0] = p[1] + [p[2]]
         elif n == 2:
-            p[0] = [p[1]]
+            p[0] = ['config', p[1]]
 
     def p_error(self, p):
         raise ApacheConfigError("Parser error at '%s'" % p.value)

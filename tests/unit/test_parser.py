@@ -22,13 +22,13 @@ class ParserTestCase(unittest.TestCase):
         parser = ApacheConfigParser(ApacheConfigLexer(), start='statement')
 
         ast = parser.parse('a b\n')
-        self.assertEqual(ast, ('option', 'a', 'b'))
+        self.assertEqual(ast, ['statement', 'a', 'b'])
 
         ast = parser.parse('a=b\n')
-        self.assertEqual(ast, ('option', 'a', 'b'))
+        self.assertEqual(ast, ['statement', 'a', 'b'])
 
         ast = parser.parse('a "b c"\n')
-        self.assertEqual(ast, ('option', 'a', 'b c'))
+        self.assertEqual(ast, ['statement', 'a', 'b c'])
 
     def testOptionAndValueSet(self):
         text = """\
@@ -44,7 +44,15 @@ a = "b"
         parser = ApacheConfigParser(ApacheConfigLexer(), start='statements')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, [('option', 'a', 'b')] * 8)
+        self.assertEqual(ast, ['statements',
+                               ['statement', 'a', 'b'],
+                               ['statement', 'a', 'b'],
+                               ['statement', 'a', 'b'],
+                               ['statement', 'a', 'b'],
+                               ['statement', 'a', 'b'],
+                               ['statement', 'a', 'b'],
+                               ['statement', 'a', 'b'],
+                               ['statement', 'a', 'b']])
 
     def testCommentsAndOptions(self):
         text = """\
@@ -58,9 +66,13 @@ a = "b b"
         parser = ApacheConfigParser(ApacheConfigLexer(), start='statements')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, [('comment', ''), ('comment', ' a'),
-                               ('comment', 'a'), ('option', 'a', 'b b'),
-                               ('comment', ' a b'), ('option', 'a', 'b b')])
+        self.assertEqual(ast, ['statements',
+                               ['comment', ''],
+                               ['comment', ' a'],
+                               ['comment', 'a'],
+                               ['statement', 'a', 'b b'],
+                               ['comment', ' a b'],
+                               ['statement', 'a', 'b b']])
 
     def testBlockWithOptions(self):
         text = """\
@@ -74,10 +86,10 @@ a = "b b"
         parser = ApacheConfigParser(ApacheConfigLexer(), start='block')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, ('block', 'a', [('comment', 'a'),
-                                              ('option', 'a', 'b b'),
-                                              ('comment', ' a b'),
-                                              ('option', 'a', 'b b')], 'a'))
+        self.assertEqual(ast, ['block', 'a',
+                               ['statements', ['comment', 'a'],
+                                ['statement', 'a', 'b b'], ['comment', ' a b'],
+                                ['statement', 'a', 'b b']], 'a'])
 
     def testWholeConfig(self):
         text = """\
@@ -96,11 +108,18 @@ a b
         parser = ApacheConfigParser(ApacheConfigLexer(), start='config')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, [[('comment', ' a'), ('option', 'a', 'b')],
-                               ('block', 'a', [('option', 'a', 'b')], 'a'),
-                               [('option', 'a', 'b')],
-                               ('block', 'a a', [('option', 'a', 'b')], 'a a'),
-                               [('comment', ' a')]])
+        self.assertEqual(ast, ['config',
+                               ['statements', ['comment', ' a'],
+                                ['statement', 'a', 'b']],
+                                ['block', 'a',
+                                 ['statements',
+                                  ['statement', 'a', 'b']], 'a'],
+                                ['statements',
+                                 ['statement', 'a', 'b']],
+                               ['block', 'a a',
+                                ['statements',
+                                 ['statement', 'a', 'b']], 'a a'],
+                               ['statements', ['comment', ' a']]])
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
