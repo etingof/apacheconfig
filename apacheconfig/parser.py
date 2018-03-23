@@ -46,13 +46,9 @@ class ApacheConfigParser(object):
         p[0] = ['comment', p[1]]
 
     def p_statement(self, p):
-        """statement : STRING '=' STRING
-                     | STRING STRING
+        """statement : OPTION_AND_VALUE
         """
-        if len(p) == 4:
-            p[0] = ['statement', p[1], p[3]]
-        else:
-            p[0] = ['statement', p[1], p[2]]
+        p[0] = ['statement', p[1][0], p[1][1]]
 
     def p_statements(self, p):
         """statements : statements statement

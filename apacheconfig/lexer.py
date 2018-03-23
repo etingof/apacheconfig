@@ -20,11 +20,11 @@ class ApacheConfigLexer(object):
         'OPEN_TAG',
         'CLOSE_TAG',
         'OPEN_CLOSE_TAG',
-        'STRING',
+        'OPTION_AND_VALUE',
         'NEWLINE',
     )
 
-    literals = '='
+    #literals = '='
 
     def __init__(self, tempdir=None, debug=False):
         self._tempdir = tempdir
@@ -76,12 +76,17 @@ class ApacheConfigLexer(object):
         t.value = t.value[1:-1]
         return t
 
-    def t_STRING(self, t):
-        r'\"[^\"]*\"|[a-zA-Z0-9!"#$%&()*+,.\/:;?@\[\]^_`{\\}~-]+'
-        if t.value[0] == '"':
-            t.value = t.value[1:-1]
-        t.value = t.value.replace('\\#', '#')
+    def t_OPTION_AND_VALUE(self, t):
+        r'[^ \n\r\t=]+[ \n\r\t=]+[^\r\n]+'
+        option, value = re.split(r'[ \n\r\t=]+', t.value, maxsplit=1)
+        if value[0] == '"':
+            value = value[1:]
+        if value[-1] == '"':
+            value = value[:-1]
+        if '#' in value:
+            value = value.replace('\\#', '#')
         t.lexer.lineno += len(re.findall(r'\r\n|\n|\r', t.value))
+        t.value = option, value
         return t
 
     def t_WHITESPACE(self, t):

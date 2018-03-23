@@ -35,9 +35,9 @@ a "b"
 a = "b"
 """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, ['a', 'b', 'a', '=', 'b', 'a', 'b',
-                                  'a', '=', 'b', 'a', '=', 'b',
-                                  'a', 'b', 'a', 'b', 'a', '=', 'b'])
+        self.assertEqual(tokens, [('a', 'b'), ('a', 'b'), ('a', 'b'),
+                                  ('a', 'b'), ('a', 'b'), ('a', 'b'),
+                                  ('a', 'b'), ('a', 'b')])
 
     def testLiteralTags(self):
         text = """\
@@ -76,7 +76,7 @@ a "b"
 </a>
 """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, ['a', 'a', 'b', 'a', '=', 'b', 'a', '=', 'b', 'a', '=', 'b', 'a', 'b', 'a'])
+        self.assertEqual(tokens, ['a', ('a', 'b'), ('a', 'b'), ('a', 'b'), ('a', 'b'), ('a', 'b'), 'a'])
 
     def testBlockComments(self):
         text = """\
@@ -108,7 +108,7 @@ a = b
 </a>
 """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, [' h', 'a', '=', 'b', 'a', 'a', 'b', 'a'])
+        self.assertEqual(tokens, [' h', ('a', 'b'), 'a', ('a', 'b'), 'a'])
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])

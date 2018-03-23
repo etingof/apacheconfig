@@ -16,11 +16,14 @@ except ImportError:
     import unittest
 
 test_configs = {
-    'nested-block-test.conf': {'cops': {'color': '#000000',
-                                        'age': '25',
-                                        'name': 'stein'}},
+    'nested-block-test.conf': {'cops':
+                                   {'age': '25',
+                                    'appearance':
+                                        {'color': '#000000'},
+                                    'name': 'stein'}},
     'array-content-test.conf': {'domain':
                                     ['b0fh.org', 'l0pht.com', 'infonexus.com']},
+    'unquoted-values-with-whitespaces.conf': {'option': 'value with whitespaces'},
 }
 
 
