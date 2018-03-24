@@ -26,6 +26,7 @@ class ApacheConfigLexer(object):
 
     states = (
         ('multiline', 'exclusive'),
+        ('heredoc', 'exclusive'),
     )
 
     def __init__(self, tempdir=None, debug=False):
@@ -96,9 +97,20 @@ class ApacheConfigLexer(object):
             t.lexer.begin('multiline')
             return
 
-        t.lexer.lineno += len(re.findall(r'\r\n|\n|\r', t.value))
+        lineno = len(re.findall(r'\r\n|\n|\r', t.value))
 
-        t.value = self._parse_option_value(t.value)
+        option, value = self._parse_option_value(t.value)
+
+        if value.startswith('<<'):
+            t.lexer.heredoc_anchor = value[2:].strip()
+            t.lexer.heredoc_option = option
+            t.lexer.code_start = t.lexer.lexpos
+            t.lexer.begin('heredoc')
+            return
+
+        t.value = option, value
+
+        t.lexer.lineno += lineno
 
         return t
 
@@ -109,9 +121,9 @@ class ApacheConfigLexer(object):
 
         t.type = "OPTION_AND_VALUE"
         t.lexer.begin('INITIAL')
-        t.lexer.lineno += len(re.findall(r'\r\n|\n|\r', t.value))
 
         value = t.lexer.lexdata[t.lexer.code_start:t.lexer.lexpos + 1]
+        t.lexer.lineno += len(re.findall(r'\r\n|\n|\r', value))
         value = value.replace('\\\n', '').replace('\r', '').replace('\n', '')
 
         t.value = self._parse_option_value(value)
@@ -124,6 +136,29 @@ class ApacheConfigLexer(object):
 
     def t_multiline_error(self, t):
         raise ApacheConfigError("Illegal character '%s' in multiline text" % t.value[0])
+
+    def t_heredoc_OPTION_AND_VALUE(self, t):
+        r'[^\r\n]+'
+        if t.value != t.lexer.heredoc_anchor:
+            return
+
+        t.type = "OPTION_AND_VALUE"
+        t.lexer.begin('INITIAL')
+
+        value = t.lexer.lexdata[t.lexer.code_start + 1:t.lexer.lexpos - len(t.lexer.heredoc_anchor)]
+
+        t.lexer.lineno += len(re.findall(r'\r\n|\n|\r', t.value))
+
+        t.value = t.lexer.heredoc_option, value
+
+        return t
+
+    def t_heredoc_NEWLINE(self, t):
+        r'\r\n|\n|\r'
+        t.lexer.lineno += 1
+
+    def t_heredoc_error(self, t):
+        raise ApacheConfigError("Illegal character '%s' in here-document text" % t.value[0])
 
     def t_WHITESPACE(self, t):
         r'[ \t]+'

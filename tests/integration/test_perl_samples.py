@@ -28,6 +28,7 @@ test_configs = {
                                               "-l azrael -L:34777samir.okir.da.ru:22           "
                                               "-L:31773:shane.sol1.rocket.de:22           "
                                               "'exec sleep 99999990'"},
+    'here-document-test.conf': {'header': '  <table border="0">\n  </table>\n'},
 }
 
 
