@@ -33,6 +33,25 @@ test_configs = {
                                   'foo':  {'bar': 'baz '},
                                   'db': {'host': 'blah.blubber'},
                                   'user': 'tom'},
+    'combination-of-constructs.conf': {'nocomment':
+                                           'Comments in a here-doc should not be treated as comments.\n'
+                                           '/* So this should appear in the output */\n',
+                                       'domain': ['nix.to', 'b0fh.org', 'foo.bar'],
+                                       'quoted': 'this one contains whitespace at the end    ',
+                                       'passwd': 'sakkra',
+                                       'db': {'host': 'blah.blubber'},
+                                       'quotedwithquotes': ' holy crap, it contains \\"masked quotes\\" and '
+                                                           '\'single quotes\'  ',
+                                       'cops': {'officer gordon':
+                                                    {'age': '31', 'name': 'bird'},
+                                                'officer randall': {'age': '25', 'name': 'stein'}},
+                                       'beta': {'user2': 'max'},
+                                       'command': "ssh -f -g orpheus.0x49.org           "
+                                                  "-l azrael -L:34777samir.okir.da.ru:22           "
+                                                  "-L:31773:shane.sol1.rocket.de:22           'exec sleep 99999990'",
+                                       'user': 'tom ',
+                                       'message': '  yes. we are not here. you\n  can reach us somewhere in\n'
+                                                  '  outerspace.\n'},
 }
 
 
