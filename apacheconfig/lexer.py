@@ -24,7 +24,9 @@ class ApacheConfigLexer(object):
         'NEWLINE',
     )
 
-    #literals = '='
+    states = (
+        ('multiline', 'exclusive'),
+    )
 
     def __init__(self, tempdir=None, debug=False):
         self._tempdir = tempdir
@@ -76,18 +78,52 @@ class ApacheConfigLexer(object):
         t.value = t.value[1:-1]
         return t
 
-    def t_OPTION_AND_VALUE(self, t):
-        r'[^ \n\r\t=]+[ \n\r\t=]+[^\r\n]+'
-        option, value = re.split(r'[ \n\r\t=]+', t.value, maxsplit=1)
+    @staticmethod
+    def _parse_option_value(token):
+        option, value = re.split(r'[ \n\r\t=]+', token, maxsplit=1)
         if value[0] == '"':
             value = value[1:]
         if value[-1] == '"':
             value = value[:-1]
         if '#' in value:
             value = value.replace('\\#', '#')
+        return option, value
+
+    def t_OPTION_AND_VALUE(self, t):
+        r'[^ \n\r\t=]+[ \n\r\t=]+[^\r\n]+'
+        if t.value.endswith('\\'):
+            t.lexer.code_start = t.lexer.lexpos - len(t.value)
+            t.lexer.begin('multiline')
+            return
+
         t.lexer.lineno += len(re.findall(r'\r\n|\n|\r', t.value))
-        t.value = option, value
+
+        t.value = self._parse_option_value(t.value)
+
         return t
+
+    def t_multiline_OPTION_AND_VALUE(self, t):
+        r'[^\r\n]+'
+        if t.value.endswith('\\'):
+            return
+
+        t.type = "OPTION_AND_VALUE"
+        t.lexer.begin('INITIAL')
+        t.lexer.lineno += len(re.findall(r'\r\n|\n|\r', t.value))
+
+        value = t.lexer.lexdata[t.lexer.code_start:t.lexer.lexpos + 1]
+        value = value.replace('\\\n', '').replace('\r', '').replace('\n', '')
+
+        t.value = self._parse_option_value(value)
+
+        return t
+
+    def t_multiline_NEWLINE(self, t):
+        r'\r\n|\n|\r'
+        t.lexer.lineno += 1
+
+    def t_multiline_error(self, t):
+        raise ApacheConfigError("Illegal character '%s' in multiline text" % t.value[0])
 
     def t_WHITESPACE(self, t):
         r'[ \t]+'

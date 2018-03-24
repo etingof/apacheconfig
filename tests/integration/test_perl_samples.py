@@ -24,6 +24,10 @@ test_configs = {
     'array-content-test.conf': {'domain':
                                     ['b0fh.org', 'l0pht.com', 'infonexus.com']},
     'unquoted-values-with-whitespaces.conf': {'option': 'value with whitespaces'},
+    'multiline-option-test.conf': {'command': "ssh -f -g orpheus.0x49.org           "
+                                              "-l azrael -L:34777samir.okir.da.ru:22           "
+                                              "-L:31773:shane.sol1.rocket.de:22           "
+                                              "'exec sleep 99999990'"},
 }
 
 
