@@ -42,6 +42,7 @@ class ApacheConfigParser(object):
 
     def p_comment(self, p):
         """comment : COMMENT
+                   | CCOMMENT
         """
         p[0] = ['comment', p[1]]
 

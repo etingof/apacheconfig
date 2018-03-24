@@ -17,6 +17,7 @@ class ApacheConfigLexer(object):
 
     tokens = (
         'COMMENT',
+        'CCOMMENT',
         'OPEN_TAG',
         'CLOSE_TAG',
         'OPEN_CLOSE_TAG',
@@ -25,6 +26,7 @@ class ApacheConfigLexer(object):
     )
 
     states = (
+        ('ccomment', 'exclusive'),
         ('multiline', 'exclusive'),
         ('heredoc', 'exclusive'),
     )
@@ -63,6 +65,33 @@ class ApacheConfigLexer(object):
         r'(?<!\\)\#[^\n\r]*'
         t.value = t.value[1:]
         return t
+
+    def t_CCOMMENT(self, t):
+        r'\/\*'
+        t.lexer.code_start = t.lexer.lexpos
+        t.lexer.ccomment_level = 1  # Initial comment level
+        t.lexer.begin('ccomment')
+
+    def t_ccomment_open(self, t):
+        r'\/\*'
+        t.lexer.ccomment_level += 1
+
+    def t_ccomment_close(self, t):
+        r'\*\/'
+        t.lexer.ccomment_level -= 1
+
+        if t.lexer.ccomment_level == 0:
+            t.value = t.lexer.lexdata[t.lexer.code_start:t.lexer.lexpos + 1]
+            t.type = "CCOMMENT"
+            t.lexer.lineno += t.value.count('\n')
+            t.lexer.begin('INITIAL')
+            return t
+
+    def t_ccomment_body(self, t):
+        r'.+?'
+
+    def t_ccomment_error(self, t):
+        raise ApacheConfigError("Illegal character '%s' in C-style comment" % t.value[0])
 
     def t_CLOSE_TAG(self, t):
         r'</[^\n\r\t]+>'

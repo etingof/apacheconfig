@@ -29,6 +29,10 @@ test_configs = {
                                               "-L:31773:shane.sol1.rocket.de:22           "
                                               "'exec sleep 99999990'"},
     'here-document-test.conf': {'header': '  <table border="0">\n  </table>\n'},
+    'c-style-comment-test.conf': {'passwd': 'sakkra',
+                                  'foo':  {'bar': 'baz '},
+                                  'db': {'host': 'blah.blubber'},
+                                  'user': 'tom'},
 }
 
 
