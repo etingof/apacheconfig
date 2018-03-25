@@ -17,6 +17,7 @@ except ImportError:
 
 class LexerTestCase(unittest.TestCase):
     def setUp(self):
+        ApacheConfigLexer = make_lexer()
         self.lexer = ApacheConfigLexer()
 
     def test_whitespace(self):

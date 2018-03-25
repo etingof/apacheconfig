@@ -32,6 +32,9 @@ c "d d"
 </a>
 # a
 """
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
         loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
 
         config = loader.loads(text)

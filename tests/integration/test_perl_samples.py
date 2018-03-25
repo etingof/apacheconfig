@@ -74,6 +74,9 @@ class PerlConfigGeneralTestCase(unittest.TestCase):
         errors = []
 
         for filename in os.listdir(samples_dir):
+            ApacheConfigLexer = make_lexer()
+            ApacheConfigParser = make_parser()
+
             loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
 
             sample_file = os.path.join(samples_dir, filename)

@@ -18,6 +18,9 @@ except ImportError:
 class ParserTestCase(unittest.TestCase):
 
     def testOptionAndValue(self):
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
         parser = ApacheConfigParser(ApacheConfigLexer(), start='statement')
 
         ast = parser.parse('a b\n')
@@ -28,6 +31,52 @@ class ParserTestCase(unittest.TestCase):
 
         ast = parser.parse('a "b c"\n')
         self.assertEqual(ast, ['statement', 'a', 'b c'])
+
+    def testHashComments(self):
+            text = """\
+#a
+# b
+"""
+            ApacheConfigLexer = make_lexer()
+            ApacheConfigParser = make_parser()
+
+            parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+
+            ast = parser.parse(text)
+            self.assertEqual(ast, ['contents', ['comment', 'a'], ['comment', ' b']])
+
+    def testCStyleComments(self):
+        text = """\
+/*a*/
+/*
+# b
+*/
+    """
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+
+        ast = parser.parse(text)
+        self.assertEqual(ast, ['contents', ['comment', 'a'], ['comment', '\n# b\n']])
+
+    def testCStyleCommentsDisabled(self):
+            text = """\
+    /*a*/
+    /*
+    # b
+    */
+        """
+            options = {
+                'cstylecomments': False
+            }
+
+            ApacheConfigLexer = make_lexer(**options)
+            ApacheConfigParser = make_parser(**options)
+
+            parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+
+            self.assertRaises(ApacheConfigError, parser.parse, text)
 
     def testOptionAndValueSet(self):
         text = """\
@@ -40,6 +89,9 @@ a   b
 a "b"
 a = "b"
 """
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
         parser = ApacheConfigParser(ApacheConfigLexer(), start='statements')
 
         ast = parser.parse(text)
@@ -62,6 +114,9 @@ a = "b"
   a = "b b"
 </a>
 """
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
         parser = ApacheConfigParser(ApacheConfigLexer(), start='block')
 
         ast = parser.parse(text)
@@ -83,6 +138,9 @@ a = "b"
   </b>
 </a>
 """
+            ApacheConfigLexer = make_lexer()
+            ApacheConfigParser = make_parser()
+
             parser = ApacheConfigParser(ApacheConfigLexer(), start='block')
 
             ast = parser.parse(text)
@@ -97,6 +155,9 @@ a = "b"
     <a/>
     <b/>
 """
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
         parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
 
         ast = parser.parse(text)
@@ -118,6 +179,9 @@ a b
  </a a>
 # a
 """
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
         parser = ApacheConfigParser(ApacheConfigLexer(), start='config')
 
         ast = parser.parse(text)

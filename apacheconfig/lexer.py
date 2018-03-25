@@ -13,11 +13,59 @@ from apacheconfig.error import ApacheConfigError
 log = logging.getLogger(__name__)
 
 
-class ApacheConfigLexer(object):
+class HashCommentsLexer(object):
+    tokens = (
+        'HASHCOMMENT',
+    )
+
+    states = ()
+
+    def t_HASHCOMMENT(self, t):
+        r'(?<!\\)\#[^\n\r]*'
+        t.value = t.value[1:]
+        return t
+
+
+class CStyleCommentsLexer(object):
+    tokens = (
+        'CCOMMENT',
+    )
+
+    states = (
+        ('ccomment', 'exclusive'),
+    )
+
+    def t_CCOMMENT(self, t):
+        r'\/\*'
+        t.lexer.code_start = t.lexer.lexpos
+        t.lexer.ccomment_level = 1  # Initial comment level
+        t.lexer.begin('ccomment')
+
+    def t_ccomment_open(self, t):
+        r'\/\*'
+        t.lexer.ccomment_level += 1
+
+    def t_ccomment_close(self, t):
+        r'\*\/'
+        t.lexer.ccomment_level -= 1
+
+        if t.lexer.ccomment_level == 0:
+            t.value = t.lexer.lexdata[t.lexer.code_start:t.lexer.lexpos + 1 - 3]
+            t.type = "CCOMMENT"
+            t.lexer.lineno += t.value.count('\n')
+            t.lexer.begin('INITIAL')
+            return t
+
+    def t_ccomment_body(self, t):
+        r'.+?'
+
+    def t_ccomment_error(self, t):
+        raise ApacheConfigError("Illegal character '%s' in C-style comment" % t.value[0])
+
+
+class BaseApacheConfigLexer(object):
 
     tokens = (
-        'COMMENT',
-        'CCOMMENT',
         'INCLUDE',
         'OPEN_TAG',
         'CLOSE_TAG',
@@ -27,7 +75,6 @@ class ApacheConfigLexer(object):
     )
 
     states = (
-        ('ccomment', 'exclusive'),
         ('multiline', 'exclusive'),
         ('heredoc', 'exclusive'),
     )
@@ -62,38 +109,6 @@ class ApacheConfigLexer(object):
 
     # Tokenizer rules
 
-    def t_COMMENT(self, t):
-        r'(?<!\\)\#[^\n\r]*'
-        t.value = t.value[1:]
-        return t
-
-    def t_CCOMMENT(self, t):
-        r'\/\*'
-        t.lexer.code_start = t.lexer.lexpos
-        t.lexer.ccomment_level = 1  # Initial comment level
-        t.lexer.begin('ccomment')
-
-    def t_ccomment_open(self, t):
-        r'\/\*'
-        t.lexer.ccomment_level += 1
-
-    def t_ccomment_close(self, t):
-        r'\*\/'
-        t.lexer.ccomment_level -= 1
-
-        if t.lexer.ccomment_level == 0:
-            t.value = t.lexer.lexdata[t.lexer.code_start:t.lexer.lexpos + 1]
-            t.type = "CCOMMENT"
-            t.lexer.lineno += t.value.count('\n')
-            t.lexer.begin('INITIAL')
-            return t
-
-    def t_ccomment_body(self, t):
-        r'.+?'
-
-    def t_ccomment_error(self, t):
-        raise ApacheConfigError("Illegal character '%s' in C-style comment" % t.value[0])
-
     def t_INCLUDE(self, t):
         r'<<include[\t ]+[^\n\r\t]+>>'
         t.value = t.value[2:-2].split(None, 1)[1]
@@ -116,7 +131,11 @@ class ApacheConfigLexer(object):
 
     @staticmethod
     def _parse_option_value(token):
+        if not re.match(r'.*?[ \n\r\t=]+', token):
+            raise ApacheConfigError('Syntax error in option-value pair %s' % token)
         option, value = re.split(r'[ \n\r\t=]+', token, maxsplit=1)
+        if not option or not value:
+            raise ApacheConfigError('Syntax error in option-value pair %s' % token)
         if value[0] == '"':
             value = value[1:]
         if value[-1] == '"':
@@ -204,3 +223,21 @@ class ApacheConfigLexer(object):
 
     def t_error(self, t):
         raise ApacheConfigError("Illegal character '%s'" % t.value[0])
+
+
+def make_lexer(**options):
+
+    lexer_class = BaseApacheConfigLexer
+
+    lexer_class = type('ApacheConfigLexer',
+                       (lexer_class, HashCommentsLexer),
+                       {'tokens': lexer_class.tokens + HashCommentsLexer.tokens,
+                        'states': lexer_class.states + HashCommentsLexer.states})
+
+    if options.get('cstylecomments', True):
+        lexer_class = type('ApacheConfigLexer',
+                           (lexer_class, CStyleCommentsLexer),
+                           {'tokens': lexer_class.tokens + CStyleCommentsLexer.tokens,
+                            'states': lexer_class.states + CStyleCommentsLexer.states})
+
+    return lexer_class

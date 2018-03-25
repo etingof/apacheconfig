@@ -12,7 +12,22 @@ from apacheconfig.error import ApacheConfigError
 log = logging.getLogger(__name__)
 
 
-class ApacheConfigParser(object):
+class HashCommentsParser(object):
+    def p_comment(self, p):
+        """comment : HASHCOMMENT
+        """
+        p[0] = ['comment', p[1]]
+
+
+class CStyleCommentsParser(object):
+    def p_comment(self, p):
+        """comment : HASHCOMMENT
+                   | CCOMMENT
+        """
+        p[0] = ['comment', p[1]]
+
+
+class BaseApacheConfigParser(object):
 
     def __init__(self, lexer, start='config', tempdir=None, debug=False):
         self._lexer = lexer
@@ -44,12 +59,6 @@ class ApacheConfigParser(object):
         """include : INCLUDE
         """
         p[0] = ['include', p[1]]
-
-    def p_comment(self, p):
-        """comment : COMMENT
-                   | CCOMMENT
-        """
-        p[0] = ['comment', p[1]]
 
     def p_statement(self, p):
         """statement : OPTION_AND_VALUE
@@ -107,3 +116,15 @@ class ApacheConfigParser(object):
 
     def p_error(self, p):
         raise ApacheConfigError("Parser error at '%s'" % p.value if p else '?')
+
+
+def make_parser(**options):
+
+    parser_class = BaseApacheConfigParser
+
+    if options.get('cstylecomments', True):
+        parser_class = type('ApacheConfigParser', (parser_class, CStyleCommentsParser), {})
+    else:
+        parser_class = type('ApacheConfigParser', (parser_class, HashCommentsParser), {})
+
+    return parser_class
