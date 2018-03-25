@@ -73,24 +73,22 @@ class PerlConfigGeneralTestCase(unittest.TestCase):
 
         errors = []
 
-        for filename in os.listdir(samples_dir):
-            ApacheConfigLexer = make_lexer()
-            ApacheConfigParser = make_parser()
+        with make_loader() as loader:
 
-            loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+            for filename in os.listdir(samples_dir):
 
-            sample_file = os.path.join(samples_dir, filename)
+                sample_file = os.path.join(samples_dir, filename)
 
-            with open(sample_file) as f:
-                try:
-                    config = loader.loads(f.read())
+                with open(sample_file) as f:
+                    try:
+                        config = loader.loads(f.read())
 
-                except ApacheConfigError as ex:
-                    errors.append('failed to parse %s: %s' % (sample_file, ex))
-                    continue
+                    except ApacheConfigError as ex:
+                        errors.append('failed to parse %s: %s' % (sample_file, ex))
+                        continue
 
-            if filename in test_configs:
-                self.assertEqual(config,  test_configs[filename])
+                if filename in test_configs:
+                    self.assertEqual(config,  test_configs[filename])
 
         self.assertEqual(errors, [])
 

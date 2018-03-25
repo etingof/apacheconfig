@@ -50,10 +50,9 @@ By running the following code:
 ```python
 from apacheconfig import *
 
-loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
-
-with open('apache.conf') as f:
-    config = loader.loads(f.read())
+with make_loader() as loader:
+    with open('apache.conf') as f:
+        config = loader.loads(f.read())
 
 print(config)
 ```
