@@ -52,6 +52,15 @@ test_configs = {
                                        'user': 'tom ',
                                        'message': '  yes. we are not here. you\n  can reach us somewhere in\n'
                                                   '  outerspace.\n'},
+    'include-first-test.conf': {'seen_first_config': 'true',
+                                'seen_second_config': 'true',
+                                'inner': {'final_include': 'true',
+                                          'seen_third_config': 'true'}},
+    'include-second-test.conf': {'seen_second_config': 'true',
+                                 'inner': {'final_include': 'true',
+                                           'seen_third_config': 'true'}},
+    'include-third-test.conf': {'final_include': 'true',
+                                'seen_third_config': 'true'},
 }
 
 

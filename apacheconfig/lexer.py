@@ -18,6 +18,7 @@ class ApacheConfigLexer(object):
     tokens = (
         'COMMENT',
         'CCOMMENT',
+        'INCLUDE',
         'OPEN_TAG',
         'CLOSE_TAG',
         'OPEN_CLOSE_TAG',
@@ -92,6 +93,11 @@ class ApacheConfigLexer(object):
 
     def t_ccomment_error(self, t):
         raise ApacheConfigError("Illegal character '%s' in C-style comment" % t.value[0])
+
+    def t_INCLUDE(self, t):
+        r'<<include[\t ]+[^\n\r\t]+>>'
+        t.value = t.value[2:-2].split(None, 1)[1]
+        return t
 
     def t_CLOSE_TAG(self, t):
         r'</[^\n\r\t]+>'

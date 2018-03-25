@@ -40,6 +40,11 @@ class ApacheConfigParser(object):
 
     # Parsing rules
 
+    def p_include(self, p):
+        """include : INCLUDE
+        """
+        p[0] = ['include', p[1]]
+
     def p_comment(self, p):
         """comment : COMMENT
                    | CCOMMENT
@@ -64,9 +69,11 @@ class ApacheConfigParser(object):
     def p_contents(self, p):
         """contents : contents statements
                     | contents comment
+                    | contents include
                     | contents block
                     | statements
                     | comment
+                    | include
                     | block
         """
         n = len(p)

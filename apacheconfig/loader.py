@@ -71,9 +71,12 @@ class ApacheConfigLoader(object):
             ast[0]: ast[1]
         }
 
-
     def g_comment(self, ast):
         return []
+
+    def g_include(self, ast):
+        with open(ast[0]) as f:
+            return self.loads(f.read())
 
     def _walkast(self, ast):
         if not ast:
