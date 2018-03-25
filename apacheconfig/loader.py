@@ -13,9 +13,10 @@ log = logging.getLogger(__name__)
 
 class ApacheConfigLoader(object):
 
-    def __init__(self, parser, debug=False):
+    def __init__(self, parser, debug=False, **options):
         self._parser = parser
         self._debug = debug
+        self._options = options
 
     # Code generation rules
 
@@ -46,8 +47,20 @@ class ApacheConfigLoader(object):
 
         for subtree in ast:
             items = self._walkast(subtree)
-            if items:
-                contents.update(items)
+            for item in items:
+                if item in contents:
+                    if self._options.get('mergeduplicateblocks'):
+                        for subitem in contents[item]:
+                            if subitem in items[item]:
+                                if not isinstance(contents[item][subitem], list):
+                                    contents[item][subitem] = [contents[item][subitem]]
+                                contents[item][subitem].append(items[item][subitem])
+                    else:
+                        if not isinstance(contents[item], list):
+                            contents[item] = [contents[item]]
+                        contents[item].append(items[item])
+                else:
+                    contents[item] = items[item]
 
         return contents
 

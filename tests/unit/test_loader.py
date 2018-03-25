@@ -39,13 +39,53 @@ c "d d"
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a': 'b',
+        self.assertEqual(config, {'a': ['b', 'b'],
                                   'a a block': {
                                       'c': 'd d'
                                   },
                                   'a block': {
                                       'a': 'b'
                                   }})
+
+    def testDuplicateBlocksUnmerged(self):
+        text = """\
+<a>
+b = 1
+</a>
+<a>
+b = 2
+</a>
+"""
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': [{'b': '1'}, {'b': '2'}]})
+
+    def testDuplicateBlocksMerged(self):
+        text = """\
+<a>
+b = 1
+</a>
+<a>
+b = 2
+</a>
+"""
+        options = {
+            'mergeduplicateblocks': True
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': {'b': ['1', '2']}})
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
