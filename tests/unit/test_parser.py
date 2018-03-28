@@ -165,6 +165,30 @@ a = "b"
                                ['block', 'a', [], 'a'],
                                ['block', 'b', [], 'b']])
 
+    def testLowerCase(self):
+        text = """\
+    <A/>
+    <aA>
+      Bb Cc
+    </aA>
+"""
+        options = {
+            'lowercasenames': True
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+
+        ast = parser.parse(text)
+        self.assertEqual(ast, ['contents',
+                               ['block', 'a', [], 'a'],
+                               ['block', 'aa',
+                                ['contents',
+                                 ['statements', ['statement', 'bb', 'Cc']]],
+                                'aa']])
+
     def testWholeConfig(self):
         text = """\
 # a

@@ -64,6 +64,8 @@ class BaseApacheConfigParser(object):
         """statement : OPTION_AND_VALUE
         """
         p[0] = ['statement', p[1][0], p[1][1]]
+        if self.options.get('lowercasenames'):
+            p[0][1] = p[0][1].lower()
 
     def p_statements(self, p):
         """statements : statements statement
@@ -104,6 +106,10 @@ class BaseApacheConfigParser(object):
         else:
             p[0] = ['block', p[1], [], p[1]]
 
+        if self.options.get('lowercasenames'):
+            for tag in (1, 3):
+                p[0][tag] = p[0][tag].lower()
+
     def p_config(self, p):
         """config : config contents
                   | contents
@@ -123,8 +129,12 @@ def make_parser(**options):
     parser_class = BaseApacheConfigParser
 
     if options.get('cstylecomments', True):
-        parser_class = type('ApacheConfigParser', (parser_class, CStyleCommentsParser), {})
+        parser_class = type('ApacheConfigParser',
+                            (parser_class, CStyleCommentsParser),
+                            {'options': options})
     else:
-        parser_class = type('ApacheConfigParser', (parser_class, HashCommentsParser), {})
+        parser_class = type('ApacheConfigParser',
+                            (parser_class, HashCommentsParser),
+                            {'options': options})
 
     return parser_class
