@@ -42,16 +42,17 @@ test_configs = {
                                        'db': {'host': 'blah.blubber'},
                                        'quotedwithquotes': ' holy crap, it contains \\"masked quotes\\" and '
                                                            '\'single quotes\'  ',
-                                       'cops': {'officer gordon':
-                                                    {'age': '31', 'name': 'bird'},
-                                                'officer randall': {'age': '25', 'name': 'stein'}},
+                                       'cops': {'officer':
+                                                    [{'randall': {'age': '25', 'name': 'stein'}},
+                                                     {'gordon': {'age': '31', 'name': 'bird'}}]},
                                        'beta': [{'user1': 'hans'}, {'user2': 'max'}],
-                                       'command': "ssh -f -g orpheus.0x49.org           "
-                                                  "-l azrael -L:34777samir.okir.da.ru:22           "
-                                                  "-L:31773:shane.sol1.rocket.de:22           'exec sleep 99999990'",
+                                       'command': "ssh -f -g orpheus.0x49.org           -l azrael "
+                                                  "-L:34777samir.okir.da.ru:22           "
+                                                  "-L:31773:shane.sol1.rocket.de:22           "
+                                                  "'exec sleep 99999990'",
                                        'user': 'tom ',
-                                       'message': '  yes. we are not here. you\n  can reach us somewhere in\n'
-                                                  '  outerspace.\n'},
+                                       'message': '  yes. we are not here. you\n  can reach us '
+                                                  'somewhere in\n  outerspace.\n'},
     'include-first-test.conf': {'seen_first_config': 'true',
                                 'seen_second_config': 'true',
                                 'inner': {'final_include': 'true',

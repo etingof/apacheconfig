@@ -115,17 +115,17 @@ class BaseApacheConfigLexer(object):
         return t
 
     def t_CLOSE_TAG(self, t):
-        r'</[^\n\r\t]+>'
+        r'</[^\n\r]+>'
         t.value = t.value[2:-1]
         return t
 
     def t_OPEN_CLOSE_TAG(self, t):
-        r'<[^\n\r\t/]+/>'
+        r'<[^\n\r/]+/>'
         t.value = t.value[1:-2]
         return t
 
     def t_OPEN_TAG(self, t):
-        r'<[^\n\r\t]+>'
+        r'<[^\n\r]+>'
         t.value = t.value[1:-1]
         return t
 

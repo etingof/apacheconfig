@@ -5,6 +5,7 @@
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
 import logging
+import re
 
 from apacheconfig.error import ApacheConfigError
 
@@ -31,14 +32,27 @@ class ApacheConfigLoader(object):
         return config
 
     def g_block(self, ast):
-        block = {
-            ast[0]: {}
-        }
+        tag = ast[0]
+        values = {}
+
+        if re.match(r'.*?[ \t\r\n]+', tag):
+            tag, name = re.split(r'[ \t\r\n]+', tag, maxsplit=1)
+
+            block = {
+                tag: {
+                    name: values
+                }
+            }
+
+        else:
+            block = {
+                tag: values
+            }
 
         for subtree in ast[1:-1]:
             items = self._walkast(subtree)
             if items:
-                block[ast[0]].update(items)
+                values.update(items)
 
         return block
 

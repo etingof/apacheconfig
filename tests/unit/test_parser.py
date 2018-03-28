@@ -152,8 +152,8 @@ a = "b"
 
     def testEmptyBlocks(self):
         text = """\
-    <a/>
-    <b/>
+<a/>
+<b/>
 """
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
@@ -165,7 +165,7 @@ a = "b"
                                ['block', 'a', [], 'a'],
                                ['block', 'b', [], 'b']])
 
-    def testLowerCase(self):
+    def testLowerCaseNames(self):
         text = """\
     <A/>
     <aA>
