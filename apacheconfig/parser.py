@@ -128,7 +128,7 @@ def make_parser(**options):
 
     parser_class = BaseApacheConfigParser
 
-    if options.get('cstylecomments', True):
+    if options.get('ccomments', True):
         parser_class = type('ApacheConfigParser',
                             (parser_class, CStyleCommentsParser),
                             {'options': options})

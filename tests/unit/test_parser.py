@@ -68,7 +68,7 @@ class ParserTestCase(unittest.TestCase):
     */
         """
             options = {
-                'cstylecomments': False
+                'ccomments': False
             }
 
             ApacheConfigLexer = make_lexer(**options)

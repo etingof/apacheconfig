@@ -235,7 +235,7 @@ def make_lexer(**options):
                         'states': lexer_class.states + HashCommentsLexer.states,
                         'options': options})
 
-    if options.get('cstylecomments', True):
+    if options.get('ccomments', True):
         lexer_class = type('ApacheConfigLexer',
                            (lexer_class, CStyleCommentsLexer),
                            {'tokens': lexer_class.tokens + CStyleCommentsLexer.tokens,
