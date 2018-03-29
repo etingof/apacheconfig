@@ -78,6 +78,36 @@ class ParserTestCase(unittest.TestCase):
 
             self.assertRaises(ApacheConfigError, parser.parse, text)
 
+    def testIncludes(self):
+        text = """\
+include first.conf
+<<include second.conf>>
+"""
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+
+        ast = parser.parse(text)
+        self.assertEqual(ast, ['contents', ['include', 'first.conf'], ['include', 'second.conf']])
+
+    def testApacheIncludesDisabled(self):
+        text = """\
+include first.conf
+<<include second.conf>>
+"""
+        options = {
+            'useapacheincludes': False
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+
+        ast = parser.parse(text)
+        self.assertEqual(ast, ['contents', ['include', 'first.conf'], ['include', 'second.conf']])
+
     def testOptionAndValueSet(self):
         text = """\
 a b

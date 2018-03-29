@@ -100,6 +100,26 @@ a "b"
         tokens = self.lexer.tokenize(text)
         self.assertEqual(tokens, ['a', 'a'])
 
+    def testIncludesConfigGeneral(self):
+        text = """\
+<<include first.conf>>
+<a>
+<<include second.conf>>
+</a>
+"""
+        tokens = self.lexer.tokenize(text)
+        self.assertEqual(tokens, ['first.conf', 'a', 'second.conf', 'a'])
+
+    def testIncludesApache(self):
+        text = """\
+include first.conf
+<a>
+include second.conf
+</a>
+"""
+        tokens = self.lexer.tokenize(text)
+        self.assertEqual(tokens, ['first.conf', 'a', 'second.conf', 'a'])
+
     def testConfiguration(self):
         text = """\
 # h

@@ -27,6 +27,21 @@ class CStyleCommentsParser(object):
         p[0] = ['comment', p[1]]
 
 
+class IncludesParser(object):
+    def p_include(self, p):
+        """include : INCLUDE
+        """
+        p[0] = ['include', p[1]]
+
+
+class ApacheIncludesParser(object):
+    def p_include(self, p):
+        """include : INCLUDE
+                   | APACHEINCLUDE
+        """
+        p[0] = ['include', p[1]]
+
+
 class BaseApacheConfigParser(object):
 
     def __init__(self, lexer, start='config', tempdir=None, debug=False):
@@ -54,11 +69,6 @@ class BaseApacheConfigParser(object):
         return self.engine.parse(text)
 
     # Parsing rules
-
-    def p_include(self, p):
-        """include : INCLUDE
-        """
-        p[0] = ['include', p[1]]
 
     def p_statement(self, p):
         """statement : OPTION_AND_VALUE
@@ -136,5 +146,15 @@ def make_parser(**options):
         parser_class = type('ApacheConfigParser',
                             (parser_class, HashCommentsParser),
                             {'options': options})
+
+    if options.get('useapacheinclude', True):
+        parser_class = type('ApacheConfigParser',
+                            (parser_class, ApacheIncludesParser),
+                            {'options': options})
+    else:
+        parser_class = type('ApacheConfigParser',
+                            (parser_class, IncludesParser),
+                            {'options': options})
+
 
     return parser_class

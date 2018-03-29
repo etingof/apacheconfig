@@ -63,6 +63,19 @@ class CStyleCommentsLexer(object):
         raise ApacheConfigError("Illegal character '%s' in C-style comment" % t.value[0])
 
 
+class ApacheIncludesLexer(object):
+    tokens = (
+        'APACHEINCLUDE',
+    )
+
+    states = ()
+
+    def t_APACHEINCLUDE(self, t):
+        r'include[\t ]+[^\n\r]+'
+        t.value = t.value.split(None, 1)[1]
+        return t
+
+
 class BaseApacheConfigLexer(object):
 
     tokens = (
@@ -240,6 +253,13 @@ def make_lexer(**options):
                            (lexer_class, CStyleCommentsLexer),
                            {'tokens': lexer_class.tokens + CStyleCommentsLexer.tokens,
                             'states': lexer_class.states + CStyleCommentsLexer.states,
+                            'options': options})
+
+    if options.get('useapacheinclude', True):
+        lexer_class = type('ApacheConfigLexer',
+                           (lexer_class, ApacheIncludesLexer),
+                           {'tokens': lexer_class.tokens + ApacheIncludesLexer.tokens,
+                            'states': lexer_class.states + ApacheIncludesLexer.states,
                             'options': options})
 
     return lexer_class
