@@ -88,7 +88,7 @@ a = 1
 a = 2
 """
         options = {
-            'allowmultipleoptions': True
+            'allowmultioptions': True
         }
 
         ApacheConfigLexer = make_lexer()
@@ -102,11 +102,11 @@ a = 2
 
     def testDuplicateOptionsDenied(self):
         text = """\
-        a = 1
-        a = 2
-        """
+a = 1
+a = 2
+"""
         options = {
-            'allowmultipleoptions': False
+            'allowmultioptions': False
         }
 
         ApacheConfigLexer = make_lexer()
@@ -115,6 +115,24 @@ a = 2
         loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
 
         self.assertRaises(ApacheConfigError, loader.loads, text)
+
+    def testDuplicateOptionsOverriden(self):
+        text = """\
+a = 1
+a = 2
+"""
+        options = {
+            'mergeduplicateoptions': True
+        }
+
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': '2'})
 
     def testNamedBlocks(self):
         text = """\
