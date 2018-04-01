@@ -6,6 +6,7 @@
 #
 import logging
 import re
+import os
 
 from apacheconfig.error import ApacheConfigError
 
@@ -17,7 +18,7 @@ class ApacheConfigLoader(object):
     def __init__(self, parser, debug=False, **options):
         self._parser = parser
         self._debug = debug
-        self._options = options
+        self._options = dict(options)
 
     # Code generation rules
 
@@ -116,8 +117,7 @@ class ApacheConfigLoader(object):
         return []
 
     def g_include(self, ast):
-        with open(ast[0]) as f:
-            return self.loads(f.read())
+        return self.load(ast[0])
 
     def _walkast(self, ast):
         if not ast:
@@ -137,3 +137,37 @@ class ApacheConfigLoader(object):
         ast = self._parser.parse(text)
 
         return self._walkast(ast)
+
+    def load(self, filepath):
+        options = self._options
+
+        if os.path.isabs(filepath):
+            configpath = [os.path.dirname(filepath)]
+            filename = os.path.basename(filepath)
+        else:
+            configpath = options.get('configpath', [])
+
+            if 'configroot' in options and options.get('includerelative'):
+                configpath.insert(0, options['configroot'])
+
+            if 'programpath' in options:
+                configpath.append(options['programpath'])
+            else:
+                configpath.append('.')
+
+            filename = os.path.basename(filepath)
+
+        for configdir in configpath:
+
+            filepath = os.path.join(configdir, filename)
+
+            if not os.path.exists(filepath):
+                continue
+
+            with open(filepath) as f:
+                ast = self._parser.parse(f.read())
+
+            return self._walkast(ast)
+
+        else:
+            raise ApacheConfigError('Config file "%s" not found in search path %s' % (filename, ':'.join(configpath)))
