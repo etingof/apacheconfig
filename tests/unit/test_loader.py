@@ -82,6 +82,40 @@ b = 2
 
         self.assertEqual(config, {'a': {'b': ['1', '2']}})
 
+    def testDuplicateOptionsAllowed(self):
+        text = """\
+a = 1
+a = 2
+"""
+        options = {
+            'allowmultipleoptions': True
+        }
+
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': ['1', '2']})
+
+    def testDuplicateOptionsDenied(self):
+        text = """\
+        a = 1
+        a = 2
+        """
+        options = {
+            'allowmultipleoptions': False
+        }
+
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        self.assertRaises(ApacheConfigError, loader.loads, text)
+
     def testNamedBlocks(self):
         text = """\
 <a b>

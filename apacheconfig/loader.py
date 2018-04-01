@@ -85,9 +85,12 @@ class ApacheConfigLoader(object):
             items = self._walkast(subtree)
             for item in items:
                 if item in statements:
-                    if not isinstance(statements[item], list):
-                        statements[item] = [statements[item]]
-                    statements[item].append(items[item])
+                    if self._options.get('allowmultipleoptions', True):
+                        if not isinstance(statements[item], list):
+                            statements[item] = [statements[item]]
+                        statements[item].append(items[item])
+                    else:
+                        raise ApacheConfigError('Duplicate option "%s" prohibited' % item)
                 else:
                     statements[item] = items[item]
 
