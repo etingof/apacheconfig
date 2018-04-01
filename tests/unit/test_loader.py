@@ -125,8 +125,8 @@ a = 2
             'mergeduplicateoptions': True
         }
 
-        ApacheConfigLexer = make_lexer()
-        ApacheConfigParser = make_parser()
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
 
         loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
 
@@ -149,6 +149,27 @@ c = 1
 
         self.assertEqual(config, {'a': {'b': {'c': '1'}}})
 
+    def testAutoTrue(self):
+        text = """\
+a 1
+a on
+a true
+b 0
+b off
+b false
+"""
+        options = {
+            'autotrue': True
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': ['1', '1', '1'], 'b': ['0', '0', '0']})
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])

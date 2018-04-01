@@ -100,8 +100,16 @@ class ApacheConfigLoader(object):
         return statements
 
     def g_statement(self, ast):
+        option, value = ast[:2]
+
+        if self._options.get('autotrue', False):
+            if value.lower() in ('yes', 'on', 'true'):
+                value = '1'
+            elif value.lower() in ('no', 'off', 'false'):
+                value = '0'
+
         return {
-            ast[0]: ast[1]
+            option: value
         }
 
     def g_comment(self, ast):
