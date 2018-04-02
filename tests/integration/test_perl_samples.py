@@ -66,7 +66,7 @@ test_configs = {
 
 
 class PerlConfigGeneralTestCase(unittest.TestCase):
-    def testParseFile(self):
+    def testParseFiles(self):
         samples_dir = os.path.join(
             os.path.dirname(__file__),
             'samples', 'perl-config-general'
@@ -93,6 +93,21 @@ class PerlConfigGeneralTestCase(unittest.TestCase):
                     self.assertEqual(config,  test_configs[filename])
 
         self.assertEqual(errors, [])
+
+    def testIncludeDirectories(self):
+        samples_dir = os.path.join(
+            os.path.dirname(__file__),
+            'samples', 'perl-config-general'
+        )
+
+        options = {
+            'includedirectories': True
+        }
+
+        with make_loader(**options) as loader:
+            config = loader.load(samples_dir)
+
+        self.assertTrue(config)
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])

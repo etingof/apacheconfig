@@ -230,6 +230,23 @@ b false
 
         self.assertEqual(expected_probes, actual_probes)
 
+    def testIncludeDirectories(self):
+        options = {
+            'includedirectories': True
+        }
+
+        with make_loader(**options) as loader:
+            with mock.patch('os.path.exists') as path_exists_mock:
+                with mock.patch('os.path.isdir') as path_isdir_mock:
+                    with mock.patch('os.listdir') as listdir_mock:
+                        path_exists_mock.side_effect = lambda x: [True, False]
+                        path_isdir_mock.side_effect = lambda x: [True, False]
+                        listdir_mock.return_value = []
+
+                        config = loader.load('xxx')
+
+                        self.assertEqual(config, {})
+
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 

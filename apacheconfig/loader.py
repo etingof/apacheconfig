@@ -62,20 +62,7 @@ class ApacheConfigLoader(object):
 
         for subtree in ast:
             items = self._walkast(subtree)
-            for item in items:
-                if item in contents:
-                    if self._options.get('mergeduplicateblocks'):
-                        for subitem in contents[item]:
-                            if subitem in items[item]:
-                                if not isinstance(contents[item][subitem], list):
-                                    contents[item][subitem] = [contents[item][subitem]]
-                                contents[item][subitem].append(items[item][subitem])
-                    else:
-                        if not isinstance(contents[item], list):
-                            contents[item] = [contents[item]]
-                        contents[item].append(items[item])
-                else:
-                    contents[item] = items[item]
+            self._merge_contents(contents, items)
 
         return contents
 
@@ -103,7 +90,7 @@ class ApacheConfigLoader(object):
     def g_statement(self, ast):
         option, value = ast[:2]
 
-        if self._options.get('autotrue', False):
+        if self._options.get('autotrue'):
             if value.lower() in ('yes', 'on', 'true'):
                 value = '1'
             elif value.lower() in ('no', 'off', 'false'):
@@ -118,6 +105,24 @@ class ApacheConfigLoader(object):
 
     def g_include(self, ast):
         return self.load(ast[0])
+
+    def _merge_contents(self, contents, items):
+        for item in items:
+            if item in contents:
+                if self._options.get('mergeduplicateblocks'):
+                    for subitem in contents[item]:
+                        if subitem in items[item]:
+                            if not isinstance(contents[item][subitem], list):
+                                contents[item][subitem] = [contents[item][subitem]]
+                            contents[item][subitem].append(items[item][subitem])
+                else:
+                    if not isinstance(contents[item], list):
+                        contents[item] = [contents[item]]
+                    contents[item].append(items[item])
+            else:
+                contents[item] = items[item]
+
+        return contents
 
     def _walkast(self, ast):
         if not ast:
@@ -138,12 +143,6 @@ class ApacheConfigLoader(object):
 
         return self._walkast(ast)
 
-    def _load_file(self, filepath):
-        with open(filepath) as f:
-            ast = self._parser.parse(f.read())
-
-        return self._walkast(ast)
-
     def load(self, filepath):
         options = self._options
 
@@ -161,7 +160,12 @@ class ApacheConfigLoader(object):
             else:
                 configpath.append('.')
 
-            filename = os.path.basename(filepath)
+            if os.path.isdir(filepath):
+                configpath.insert(0, filepath)
+                filename = '.'
+            else:
+                configpath.insert(0, os.path.dirname(filepath))
+                filename = os.path.basename(filepath)
 
         for configdir in configpath:
 
@@ -170,7 +174,20 @@ class ApacheConfigLoader(object):
             if not os.path.exists(filepath):
                 continue
 
-            return self._load_file(filepath)
+            if options.get('includedirectories'):
+                if os.path.isdir(filepath):
+                    contents = {}
+                    for include_file in sorted(os.listdir(filepath)):
+                        items = self.load(os.path.join(filepath, include_file))
+                        self._merge_contents(contents, items)
+
+                    return contents
+
+            with open(filepath) as f:
+                ast = self._parser.parse(f.read())
+
+            return self._walkast(ast)
+
 
         else:
             raise ApacheConfigError('Config file "%s" not found in search path %s' % (filename, ':'.join(configpath)))
