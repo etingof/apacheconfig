@@ -14,6 +14,13 @@ try:
 except ImportError:
     import unittest
 
+try:
+    mock = unittest.mock
+
+except AttributeError:
+
+    import mock
+
 
 class LoaderTestCase(unittest.TestCase):
 
@@ -170,6 +177,58 @@ b false
         config = loader.loads(text)
 
         self.assertEqual(config, {'a': ['1', '1', '1'], 'b': ['0', '0', '0']})
+
+    @mock.patch('os.path.exists')
+    def testConfigPath(self, path_exists_mock):
+        options = {
+            'configpath': ['a', 'b']
+        }
+
+        path_exists_mock.return_value = False
+
+        with make_loader(**options) as loader:
+            self.assertRaises(ApacheConfigError, loader.load, 't.conf')
+
+        expected_probes = ['a/t.conf', 'b/t.conf', './t.conf']
+        actual_probes = [x[1][0] for x in path_exists_mock.mock_calls
+                         if len(x[1]) and x[1][0] in expected_probes]
+
+        self.assertEqual(expected_probes, actual_probes)
+
+    @mock.patch('os.path.exists')
+    def testProgramPath(self, path_exists_mock):
+        options = {
+            'programpath': 'a/b'
+        }
+
+        path_exists_mock.return_value = False
+
+        with make_loader(**options) as loader:
+            self.assertRaises(ApacheConfigError, loader.load, 't.conf')
+
+        expected_probes = ['a/b/t.conf']
+        actual_probes = [x[1][0] for x in path_exists_mock.mock_calls
+                         if len(x[1]) and x[1][0] in expected_probes]
+
+        self.assertEqual(expected_probes, actual_probes)
+
+    @mock.patch('os.path.exists')
+    def testIncludeRelative(self, path_exists_mock):
+        options = {
+            'includerelative': True,
+            'configroot': 'a'
+        }
+
+        path_exists_mock.return_value = False
+
+        with make_loader(**options) as loader:
+            self.assertRaises(ApacheConfigError, loader.load, 't.conf')
+
+        expected_probes = ['a/t.conf']
+        actual_probes = [x[1][0] for x in path_exists_mock.mock_calls
+                         if len(x[1]) and x[1][0] in expected_probes]
+
+        self.assertEqual(expected_probes, actual_probes)
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])

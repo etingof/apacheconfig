@@ -138,6 +138,12 @@ class ApacheConfigLoader(object):
 
         return self._walkast(ast)
 
+    def _load_file(self, filepath):
+        with open(filepath) as f:
+            ast = self._parser.parse(f.read())
+
+        return self._walkast(ast)
+
     def load(self, filepath):
         options = self._options
 
@@ -164,10 +170,7 @@ class ApacheConfigLoader(object):
             if not os.path.exists(filepath):
                 continue
 
-            with open(filepath) as f:
-                ast = self._parser.parse(f.read())
-
-            return self._walkast(ast)
+            return self._load_file(filepath)
 
         else:
             raise ApacheConfigError('Config file "%s" not found in search path %s' % (filename, ':'.join(configpath)))
