@@ -91,7 +91,15 @@ class ApacheConfigLoader(object):
     def g_statement(self, ast):
         option, value = ast[:2]
 
-        if self._options.get('autotrue'):
+        flagbits = self._options.get('flagbits')
+        if flagbits and option in flagbits:
+            flags = dict([(key, None) for key in flagbits[option]])
+            for flag in value.split('|'):
+                flag = flag.strip()
+                flags[flag] = flagbits[option][flag]
+            value = flags
+
+        elif self._options.get('autotrue'):
             if value.lower() in ('yes', 'on', 'true'):
                 value = '1'
             elif value.lower() in ('no', 'off', 'false'):

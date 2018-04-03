@@ -178,6 +178,29 @@ b false
 
         self.assertEqual(config, {'a': ['1', '1', '1'], 'b': ['0', '0', '0']})
 
+    def testFlagBits(self):
+        text = """\
+mode = CLEAR | UNSECURE
+"""
+        options = {
+            'flagbits': {
+                'mode': {
+                    'CLEAR': 1,
+                    'STRONG': 1,
+                    'UNSECURE': '32bit'
+                }
+            }
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'mode': {'CLEAR': 1, 'STRONG': None, 'UNSECURE': '32bit'}})
+
     @mock.patch('os.path.exists')
     def testConfigPath(self, path_exists_mock):
         text = """\
