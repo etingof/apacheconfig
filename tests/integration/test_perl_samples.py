@@ -93,9 +93,7 @@ class PerlConfigGeneralTestCase(unittest.TestCase):
                 if filename in test_configs:
                     self.assertEqual(config,  test_configs[filename])
 
-        self.assertEqual(errors, [
-            'failed to parse tests/integration/samples/perl-config-general/include-directory-test.conf: '
-            'Config file "." not found in search path tests/integration/samples/perl-config-general/includes:.'])
+        self.assertEqual(len(errors), 2)
 
     def testIncludeDirectories(self):
         samples_file = os.path.join(
@@ -105,6 +103,21 @@ class PerlConfigGeneralTestCase(unittest.TestCase):
 
         options = {
             'includedirectories': True
+        }
+
+        with make_loader(**options) as loader:
+            config = loader.load(samples_file)
+
+        self.assertTrue(config)
+
+    def testIncludeGlob(self):
+        samples_file = os.path.join(
+            os.path.dirname(__file__),
+            'samples', 'perl-config-general', 'include-glob-test.conf'
+        )
+
+        options = {
+            'includeglob': True
         }
 
         with make_loader(**options) as loader:

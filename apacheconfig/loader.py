@@ -4,6 +4,7 @@
 # Copyright (c) 2018, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
+import glob
 import logging
 import re
 import os
@@ -134,9 +135,6 @@ class ApacheConfigLoader(object):
 
             filepath = os.path.join(configdir, filename)
 
-            if not os.path.exists(filepath):
-                continue
-
             if os.path.isdir(filepath):
                 if options.get('includedirectories'):
                     contents = {}
@@ -147,7 +145,16 @@ class ApacheConfigLoader(object):
 
                     return contents
 
-            else:
+            elif options.get('includeglob'):
+                contents = {}
+
+                for include_file in sorted(glob.glob(filepath)):
+                    items = self.load(include_file)
+                    self._merge_contents(contents, items)
+
+                return contents
+
+            elif os.path.exists(filepath):
                 return self.load(filepath)
 
         else:
