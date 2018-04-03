@@ -180,6 +180,10 @@ b false
 
     @mock.patch('os.path.exists')
     def testConfigPath(self, path_exists_mock):
+        text = """\
+<<include t.conf>>
+"""
+
         options = {
             'configpath': ['a', 'b']
         }
@@ -187,7 +191,7 @@ b false
         path_exists_mock.return_value = False
 
         with make_loader(**options) as loader:
-            self.assertRaises(ApacheConfigError, loader.load, 't.conf')
+            self.assertRaises(ApacheConfigError, loader.loads, text)
 
         expected_probes = ['a/t.conf', 'b/t.conf', './t.conf']
         actual_probes = [x[1][0] for x in path_exists_mock.mock_calls
@@ -197,6 +201,10 @@ b false
 
     @mock.patch('os.path.exists')
     def testProgramPath(self, path_exists_mock):
+        text = """\
+<<include t.conf>>
+"""
+
         options = {
             'programpath': 'a/b'
         }
@@ -204,7 +212,7 @@ b false
         path_exists_mock.return_value = False
 
         with make_loader(**options) as loader:
-            self.assertRaises(ApacheConfigError, loader.load, 't.conf')
+            self.assertRaises(ApacheConfigError, loader.loads, text)
 
         expected_probes = ['a/b/t.conf']
         actual_probes = [x[1][0] for x in path_exists_mock.mock_calls
@@ -214,6 +222,10 @@ b false
 
     @mock.patch('os.path.exists')
     def testIncludeRelative(self, path_exists_mock):
+        text = """\
+<<include t.conf>>
+"""
+
         options = {
             'includerelative': True,
             'configroot': 'a'
@@ -222,7 +234,7 @@ b false
         path_exists_mock.return_value = False
 
         with make_loader(**options) as loader:
-            self.assertRaises(ApacheConfigError, loader.load, 't.conf')
+            self.assertRaises(ApacheConfigError, loader.loads, text)
 
         expected_probes = ['a/t.conf']
         actual_probes = [x[1][0] for x in path_exists_mock.mock_calls
@@ -231,6 +243,10 @@ b false
         self.assertEqual(expected_probes, actual_probes)
 
     def testIncludeDirectories(self):
+        text = """\
+<<include xxx>>
+"""
+
         options = {
             'includedirectories': True
         }
@@ -243,7 +259,7 @@ b false
                         path_isdir_mock.side_effect = lambda x: [True, False]
                         listdir_mock.return_value = []
 
-                        config = loader.load('xxx')
+                        config = loader.loads(text)
 
                         self.assertEqual(config, {})
 

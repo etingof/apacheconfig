@@ -34,8 +34,8 @@ test_configs = {
                                   'db': {'host': 'blah.blubber'},
                                   'user': 'tom'},
     'combination-of-constructs.conf': {'nocomment':
-                                           'Comments in a here-doc should not be treated as comments.\n'
-                                           '/* So this should appear in the output */\n',
+                                       'Comments in a here-doc should not be treated as comments.\n'
+                                       '/* So this should appear in the output */\n',
                                        'domain': ['nix.to', 'b0fh.org', 'foo.bar'],
                                        'quoted': 'this one contains whitespace at the end    ',
                                        'passwd': 'sakkra',
@@ -53,15 +53,15 @@ test_configs = {
                                        'user': 'tom ',
                                        'message': '  yes. we are not here. you\n  can reach us '
                                                   'somewhere in\n  outerspace.\n'},
-    'include-first-test.conf': {'seen_first_config': 'true',
-                                'seen_second_config': 'true',
-                                'inner': {'final_include': 'true',
-                                          'seen_third_config': 'true'}},
-    'include-second-test.conf': {'seen_second_config': 'true',
-                                 'inner': {'final_include': 'true',
-                                           'seen_third_config': 'true'}},
-    'include-third-test.conf': {'final_include': 'true',
-                                'seen_third_config': 'true'},
+    'include-file-test.conf': {'seen_first_config': 'true',
+                               'seen_second_config': 'true',
+                               'inner': {'final_include': 'true',
+                                         'seen_third_config': 'true'}},
+    'second-test.conf': {'seen_second_config': 'true',
+                         'inner': {'final_include': 'true',
+                                   'seen_third_config': 'true'}},
+    'third-test.conf': {'final_include': 'true',
+                        'seen_third_config': 'true'},
 }
 
 
@@ -74,30 +74,33 @@ class PerlConfigGeneralTestCase(unittest.TestCase):
 
         errors = []
 
-        options = {
-            'programpath': samples_dir
-        }
-
-        with make_loader(**options) as loader:
+        with make_loader() as loader:
 
             for filename in os.listdir(samples_dir):
 
+                filepath = os.path.join(samples_dir, filename)
+
+                if os.path.isdir(filepath):
+                    continue
+
                 try:
-                    config = loader.load(filename)
+                    config = loader.load(filepath)
 
                 except ApacheConfigError as ex:
-                    errors.append('failed to parse %s: %s' % (sample_file, ex))
+                    errors.append('failed to parse %s: %s' % (filepath, ex))
                     continue
 
                 if filename in test_configs:
                     self.assertEqual(config,  test_configs[filename])
 
-        self.assertEqual(errors, [])
+        self.assertEqual(errors, [
+            'failed to parse tests/integration/samples/perl-config-general/include-directory-test.conf: '
+            'Config file "." not found in search path tests/integration/samples/perl-config-general/includes:.'])
 
     def testIncludeDirectories(self):
-        samples_dir = os.path.join(
+        samples_file = os.path.join(
             os.path.dirname(__file__),
-            'samples', 'perl-config-general'
+            'samples', 'perl-config-general', 'include-directory-test.conf'
         )
 
         options = {
@@ -105,7 +108,7 @@ class PerlConfigGeneralTestCase(unittest.TestCase):
         }
 
         with make_loader(**options) as loader:
-            config = loader.load(samples_dir)
+            config = loader.load(samples_file)
 
         self.assertTrue(config)
 

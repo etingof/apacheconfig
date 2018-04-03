@@ -104,7 +104,54 @@ class ApacheConfigLoader(object):
         return []
 
     def g_include(self, ast):
-        return self.load(ast[0])
+        filepath = ast[0]
+
+        options = self._options
+
+        if os.path.isabs(filepath):
+            configpath = [os.path.dirname(filepath)]
+            filename = os.path.basename(filepath)
+
+        else:
+            configpath = options.get('configpath', [])
+
+            if 'configroot' in options and options.get('includerelative'):
+                configpath.insert(0, options['configroot'])
+
+            if 'programpath' in options:
+                configpath.append(options['programpath'])
+            else:
+                configpath.append('.')
+
+            if os.path.isdir(filepath):
+                configpath.insert(0, filepath)
+                filename = '.'
+            else:
+                configpath.insert(0, os.path.dirname(filepath))
+                filename = os.path.basename(filepath)
+
+        for configdir in configpath:
+
+            filepath = os.path.join(configdir, filename)
+
+            if not os.path.exists(filepath):
+                continue
+
+            if os.path.isdir(filepath):
+                if options.get('includedirectories'):
+                    contents = {}
+
+                    for include_file in sorted(os.listdir(filepath)):
+                        items = self.load(os.path.join(filepath, include_file))
+                        self._merge_contents(contents, items)
+
+                    return contents
+
+            else:
+                return self.load(filepath)
+
+        else:
+            raise ApacheConfigError('Config file "%s" not found in search path %s' % (filename, ':'.join(configpath)))
 
     def _merge_contents(self, contents, items):
         for item in items:
@@ -144,50 +191,8 @@ class ApacheConfigLoader(object):
         return self._walkast(ast)
 
     def load(self, filepath):
-        options = self._options
+        with open(filepath) as f:
+            ast = self._parser.parse(f.read())
 
-        if os.path.isabs(filepath):
-            configpath = [os.path.dirname(filepath)]
-            filename = os.path.basename(filepath)
-        else:
-            configpath = options.get('configpath', [])
+        return self._walkast(ast)
 
-            if 'configroot' in options and options.get('includerelative'):
-                configpath.insert(0, options['configroot'])
-
-            if 'programpath' in options:
-                configpath.append(options['programpath'])
-            else:
-                configpath.append('.')
-
-            if os.path.isdir(filepath):
-                configpath.insert(0, filepath)
-                filename = '.'
-            else:
-                configpath.insert(0, os.path.dirname(filepath))
-                filename = os.path.basename(filepath)
-
-        for configdir in configpath:
-
-            filepath = os.path.join(configdir, filename)
-
-            if not os.path.exists(filepath):
-                continue
-
-            if options.get('includedirectories'):
-                if os.path.isdir(filepath):
-                    contents = {}
-                    for include_file in sorted(os.listdir(filepath)):
-                        items = self.load(os.path.join(filepath, include_file))
-                        self._merge_contents(contents, items)
-
-                    return contents
-
-            with open(filepath) as f:
-                ast = self._parser.parse(f.read())
-
-            return self._walkast(ast)
-
-
-        else:
-            raise ApacheConfigError('Config file "%s" not found in search path %s' % (filename, ':'.join(configpath)))
