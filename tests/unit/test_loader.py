@@ -141,6 +141,28 @@ a = 2
 
         self.assertEqual(config, {'a': '2'})
 
+    def testDefaultConfig(self):
+        text = """\
+a = 1
+b = 2
+"""
+        options = {
+            'defaultconfig': {
+                'b': '4',
+                'c': '3'
+            },
+            'mergeduplicateoptions': True
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': '1', 'b': ['4', '2'], 'c': '3'})
+
     def testNamedBlocks(self):
         text = """\
 <a b>

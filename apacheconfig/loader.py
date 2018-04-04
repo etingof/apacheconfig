@@ -59,7 +59,8 @@ class ApacheConfigLoader(object):
         return block
 
     def g_contents(self, ast):
-        contents = {}
+        # TODO(etingof): remove defaulted and overriden options from productions
+        contents = self._options.get('defaultconfig', {})
 
         for subtree in ast:
             items = self._walkast(subtree)
@@ -171,6 +172,7 @@ class ApacheConfigLoader(object):
     def _merge_contents(self, contents, items):
         for item in items:
             if item in contents:
+                # TODO(etingof): keep block/statements merging at one place
                 if self._options.get('mergeduplicateblocks'):
                     for subitem in contents[item]:
                         if subitem in items[item]:
