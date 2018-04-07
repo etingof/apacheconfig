@@ -20,6 +20,7 @@ class ApacheConfigLoader(object):
         self._parser = parser
         self._debug = debug
         self._options = dict(options)
+        self._stack = []
 
     # Code generation rules
 
@@ -86,6 +87,32 @@ class ApacheConfigLoader(object):
                         raise ApacheConfigError('Duplicate option "%s" prohibited' % item)
                 else:
                     statements[item] = items[item]
+
+        if self._options.get('interpolatevars', False):
+
+            def lookup(match):
+                option = match.groups()[0]
+
+                if option in statements:
+                    return interpolate(statements[option])
+
+                for frame in self._stack:
+                    if option in frame:
+                        return interpolate(frame[option])
+
+                return interpolate(match.string)
+
+            def interpolate(value):
+                expanded = re.sub(r'(?<!\\)\${([^\n\r]+?)}', lookup, value)
+                if expanded != value:
+                    return expanded
+                return re.sub(r'(?<!\\)\$([^\n\r $]+?)', lookup, value)
+
+            for option, value in tuple(statements.items()):
+                if not getattr(value, 'is_single_quoted', False):
+                    statements[option] = interpolate(value)
+
+        self._stack.insert(0, statements)
 
         return statements
 

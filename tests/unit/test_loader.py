@@ -308,6 +308,39 @@ mode = CLEAR | UNSECURE
 
                         self.assertEqual(config, {})
 
+    def testInterpolateVars(self):
+        text = """\
+a = 1
+b = $a
+c = ${b}
+e 1
+<aa>
+  d = ${c}
+  e = 2
+  f "${e} + 2"
+  g = '${e}'
+</aa>
+"""
+        options = {
+            'interpolatevars': True
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': '1',
+                                  'b': '1',
+                                  'c': '1',
+                                  'e': '1',
+                                  'aa': {'d': '1',
+                                         'e': '2',
+                                         'f': '2 + 2',
+                                         'g': '${e}'}})
+
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 

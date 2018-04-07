@@ -13,6 +13,14 @@ from apacheconfig.error import ApacheConfigError
 log = logging.getLogger(__name__)
 
 
+class SingleQuotedString(str):
+    is_single_quoted = True
+
+
+class DoubleQuotedString(str):
+    is_double_quoted = True
+
+
 class HashCommentsLexer(object):
     tokens = (
         'HASHCOMMENT',
@@ -149,10 +157,10 @@ class BaseApacheConfigLexer(object):
         option, value = re.split(r'[ \n\r\t=]+', token, maxsplit=1)
         if not option or not value:
             raise ApacheConfigError('Syntax error in option-value pair %s' % token)
-        if value[0] == '"':
-            value = value[1:]
-        if value[-1] == '"':
-            value = value[:-1]
+        if value[0] == '"' and value[-1] == '"':
+            value = DoubleQuotedString(value[1:-1])
+        if value[0] == "'" and value[-1] == "'":
+            value = SingleQuotedString(value[1:-1])
         if '#' in value:
             value = value.replace('\\#', '#')
         return option, value
