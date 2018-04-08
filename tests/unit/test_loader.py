@@ -361,6 +361,40 @@ b = '${a}'
         self.assertEqual(config, {'a': '1',
                                   'b': '1'})
 
+    def testInterpolateVarsFailOnUndefined(self):
+        text = """\
+b = ${a}
+"""
+
+        options = {
+            'interpolatevars': True,
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        self.assertRaises(ApacheConfigError, loader.loads, text)
+
+    def testInterpolateVarsIgnoreUndefined(self):
+        text = """\
+b = '${a}'
+"""
+        options = {
+            'interpolatevars': True,
+            'strictvars': False
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'b': '${a}'})
+
     def testInterpolateEnv(self):
         text = """\
 b = $a

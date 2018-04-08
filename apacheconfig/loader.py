@@ -108,6 +108,9 @@ class ApacheConfigLoader(object):
                     if option in os.environ:
                         return interpolate(os.environ[option])
 
+                if self._options.get('strictvars', True):
+                    raise ApacheConfigError('Undefined variable "${%s}" referenced' % option)
+
                 return interpolate(match.string)
 
             def interpolate(value):
