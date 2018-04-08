@@ -342,6 +342,25 @@ e 1
                                          'f': '2 + 2',
                                          'g': '${e}'}})
 
+    def testInterpolateVarsSingleQuote(self):
+        text = """\
+a = 1
+b = '${a}'
+"""
+        options = {
+            'allowsinglequoteinterpolation': True
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': '1',
+                                  'b': '1'})
+
     def testInterpolateEnv(self):
         text = """\
 b = $a

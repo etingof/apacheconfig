@@ -88,7 +88,8 @@ class ApacheConfigLoader(object):
                 else:
                     statements[item] = items[item]
 
-        if self._options.get('interpolateenv', False):
+        if (self._options.get('interpolateenv', False) or
+                self._options.get('allowsinglequoteinterpolation', False)):
             self._options['interpolatevars'] = True
 
         if self._options.get('interpolatevars', False):
@@ -116,7 +117,8 @@ class ApacheConfigLoader(object):
                 return re.sub(r'(?<!\\)\$([^\n\r $]+?)', lookup, value)
 
             for option, value in tuple(statements.items()):
-                if not getattr(value, 'is_single_quoted', False):
+                if (not getattr(value, 'is_single_quoted', False) or
+                        self._options.get('allowsinglequoteinterpolation', False)):
                     statements[option] = interpolate(value)
 
         self._stack.insert(0, statements)
