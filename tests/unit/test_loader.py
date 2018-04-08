@@ -4,6 +4,7 @@
 # Copyright (c) 2018, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
+import os
 import sys
 
 from apacheconfig import *
@@ -334,6 +335,39 @@ e 1
 
         self.assertEqual(config, {'a': '1',
                                   'b': '1',
+                                  'c': '1',
+                                  'e': '1',
+                                  'aa': {'d': '1',
+                                         'e': '2',
+                                         'f': '2 + 2',
+                                         'g': '${e}'}})
+
+    def testInterpolateEnv(self):
+        text = """\
+b = $a
+c = ${b}
+e 1
+<aa>
+  d = ${c}
+  e = 2
+  f "${e} + 2"
+  g = '${e}'
+</aa>
+"""
+        options = {
+            'interpolateenv': True
+        }
+
+        os.environ['a'] = '1'
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'b': '1',
                                   'c': '1',
                                   'e': '1',
                                   'aa': {'d': '1',

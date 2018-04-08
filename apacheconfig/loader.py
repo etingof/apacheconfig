@@ -88,6 +88,9 @@ class ApacheConfigLoader(object):
                 else:
                     statements[item] = items[item]
 
+        if self._options.get('interpolateenv', False):
+            self._options['interpolatevars'] = True
+
         if self._options.get('interpolatevars', False):
 
             def lookup(match):
@@ -99,6 +102,10 @@ class ApacheConfigLoader(object):
                 for frame in self._stack:
                     if option in frame:
                         return interpolate(frame[option])
+
+                if self._options.get('interpolateenv', False):
+                    if option in os.environ:
+                        return interpolate(os.environ[option])
 
                 return interpolate(match.string)
 
@@ -176,7 +183,7 @@ class ApacheConfigLoader(object):
                     contents = {}
 
                     for include_file in sorted(os.listdir(filepath)):
-                        items = self.load(os.path.join(filepath, include_file))
+                        items = self.load(os.path.join(filepath, include_file), initialize=False)
                         self._merge_contents(contents, items)
 
                     return contents
@@ -185,13 +192,13 @@ class ApacheConfigLoader(object):
                 contents = {}
 
                 for include_file in sorted(glob.glob(filepath)):
-                    items = self.load(include_file)
+                    items = self.load(include_file, initialize=False)
                     self._merge_contents(contents, items)
 
                 return contents
 
             elif os.path.exists(filepath):
-                return self.load(filepath)
+                return self.load(filepath, initialize=False)
 
         else:
             raise ApacheConfigError('Config file "%s" not found in search path %s' % (filename, ':'.join(configpath)))
@@ -229,12 +236,18 @@ class ApacheConfigLoader(object):
 
         return handler(ast[1:])
 
-    def loads(self, text):
+    def loads(self, text, initialize=True):
+        if initialize:
+            self._stack = []
+
         ast = self._parser.parse(text)
 
         return self._walkast(ast)
 
-    def load(self, filepath):
+    def load(self, filepath, initialize=True):
+        if initialize:
+            self._stack = []
+
         with open(filepath) as f:
             ast = self._parser.parse(f.read())
 
