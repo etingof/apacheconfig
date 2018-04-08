@@ -165,6 +165,14 @@ class BaseApacheConfigLexer(object):
             value = value.replace('\\#', '#')
         return option, value
 
+    def _pre_parse_value(self, option, value):
+        try:
+            pre_parse_value = self.options['plug']['pre_parse_value']
+            return pre_parse_value(option, value)
+
+        except KeyError:
+            return True, option, value
+
     def t_OPTION_AND_VALUE(self, t):
         r'[^ \n\r\t=]+[ \n\r\t=]+[^\r\n]+'
         if t.value.endswith('\\'):
@@ -175,6 +183,10 @@ class BaseApacheConfigLexer(object):
         lineno = len(re.findall(r'\r\n|\n|\r', t.value))
 
         option, value = self._parse_option_value(t.value)
+
+        process, option, value = self._pre_parse_value(option, value)
+        if not process:
+            return
 
         if value.startswith('<<'):
             t.lexer.heredoc_anchor = value[2:].strip()
@@ -201,7 +213,13 @@ class BaseApacheConfigLexer(object):
         t.lexer.lineno += len(re.findall(r'\r\n|\n|\r', value))
         value = value.replace('\\\n', '').replace('\r', '').replace('\n', '')
 
-        t.value = self._parse_option_value(value)
+        option, value = self._parse_option_value(value)
+
+        process, option, value = self._pre_parse_value(option, value)
+        if not process:
+            return
+
+        t.value = option, value
 
         return t
 

@@ -74,6 +74,7 @@ class BaseApacheConfigParser(object):
         """statement : OPTION_AND_VALUE
         """
         p[0] = ['statement', p[1][0], p[1][1]]
+
         if self.options.get('lowercasenames'):
             p[0][1] = p[0][1].lower()
 

@@ -428,6 +428,33 @@ e 1
                                          'f': '2 + 2',
                                          'g': '${e}'}})
 
+    def testHookPreParse(self):
+        text = """\
+a 1
+b = 2
+"""
+
+        def pre_parse_value(option, value):
+            if option == 'a':
+                return True, option, value + '1'
+            else:
+                return False, option, value
+
+        options = {
+            'plug': {
+                'pre_parse_value': pre_parse_value
+            }
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': '11'})
+
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
