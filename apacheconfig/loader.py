@@ -241,9 +241,20 @@ class ApacheConfigLoader(object):
 
         return handler(ast[1:])
 
-    def loads(self, text, initialize=True):
+    def loads(self, text, initialize=True, source=None):
         if initialize:
             self._stack = []
+
+        try:
+            pre_read = self._options['plug']['pre_read']
+
+            process, source, text = pre_read(source, text)
+
+            if not process:
+                return {}
+
+        except KeyError:
+            pass
 
         ast = self._parser.parse(text)
 
@@ -270,10 +281,8 @@ class ApacheConfigLoader(object):
 
         try:
             with open(filepath) as f:
-                ast = self._parser.parse(f.read())
+                return self.loads(f.read(), source=filepath)
 
         except IOError as ex:
             raise ApacheConfigError('File %s can\'t be open: %s' % (filepath, ex))
-
-        return self._walkast(ast)
 

@@ -361,6 +361,19 @@ Has to return a tuple consisting of 3 values:
  - filename
  - base directory
 
+### pre_read
+
+Takes two parameters: the name of the file to be read and an string containing the raw contents of said file.
+This hook gets the unaltered, original contents.
+
+Has to return an array of 3 values:
+
+ - `True` or `False` (continue processing or not)
+ - the filename
+ - a string that replaces the read contents
+
+You can use this hook to apply your own normalizations or whatever.
+
 
 
 ## How to get apacheconfig

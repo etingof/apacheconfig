@@ -450,6 +450,28 @@ e 1
 
         self.assertRaises(ApacheConfigError, loader.load, 'blah.conf')
 
+    def testHookPreRead(self):
+        text = """\
+blah 1
+"""
+        def pre_read(filepath, text):
+            return 'blah' in text, filepath, 'a 1\n'
+
+        options = {
+            'plug': {
+                'pre_read': pre_read
+            }
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': '1'})
+
     def testHookPreParse(self):
         text = """\
 a 1
