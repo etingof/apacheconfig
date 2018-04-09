@@ -21,6 +21,7 @@ class ApacheConfigLoader(object):
         self._debug = debug
         self._options = dict(options)
         self._stack = []
+        self._includes = set()
 
     # Code generation rules
 
@@ -267,6 +268,7 @@ class ApacheConfigLoader(object):
     def load(self, filepath, initialize=True):
         if initialize:
             self._stack = []
+            self._includes = set()
 
         try:
             pre_open = self._options['plug']['pre_open']
@@ -282,6 +284,11 @@ class ApacheConfigLoader(object):
 
         except KeyError:
             pass
+
+        if filepath in self._includes and not self._options.get('includeagain'):
+            return {}
+
+        self._includes.add(filepath)
 
         try:
             with open(filepath) as f:

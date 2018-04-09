@@ -125,6 +125,40 @@ class PerlConfigGeneralTestCase(unittest.TestCase):
 
         self.assertTrue(config)
 
+    def testIncludeAgainDisabled(self):
+        samples_file = os.path.join(
+            os.path.dirname(__file__),
+            'samples', 'perl-config-general', 'include-again-test.conf'
+        )
+
+        options = {
+            'includeagain': False
+        }
+
+        with make_loader(**options) as loader:
+            config = loader.load(samples_file)
+
+        self.assertEqual(config, {'seen_second_config': 'true',
+                                  'inner': {'final_include': 'true',
+                                            'seen_third_config': 'true'}})
+
+    def testIncludeAgainEnabled(self):
+        samples_file = os.path.join(
+            os.path.dirname(__file__),
+            'samples', 'perl-config-general', 'include-again-test.conf'
+        )
+
+        options = {
+            'includeagain': True
+        }
+
+        with make_loader(**options) as loader:
+            config = loader.load(samples_file)
+
+        self.assertEqual(config, {'seen_second_config': ['true', 'true'],
+                                  'inner': [{'final_include': 'true', 'seen_third_config': 'true'},
+                                            {'final_include': 'true', 'seen_third_config': 'true'}]})
+
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 

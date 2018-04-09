@@ -104,6 +104,16 @@ provide case-in-sensitive configs. The values of the options will not lowercased
 If set to `True`, the parser will consider "include ..." as valid include statement (just like the well known
 Apache include statement).
 
+### includeagain
+
+If set to `True`, you will be able to include a sub-configfile multiple times. With the default, `False`, duplicate
+includes are silently ignored and only the first include will succeed.
+
+Reincluding a configfile can be useful if it contains data that you want to be present in multiple places in the
+data tree.
+
+Note, however, that there is currently no check for include recursion.
+
 ### includerelative
 
 If set to `True`, included files with a relative path (i.e. "cfg/blah.conf") will be opened from within the location
