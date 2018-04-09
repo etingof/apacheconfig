@@ -428,6 +428,28 @@ e 1
                                          'f': '2 + 2',
                                          'g': '${e}'}})
 
+    def testHookPreOpen(self):
+
+        def pre_open(filename, basedir):
+            return 'blah' in filename, basedir, filename
+
+        options = {
+            'plug': {
+                'pre_open': pre_open
+            }
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.load('halb.conf')
+
+        self.assertEqual(config, {})
+
+        self.assertRaises(ApacheConfigError, loader.load, 'blah.conf')
+
     def testHookPreParse(self):
         text = """\
 a 1
@@ -435,10 +457,7 @@ b = 2
 """
 
         def pre_parse_value(option, value):
-            if option == 'a':
-                return True, option, value + '1'
-            else:
-                return False, option, value
+            return option == 'a', option, value + '1'
 
         options = {
             'plug': {

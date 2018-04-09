@@ -253,8 +253,27 @@ class ApacheConfigLoader(object):
         if initialize:
             self._stack = []
 
-        with open(filepath) as f:
-            ast = self._parser.parse(f.read())
+        try:
+            pre_open = self._options['plug']['pre_open']
+
+            filename, basedir = os.path.basename(filepath), os.path.dirname(filepath)
+
+            process, filename, basedir = pre_open(filename, basedir)
+
+            filepath = os.path.join(basedir, filename)
+
+            if not process:
+                return {}
+
+        except KeyError:
+            pass
+
+        try:
+            with open(filepath) as f:
+                ast = self._parser.parse(f.read())
+
+        except IOError as ex:
+            raise ApacheConfigError('File %s can\'t be open: %s' % (filepath, ex))
 
         return self._walkast(ast)
 

@@ -308,6 +308,61 @@ on occurs in a config. Set to `False` to avoid such error messages.
 The parser will process C-style comments as well as hash-style comments. By default C-style comments are processed,
 you can disable that by setting *ccomments* option to `False.
 
+## Parser plugins
+
+You can alter the behavior of the parser by supplying callables which will be invoked on certain hooks during
+config file processing and parsing.
+
+The general approach works like this:
+
+```python
+
+def pre_open_hook(file, base):
+    print('trying to open %s... ' % file)
+    if 'blah' in file:
+      print('ignored')
+      return
+    else:
+      print('allowed')
+      return 1, file, base
+
+options = {
+    'plug': {
+        'pre_open': pre_open_hook
+    }
+}
+```
+
+Output:
+
+```bash
+trying to open cfg ... allowed
+trying to open x/*.conf ... allowed
+trying to open x/1.conf ... allowed
+trying to open x/2.conf ... allowed
+trying to open x/blah.conf ... ignored
+```
+
+As you can see, we wrote a little function which takes a filename and a base directory as parameters. We tell
+the parser via the *plug* option to call this sub every time before it attempts to open a file.
+
+General processing continues as usual if the first value of the returned array is `True`. The second value of that
+tuple depends on the kind of hook being called.
+
+The following hooks are available so far:
+
+### pre_open
+
+Takes two parameters: *filename* and *basedirectory*.
+
+Has to return a tuple consisting of 3 values:
+
+ - `True` or `False` (continue processing or not)
+ - filename
+ - base directory
+
+
+
 ## How to get apacheconfig
 
 The apacheconfig package is distributed under terms and conditions of 2-clause
