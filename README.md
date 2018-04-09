@@ -82,6 +82,18 @@ The following options are currently supported:
 If the value is `False`, then multiple identical options are disallowed. The default is `True` in which
 case values of the identical options are collected into a list.
 
+### forcearray
+
+You may force a single config line to get parsed into a list by turning on the option *forcearray* and by
+surrounding the value of the config entry by *[]*.
+
+Example:
+
+```python
+hostlist = [foo.bar]
+
+Will result in a single value array entry if the *forcearray* option is turned on.
+
 ### lowercasenames
 
 If set to `True`, then all options found in the config will be converted to lowercase. This allows you to
@@ -321,10 +333,10 @@ def pre_open_hook(file, base):
     print('trying to open %s... ' % file)
     if 'blah' in file:
       print('ignored')
-      return
+      return False, file, base
     else:
       print('allowed')
-      return 1, file, base
+      return True, file, base
 
 options = {
     'plug': {
@@ -361,15 +373,17 @@ Has to return a tuple consisting of 3 values:
  - filename
  - base directory
 
+The returned *basedirectory* and *filename* will be used for opening the file.
+
 ### pre_read
 
-Takes two parameters: the name of the file to be read and an string containing the raw contents of said file.
-This hook gets the unaltered, original contents.
+Takes two parameters: the source of the contents read from and a string containing the raw contents.
+This hook gets the unaltered, original contents as it's read from a file (or some other source).
 
 Has to return an array of 3 values:
 
  - `True` or `False` (continue processing or not)
- - the filename
+ - the source of the contents or `None` if `loads()` is invoked rather than `load()`
  - a string that replaces the read contents
 
 You can use this hook to apply your own normalizations or whatever.

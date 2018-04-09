@@ -145,6 +145,10 @@ class ApacheConfigLoader(object):
             elif value.lower() in ('no', 'off', 'false'):
                 value = '0'
 
+        if self._options.get('forcearray'):
+            if value.startswith('[') and value.endswith(']'):
+                value = [value[1:-1]]
+
         return {
             option: value
         }

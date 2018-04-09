@@ -50,6 +50,22 @@ c "d d"
         self.assertEqual(config, {'a': ['b', {'block': {'a': 'b'}},
                                         'b', {'a block': {'c': 'd d'}}]})
 
+    def testForceArray(self):
+        text = """\
+b = [1]
+"""
+        options = {
+            'forcearray': True
+        }
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'b': ['1']})
+
     def testDuplicateBlocksUnmerged(self):
         text = """\
 <a>
