@@ -91,6 +91,7 @@ Example:
 
 ```python
 hostlist = [foo.bar]
+```
 
 Will result in a single value array entry if the *forcearray* option is turned on.
 
