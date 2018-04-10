@@ -398,7 +398,80 @@ Has to return an array of 3 values:
 
 You can use this hook to apply your own normalizations or whatever.
 
+## Command-line tool
 
+The library comes with a simple command-line tool `apacheconfigtool` which can convert Apache-style
+config files into JSON. The tool is also useful for playing with config file formats and parser
+options.
+
+```bash
+$ apacheconfigtool  --help
+usage: apacheconfigtool [-h] [-v] [--allowmultioptions] [--forcearray]
+                        [--lowercasenames] [--useapacheinclude]
+                        [--includeagain] [--includerelative]
+                        [--includedirectories] [--includeglob]
+                        [--mergeduplicateblocks] [--mergeduplicateoptions]
+                        [--autotrue] [--interpolatevars] [--interpolateenv]
+                        [--allowsinglequoteinterpolation] [--strictvars]
+                        [--ccomments]
+                        file [file ...]
+
+Dump Apache config files into JSON
+
+positional arguments:
+  file                  Path to the configuration file to dump
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --version         show program's version number and exit
+
+parsing options:
+  --allowmultioptions   Collect multiple identical options into a list
+  --forcearray          Force a single config line to get parsed into a list
+                        by turning on this option and by surrounding the value
+                        of the config entry by []
+  --lowercasenames      All options found in the config will be converted to
+                        lowercase
+  --useapacheinclude    Consider "include ..." as valid include statement
+  --includeagain        Allow including sub-configfiles multiple times
+  --includerelative     Open included config files from within the location of
+                        the configfile instead from within the location of the
+                        script
+  --includedirectories  Include statement may point to a directory, in which
+                        case all files inside the directory will be loaded in
+                        ASCII order
+  --includeglob         Include statement may point to a glob pattern, in
+                        which case all files matching the pattern will be
+                        loaded in ASCII order
+  --mergeduplicateblocks
+                        Duplicate blocks (blocks and named blocks), will be
+                        merged into a single one
+  --mergeduplicateoptions
+                        If the same option occurs more than once, the last one
+                        will be used in the resulting config dictionary
+  --autotrue            Turn various forms of binary values in config into "1"
+                        and "0"
+  --interpolatevars     Enable variable interpolation
+  --interpolateenv      Enable process environment variable interpolation
+  --allowsinglequoteinterpolation
+                        Perform variable interpolation even when being in
+                        single quotes
+  --strictvars          Do not fail on an undefined variable when performing
+                        interpolation
+  --ccomments           Do not parse C-style comments
+
+$ apacheconfigtool --includedirectories include-directory-test.conf
+{
+  "final_include": "true",
+  "seen_first_config": "true",
+  "seen_second_config": "true",
+  "inner": {
+    "final_include": "true",
+    "seen_third_config": "true"
+  },
+  "seen_third_config": "true"
+}
+```
 
 ## How to get apacheconfig
 

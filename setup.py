@@ -67,20 +67,27 @@ except ImportError:
 
     params = {}
 
-params.update({
-    'name': 'apacheconfig',
-    'version': open(os.path.join('apacheconfig', '__init__.py')).read().split('\'')[1],
-    'description': 'Apache config file parser',
-    'long_description': 'Apache and Perl Config::General style configuration file parsing library',
-    'maintainer': 'Ilya Etingof <etingof@gmail.com>',
-    'author': 'Ilya Etingof',
-    'author_email': 'etingof@gmail.com',
-    'url': 'https://github.com/etingof/apacheconfig',
-    'platforms': ['any'],
-    'classifiers': [x for x in classifiers.split('\n') if x],
-    'license': 'BSD',
-    'packages': ['apacheconfig']
-})
+params.update(
+    {
+        'name': 'apacheconfig',
+        'version': open(os.path.join('apacheconfig', '__init__.py')).read().split('\'')[1],
+        'description': 'Apache config file parser',
+        'long_description': 'Apache and Perl Config::General style configuration file parsing library',
+        'maintainer': 'Ilya Etingof <etingof@gmail.com>',
+        'author': 'Ilya Etingof',
+        'author_email': 'etingof@gmail.com',
+        'url': 'https://github.com/etingof/apacheconfig',
+        'platforms': ['any'],
+        'classifiers': [x for x in classifiers.split('\n') if x],
+        'license': 'BSD',
+        'packages': ['apacheconfig'],
+        'entry_points': {
+            'console_scripts': [
+                'apacheconfigtool = apacheconfig.apacheconfigtool:main'
+            ]
+        }
+    }
+)
 
 # handle unittest discovery feature
 try:
