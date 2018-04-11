@@ -29,7 +29,7 @@ def main():
     options = parser.add_argument_group('parsing options')
 
     options.add_argument(
-        '--allowmultioptions', action='store_true',
+        '--allowmultioptions', action='store_false',
         help='Collect multiple identical options into a list'
     )
 
