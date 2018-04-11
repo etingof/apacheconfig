@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 class HashCommentsParser(object):
-    def p_comment(self, p):
+    def p_hashcomment(self, p):
         """comment : HASHCOMMENT
         """
         p[0] = ['comment', p[1]]
@@ -35,7 +35,7 @@ class IncludesParser(object):
 
 
 class ApacheIncludesParser(object):
-    def p_include(self, p):
+    def p_apacheinclude(self, p):
         """include : INCLUDE
                    | APACHEINCLUDE
         """

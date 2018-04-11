@@ -92,7 +92,6 @@ class BaseApacheConfigLexer(object):
         'CLOSE_TAG',
         'OPEN_CLOSE_TAG',
         'OPTION_AND_VALUE',
-        'NEWLINE',
     )
 
     states = (
