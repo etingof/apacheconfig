@@ -119,7 +119,11 @@ def main():
     options = dict([(option, getattr(args, option)) for option in dir(args)
                     if not option.startswith('_') and getattr(args, option) is not None])
 
+    options['programpath'] = os.path.dirname(sys.argv[0])
+
     for config_file in args.file:
+
+        options['configroot'] = os.path.dirname(config_file)
 
         with make_loader(**options) as loader:
 

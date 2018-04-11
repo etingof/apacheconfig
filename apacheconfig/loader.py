@@ -181,8 +181,7 @@ class ApacheConfigLoader(object):
                 configpath.insert(0, filepath)
                 filename = '.'
             else:
-                configpath.insert(0, os.path.dirname(filepath))
-                filename = os.path.basename(filepath)
+                filename = filepath
 
         for configdir in configpath:
 
