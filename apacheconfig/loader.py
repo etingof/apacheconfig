@@ -123,7 +123,10 @@ class ApacheConfigLoader(object):
             for option, value in tuple(statements.items()):
                 if (not getattr(value, 'is_single_quoted', False) or
                         self._options.get('allowsinglequoteinterpolation', False)):
-                    statements[option] = interpolate(value)
+                    if isinstance(value, list):
+                        statements[option] = [interpolate(x) for x in value]
+                    else:
+                        statements[option] = interpolate(value)
 
         self._stack.insert(0, statements)
 
