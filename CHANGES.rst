@@ -1,4 +1,9 @@
 
+Revision 0.1.2, released 12-04-2018
+-----------------------------------
+
+- Adds more options to the apacheconfigtool: --configpath, --flagbits and --defaultconfig
+
 Revision 0.1.1, released 12-04-2018
 -----------------------------------
 
