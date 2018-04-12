@@ -114,12 +114,39 @@ def main():
         help='Do not parse C-style comments'
     )
 
+    options.add_argument(
+        '--configpath', action='append', default=[],
+        help='Search path for the configuration files being included. Can repeat.'
+    )
+
+    options.add_argument(
+        '--flagbits', action='append', default=[],
+        help='Named bit for an option in form of OPTION:NAME:VALUE. Can repeat.'
+    )
+
     args = parser.parse_args()
 
     options = dict([(option, getattr(args, option)) for option in dir(args)
                     if not option.startswith('_') and getattr(args, option) is not None])
 
     options['programpath'] = os.path.dirname(sys.argv[0])
+
+    del options['flagbits']
+
+    for flagbit in args.flagbits:
+        if 'flagbits' not in options:
+            options['flagbits'] = {}
+        try:
+            option, name, value = flagbit.split(':', 2)
+
+        except Exception:
+            sys.stderr.write('Malformed flagbit %s\n' % flagbit)
+            return 1
+
+        if option not in options['flagbits']:
+            options['flagbits'][option] = {}
+
+        options['flagbits'][option][name] = value
 
     for config_file in args.file:
 
