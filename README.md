@@ -463,8 +463,11 @@ parsing options:
   --configpath CONFIGPATH
                         Search path for the configuration files being
                         included. Can repeat.
-  --flagbits FLAGBITS   Named bit for an option in form of OPTION:NAME:VALUE.
-                        Can repeat.
+  --flagbits <JSON>     Named bits for an option in form of a JSON object of
+                        the following structure {"OPTION": {"NAME": "VALUE"}}
+  --defaultconfig <JSON>
+                        Default values for parsed configuration in form of a
+                        JSON object
 
 $ apacheconfigtool --includedirectories include-directory-test.conf
 {

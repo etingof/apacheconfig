@@ -120,8 +120,13 @@ def main():
     )
 
     options.add_argument(
-        '--flagbits', action='append', default=[],
-        help='Named bit for an option in form of OPTION:NAME:VALUE. Can repeat.'
+        '--flagbits', metavar='<JSON>', type=str,
+        help='Named bits for an option in form of a JSON object of the following structure {"OPTION": {"NAME": "VALUE"}}'
+    )
+
+    options.add_argument(
+        '--defaultconfig', metavar='<JSON>', type=str,
+        help='Default values for parsed configuration in form of a JSON object'
     )
 
     args = parser.parse_args()
@@ -131,22 +136,21 @@ def main():
 
     options['programpath'] = os.path.dirname(sys.argv[0])
 
-    del options['flagbits']
-
-    for flagbit in args.flagbits:
-        if 'flagbits' not in options:
-            options['flagbits'] = {}
+    if 'flagbits' in options:
         try:
-            option, name, value = flagbit.split(':', 2)
+            options['flagbits'] = json.loads(options['flagbits'])
 
-        except Exception:
-            sys.stderr.write('Malformed flagbit %s\n' % flagbit)
+        except Exception as ex:
+            sys.stderr.write('Malformed flagbits %s: %s\n' % (options['flagbits'], ex))
             return 1
 
-        if option not in options['flagbits']:
-            options['flagbits'][option] = {}
+    if 'defaultconfig' in options:
+        try:
+            options['defaultconfig'] = json.loads(options['defaultconfig'])
 
-        options['flagbits'][option][name] = value
+        except Exception as ex:
+            sys.stderr.write('Malformed defaultconfig %s: %s\n' % (options['defaultconfig'], ex))
+            return 1
 
     for config_file in args.file:
 
