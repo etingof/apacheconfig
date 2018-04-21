@@ -1,8 +1,8 @@
 
 # Apache-style config parser
 
-[![PyPI](https://img.shields.io/pypi/v/apacheconfig.svg?maxAge=1800)](https://pypi.python.org/pypi/apacheconfig)
-[![Python Versions](https://img.shields.io/pypi/pyversions/apacheconfig.svg)](https://pypi.python.org/pypi/apacheconfig/)
+[![PyPI](https://img.shields.io/pypi/v/apacheconfig.svg?maxAge=1800)](https://pypi.org/project/apacheconfig)
+[![Python Versions](https://img.shields.io/pypi/pyversions/apacheconfig.svg)](https://pypi.org/project/apacheconfig/)
 [![Build status](https://travis-ci.org/etingof/apacheconfig.svg?branch=master)](https://secure.travis-ci.org/etingof/apacheconfig)
 [![Coverage Status](https://img.shields.io/codecov/c/github/etingof/apacheconfig.svg)](https://codecov.io/github/etingof/apacheconfig)
 [![GitHub license](https://img.shields.io/badge/license-BSD-blue.svg)](https://raw.githubusercontent.com/etingof/apacheconfig/master/LICENSE.rst)
@@ -488,7 +488,7 @@ The apacheconfig package is distributed under terms and conditions of 2-clause
 BSD [license](https://github.com/etingof/apacheconfig/LICENSE.rst). Source code is freely
 available as a GitHub [repo](https://github.com/etingof/apacheconfig).
 
-You could `pip install apacheconfig` or download it from [PyPI](https://pypi.python.org/pypi/apacheconfig).
+You could `pip install apacheconfig` or download it from [PyPI](https://pypi.org/project/apacheconfig).
 
 If something does not work as expected, 
 [open an issue](https://github.com/etingof/apacheconfig/issues) at GitHub.
