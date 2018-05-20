@@ -16,9 +16,9 @@ except ImportError:
     import unittest
 
 try:
-    mock = unittest.mock
+    from unittest import mock
 
-except AttributeError:
+except ImportError:
 
     import mock
 
