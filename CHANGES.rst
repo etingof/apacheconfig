@@ -1,4 +1,10 @@
 
+Revision 0.1.3, released 22-05-2018
+-----------------------------------
+
+- Migrated references to new PyPI
+- Fix to tests on Py3.3+
+
 Revision 0.1.2, released 12-04-2018
 -----------------------------------
 
