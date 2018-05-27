@@ -104,7 +104,7 @@ b = 2
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a': {'b': ['1', '2']}})
+        self.assertEqual(config, {'a': {'b': '2'}})
 
     def testDuplicateOptionsAllowed(self):
         text = """\
