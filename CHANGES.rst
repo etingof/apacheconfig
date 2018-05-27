@@ -1,4 +1,9 @@
 
+Revision 0.1.4, released 27-05-2018
+-----------------------------------
+
+- The `mergeduplicateblocks` option reworked to produce a dict rather than list
+
 Revision 0.1.3, released 22-05-2018
 -----------------------------------
 

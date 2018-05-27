@@ -220,11 +220,14 @@ class ApacheConfigLoader(object):
             if item in contents:
                 # TODO(etingof): keep block/statements merging at one place
                 if self._options.get('mergeduplicateblocks'):
-                    for subitem in contents[item]:
-                        if subitem in items[item]:
-                            if not isinstance(contents[item][subitem], list):
-                                contents[item][subitem] = [contents[item][subitem]]
-                            contents[item][subitem].append(items[item][subitem])
+                    if isinstance(contents[item], list):
+                        if items[item] in contents[item]:
+                            del contents[item]  # remove duplicates
+                        contents[item].append(items[item])
+                    elif isinstance(contents[item], dict):
+                        contents[item].update(items[item])  # this will override duplicates
+                    else:
+                        raise ApacheConfigError('Cannot merge duplicate items "%s"' % item)
                 else:
                     if not isinstance(contents[item], list):
                         contents[item] = [contents[item]]
