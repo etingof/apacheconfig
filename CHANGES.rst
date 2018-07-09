@@ -2,6 +2,7 @@
 Revision 0.1.5, released XX-07-2018
 -----------------------------------
 
+- Added config `dump()`/`dumps()` features
 - The `noescape` option implemented
 - Allow empty value syntax in the option-value pair e.g. `option: `
 - Fixed a bug causing malformed AST when a comment resides
