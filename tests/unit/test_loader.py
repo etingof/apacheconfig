@@ -110,6 +110,8 @@ b = 2
         text = """\
 a = 1
 a = 2
+# comment
+a = 3
 """
         options = {
             'allowmultioptions': True
@@ -122,7 +124,7 @@ a = 2
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a': ['1', '2']})
+        self.assertEqual(config, {'a': ['1', '2', '3']})
 
     def testDuplicateOptionsDenied(self):
         text = """\

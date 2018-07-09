@@ -61,7 +61,7 @@ class ApacheConfigLoader(object):
         return block
 
     def g_contents(self, ast):
-        # TODO(etingof): remove defaulted and overriden options from productions
+        # TODO(etingof): remove defaulted and overridden options from productions
         contents = self._options.get('defaultconfig', {})
 
         for subtree in ast:
@@ -230,21 +230,29 @@ class ApacheConfigLoader(object):
 
     def _merge_contents(self, contents, items):
         for item in items:
+            # In case of duplicate keys, AST can contain a list of values.
+            # Here all values forced into being a list to unify further processing.
+            if isinstance(items[item], list):
+                vector = items[item]
+            else:
+                vector = [items[item]]
+
             if item in contents:
                 # TODO(etingof): keep block/statements merging at one place
                 if self._options.get('mergeduplicateblocks'):
                     if isinstance(contents[item], list):
-                        if items[item] in contents[item]:
-                            del contents[item]  # remove duplicates
-                        contents[item].append(items[item])
-                    elif isinstance(contents[item], dict):
+                        for itm in vector:
+                            if itm in contents[item]:
+                                del contents[item]  # remove duplicates
+                            contents[item].extend(vector)
+                    elif isinstance(contents[item], dict) and isinstance(items[item], dict):
                         contents[item].update(items[item])  # this will override duplicates
                     else:
                         raise ApacheConfigError('Cannot merge duplicate items "%s"' % item)
                 else:
                     if not isinstance(contents[item], list):
                         contents[item] = [contents[item]]
-                    contents[item].append(items[item])
+                    contents[item].extend(vector)
             else:
                 contents[item] = items[item]
 
