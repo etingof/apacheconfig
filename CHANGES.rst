@@ -1,3 +1,8 @@
+Revision 0.2.0, released XX-07-2018
+-----------------------------------
+
+- Added `dump()` and `dumps()` methods to render Apache configuration
+  back from the `dict`
 
 Revision 0.1.5, released XX-07-2018
 -----------------------------------

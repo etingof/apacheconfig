@@ -8,6 +8,7 @@ import glob
 import logging
 import re
 import os
+import tempfile
 
 from apacheconfig.error import ApacheConfigError
 
@@ -323,3 +324,48 @@ class ApacheConfigLoader(object):
         except IOError as ex:
             raise ApacheConfigError('File %s can\'t be open: %s' % (filepath, ex))
 
+    def _dumpobj(self, obj, indent=0):
+        text = ''
+        spacing = ' ' * indent
+        if isinstance(obj, dict):
+            for key, val in obj.items():
+                if isinstance(val, str):
+                    if val.isalnum():
+                        text += '%s%s %s\n' % (spacing, key, val)
+                    else:
+                        text += '%s%s "%s"\n' % (spacing, key, val)
+                elif isinstance(val, list):
+                    for dup in val:
+                        if isinstance(dup, str):
+                            if dup.isalnum():
+                                text += '%s%s %s\n' % (spacing, key, dup)
+                            else:
+                                text += '%s%s "%s"\n' % (spacing, key, dup)
+                        else:
+                            text += '%s<%s>\n%s%s</%s>\n' % (spacing, key, self._dumpobj(dup, indent + 2), spacing, key)
+                else:
+                    text += '%s<%s>\n%s%s</%s>\n' % (spacing, key, self._dumpobj(val, indent + 2), spacing, key)
+        else:
+            raise ApacheConfigError('Unknown object type "%r" to dump' % obj)
+        return text
+
+    def dumps(self, dct):
+        return self._dumpobj(dct)
+
+    def dump(self, filepath, dct):
+        tmpf = tempfile.NamedTemporaryFile(dir=os.path.dirname(filepath), delete=False)
+
+        try:
+            with open(tmpf.name, 'w') as f:
+                f.write(self.dumps(dct))
+
+            os.rename(tmpf.name, filepath)
+
+        except IOError as ex:
+            try:
+                os.unlink(tmpf.name)
+
+            except Exception:
+                pass
+
+            raise ApacheConfigError('File %s can\'t be written: %s' % (filepath, ex))
