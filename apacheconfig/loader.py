@@ -324,33 +324,37 @@ class ApacheConfigLoader(object):
         except IOError as ex:
             raise ApacheConfigError('File %s can\'t be open: %s' % (filepath, ex))
 
-    def _dumpobj(self, obj, indent=0):
+    def _dumpdict(self, obj, indent=0):
+        if not isinstance(obj, dict):
+            raise ApacheConfigError('Unknown object type "%r" to dump' % obj)
+
         text = ''
         spacing = ' ' * indent
-        if isinstance(obj, dict):
-            for key, val in obj.items():
-                if isinstance(val, str):
-                    if val.isalnum():
-                        text += '%s%s %s\n' % (spacing, key, val)
-                    else:
-                        text += '%s%s "%s"\n' % (spacing, key, val)
-                elif isinstance(val, list):
-                    for dup in val:
-                        if isinstance(dup, str):
-                            if dup.isalnum():
-                                text += '%s%s %s\n' % (spacing, key, dup)
-                            else:
-                                text += '%s%s "%s"\n' % (spacing, key, dup)
-                        else:
-                            text += '%s<%s>\n%s%s</%s>\n' % (spacing, key, self._dumpobj(dup, indent + 2), spacing, key)
+
+        for key, val in obj.items():
+            if isinstance(val, str):
+                if val.isalnum():
+                    text += '%s%s %s\n' % (spacing, key, val)
                 else:
-                    text += '%s<%s>\n%s%s</%s>\n' % (spacing, key, self._dumpobj(val, indent + 2), spacing, key)
-        else:
-            raise ApacheConfigError('Unknown object type "%r" to dump' % obj)
+                    text += '%s%s "%s"\n' % (spacing, key, val)
+
+            elif isinstance(val, list):
+                for dup in val:
+                    if isinstance(dup, str):
+                        if dup.isalnum():
+                            text += '%s%s %s\n' % (spacing, key, dup)
+                        else:
+                            text += '%s%s "%s"\n' % (spacing, key, dup)
+                    else:
+                        text += '%s<%s>\n%s%s</%s>\n' % (spacing, key, self._dumpdict(dup, indent + 2), spacing, key)
+
+            else:
+                text += '%s<%s>\n%s%s</%s>\n' % (spacing, key, self._dumpdict(val, indent + 2), spacing, key)
+
         return text
 
     def dumps(self, dct):
-        return self._dumpobj(dct)
+        return self._dumpdict(dct)
 
     def dump(self, filepath, dct):
         tmpf = tempfile.NamedTemporaryFile(dir=os.path.dirname(filepath), delete=False)
