@@ -62,10 +62,10 @@ class ParserTestCase(unittest.TestCase):
 
     def testCStyleCommentsDisabled(self):
             text = """\
-    /*a*/
-    /*
-    # b
-    */
+/*a*/
+/*
+# b
+*/
         """
             options = {
                 'ccomments': False
@@ -76,7 +76,13 @@ class ParserTestCase(unittest.TestCase):
 
             parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
 
-            self.assertRaises(ApacheConfigError, parser.parse, text)
+            ast = parser.parse(text)
+
+            # C comments parsed as statements
+            self.assertEqual(ast, ['contents',
+                                   ['statements', ['statement', '/*a*/', ''], ['statement', '/*', '']],
+                                   ['comment', ' b'],
+                                   ['statements', ['statement', '*/', '']]])
 
     def testIncludes(self):
         text = """\

@@ -154,12 +154,13 @@ class BaseApacheConfigLexer(object):
         if not re.match(r'.*?[ \n\r\t=]+', token):
             raise ApacheConfigError('Syntax error in option-value pair %s' % token)
         option, value = re.split(r'[ \n\r\t=]+', token, maxsplit=1)
-        if not option or not value:
+        if not option:
             raise ApacheConfigError('Syntax error in option-value pair %s' % token)
-        if value[0] == '"' and value[-1] == '"':
-            value = DoubleQuotedString(value[1:-1])
-        if value[0] == "'" and value[-1] == "'":
-            value = SingleQuotedString(value[1:-1])
+        if value:
+            if value[0] == '"' and value[-1] == '"':
+                value = DoubleQuotedString(value[1:-1])
+            if value[0] == "'" and value[-1] == "'":
+                value = SingleQuotedString(value[1:-1])
         if '#' in value:
             value = value.replace('\\#', '#')
         return option, value
@@ -173,7 +174,7 @@ class BaseApacheConfigLexer(object):
             return True, option, value
 
     def t_OPTION_AND_VALUE(self, t):
-        r'[^ \n\r\t=]+[ \n\r\t=]+[^\r\n]+'
+        r'[^ \n\r\t=]+[ =]*[\n\r]+|[^ \n\r\t=]+[ \n\r\t=]+[^\r\n]+'
         if t.value.endswith('\\'):
             t.lexer.code_start = t.lexer.lexpos - len(t.value)
             t.lexer.begin('multiline')
