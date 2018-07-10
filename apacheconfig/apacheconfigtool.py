@@ -110,6 +110,11 @@ def main():
     )
 
     options.add_argument(
+        '--noescape', action='store_true',
+        help='Preserve special escape characters left outs in the configuration values'
+    )
+
+    options.add_argument(
         '--ccomments', action='store_false',
         help='Do not parse C-style comments'
     )
