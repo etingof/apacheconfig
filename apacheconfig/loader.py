@@ -242,8 +242,8 @@ class ApacheConfigLoader(object):
                 if self._options.get('mergeduplicateblocks'):
                     if isinstance(contents[item], list):
                         for itm in vector:
-                            if itm in contents[item]:
-                                del contents[item]  # remove duplicates
+                            while itm in contents[item]:
+                                contents[item].remove(itm)  # remove duplicates
                             contents[item].extend(vector)
                     elif isinstance(contents[item], dict) and isinstance(items[item], dict):
                         contents[item].update(items[item])  # this will override duplicates
