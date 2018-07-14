@@ -25,7 +25,7 @@ except ImportError:
 
 class LoaderTestCase(unittest.TestCase):
 
-    def testWholeConfig(self):
+    def testLoadWholeConfig(self):
         text = """\
 
 # a
@@ -49,6 +49,49 @@ c "d d"
 
         self.assertEqual(config, {'a': ['b', {'block': {'a': 'b'}},
                                         'b', {'a block': {'c': 'd d'}}]})
+
+    def testDumpWholeConfig(self):
+        text = """\
+
+# a
+a = b
+
+<a block>
+  a = b
+</a>
+a b
+<a a block>
+c "d d"
+</a>
+# a
+"""
+
+        expect_text = """\
+a b
+<a>
+  <block>
+    a b
+  </block>
+</a>
+a b
+<a>
+  <a block>
+    c "d d"
+  </a block>
+</a>
+"""
+
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+
+        config = loader.loads(text)
+
+        gen_text = loader.dumps(config)
+
+        self.assertEqual(expect_text, gen_text)
+
 
     def testForceArray(self):
         text = """\

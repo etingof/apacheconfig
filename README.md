@@ -55,6 +55,25 @@ with make_loader() as loader:
 print(config)
 ```
 
+You can also dump the config `dict` back into Apache configuration file form
+by calling `dump` or `dumps` method:
+
+```python
+from apacheconfig import *
+
+with make_loader() as loader:
+    config = loader.load('httpd.conf')
+
+# ...potentially modify the `config` dict anyhow...
+
+print(loader.dumps(config))
+```
+
+Please, note that dumped config file might differ in its representation from the original
+because `dict` form does not contain all pieces of the original file (like comments),
+some items may get modified on load (like variable expansion) and included files
+rendered into the single `dict`.
+
 ## Parsing options
 
 Parser behavior can be modified by passing it one or more options. The options are passed as a dictionary:

@@ -22,6 +22,11 @@ def main():
     )
 
     parser.add_argument(
+        '--json-input', action='store_true',
+        help='Expect JSON file(s) on input, produce Apache configuration'
+    )
+
+    parser.add_argument(
         'file', nargs='+',
         help='Path to the configuration file to dump'
     )
@@ -157,20 +162,36 @@ def main():
             sys.stderr.write('Malformed defaultconfig %s: %s\n' % (options['defaultconfig'], ex))
             return 1
 
-    for config_file in args.file:
 
-        options['configroot'] = os.path.dirname(config_file)
+    if args.json_input:
 
         with make_loader(**options) as loader:
 
-            try:
-                config = loader.load(config_file)
+            for json_file in args.file:
+                try:
+                    with open(json_file) as f:
+                        sys.stdout.write(loader.dumps(json.load(f)))
 
-            except ApacheConfigError as ex:
-                sys.stderr.write('Failed to parse %s: %s\n' % (config_file, ex))
-                return 1
+                except Exception as ex:
+                    sys.stderr.write('Failed to dump JSON document %s into Apache config: %s\n' % (json_file, ex))
+                    return 1
 
-            sys.stdout.write(json.dumps(config, indent=2) + '\n')
+    else:
+
+        for config_file in args.file:
+
+            options['configroot'] = os.path.dirname(config_file)
+
+            with make_loader(**options) as loader:
+
+                try:
+                    config = loader.load(config_file)
+
+                except ApacheConfigError as ex:
+                    sys.stderr.write('Failed to parse Apache config %s: %s\n' % (config_file, ex))
+                    return 1
+
+                sys.stdout.write(json.dumps(config, indent=2) + '\n')
 
 
 if __name__ == '__main__':
