@@ -329,7 +329,12 @@ on occurs in a config. Set to `False` to avoid such error messages.
 ### ccomments
 
 The parser will process C-style comments as well as hash-style comments. By default C-style comments are processed,
-you can disable that by setting *ccomments* option to `False.
+you can disable that by setting *ccomments* option to `False`.
+
+### noescape
+
+If you want to preserve escaping special characters ($\"#) in the configuration data, turn this parameter on. It is
+set to `False` by default.
 
 ## Parser plugins
 
@@ -414,7 +419,8 @@ usage: apacheconfigtool [-h] [-v] [--allowmultioptions] [--forcearray]
                         [--mergeduplicateblocks] [--mergeduplicateoptions]
                         [--autotrue] [--interpolatevars] [--interpolateenv]
                         [--allowsinglequoteinterpolation] [--strictvars]
-                        [--ccomments]
+                        [--noescape] [--ccomments] [--configpath CONFIGPATH]
+                        [--flagbits <JSON>] [--defaultconfig <JSON>]
                         file [file ...]
 
 Dump Apache config files into JSON

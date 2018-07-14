@@ -40,7 +40,7 @@ test_configs = {
                                        'quoted': 'this one contains whitespace at the end    ',
                                        'passwd': 'sakkra',
                                        'db': {'host': 'blah.blubber'},
-                                       'quotedwithquotes': ' holy crap, it contains \\"masked quotes\\" and '
+                                       'quotedwithquotes': ' holy crap, it contains "masked quotes" and '
                                                            '\'single quotes\'  ',
                                        'cops': {'officer':
                                                     [{'randall': {'age': '25', 'name': 'stein'}},

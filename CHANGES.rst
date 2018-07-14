@@ -2,6 +2,7 @@
 Revision 0.1.5, released XX-07-2018
 -----------------------------------
 
+- The `noescape` option implemented
 - Allow empty value syntax in the option-value pair e.g. `option: `
 
 Revision 0.1.4, released 27-05-2018

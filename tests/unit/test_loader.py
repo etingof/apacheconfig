@@ -240,6 +240,36 @@ mode = CLEAR | UNSECURE
 
         self.assertEqual(config, {'mode': {'CLEAR': 1, 'STRONG': None, 'UNSECURE': '32bit'}})
 
+    def testEscape(self):
+        text = """\
+a = \\$b
+"""
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': '$b'})
+
+    def testNoEscape(self):
+        text = """\
+a = \\$b
+"""
+        options = {
+            'noescape': True
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': '\\$b'})
+
     @mock.patch('os.path.exists')
     def testConfigPath(self, path_exists_mock):
         text = """\
