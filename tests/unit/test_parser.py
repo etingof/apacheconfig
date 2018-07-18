@@ -169,8 +169,8 @@ a = "b"
             text = """\
 <a>
   <b>
-     <c>
-     </c>
+     <c >
+     </ c >
   </b>
 </a>
 """
@@ -190,6 +190,8 @@ a = "b"
         text = """\
 <a/>
 <b/>
+<c />
+<d  />
 """
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
@@ -199,7 +201,9 @@ a = "b"
         ast = parser.parse(text)
         self.assertEqual(ast, ['contents',
                                ['block', 'a', [], 'a'],
-                               ['block', 'b', [], 'b']])
+                               ['block', 'b', [], 'b'],
+                               ['block', 'c', [], 'c'],
+                               ['block', 'd', [], 'd']])
 
     def testLowerCaseNames(self):
         text = """\
