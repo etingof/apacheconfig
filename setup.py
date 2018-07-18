@@ -29,6 +29,7 @@ Programming Language :: Python :: 3.3
 Programming Language :: Python :: 3.4
 Programming Language :: Python :: 3.5
 Programming Language :: Python :: 3.6
+Programming Language :: Python :: 3.7
 Topic :: Communications
 Topic :: Software Development :: Libraries :: Python Modules
 """
@@ -46,6 +47,7 @@ def howto_install_setuptools():
    Then you could make eggs from this package.
 """)
 
+requires = ['ply>=3.0']
 
 if sys.version_info[:2] < (2, 6):
     print("ERROR: this package requires Python 2.6 or later!")
@@ -55,6 +57,7 @@ try:
     from setuptools import setup, Command
 
     params = {
+        'install_requires': requires,
         'zip_safe': True
     }
 
@@ -65,7 +68,7 @@ except ImportError:
             sys.exit(1)
     from distutils.core import setup, Command
 
-    params = {}
+    params = {'requires': requires}
 
 params.update(
     {

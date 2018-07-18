@@ -1,7 +1,7 @@
 Revision 0.2.1, released XX-07-2018
 -----------------------------------
 
-No changes so far
+- Added explicit ply requirement
 
 Revision 0.2.0, released 14-07-2018
 -----------------------------------
