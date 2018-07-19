@@ -111,11 +111,11 @@ class BaseApacheConfigParser(object):
         """
         n = len(p)
         if n == 4:
-            p[0] = ['block', p[1].strip(), p[2], p[3].strip()]
+            p[0] = ['block', p[1], p[2], p[3]]
         elif n == 3:
-            p[0] = ['block', p[1].strip(),  [], p[2].strip()]
+            p[0] = ['block', p[1],  [], p[2]]
         else:
-            p[0] = ['block', p[1].strip(), [], p[1].strip()]
+            p[0] = ['block', p[1], [], p[1]]
 
         if self.options.get('lowercasenames'):
             for tag in (1, 3):

@@ -1,8 +1,3 @@
-Revision 0.2.2, released XX-07-2018
------------------------------------
-
-- Strip whitespaces from tags (e.g. < tag >
-
 Revision 0.2.1, released 18-07-2018
 -----------------------------------
 
