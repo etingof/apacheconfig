@@ -227,9 +227,9 @@ b = 2
 
     def testNamedBlocks(self):
         text = """\
-<a b>
+<a />
 c = 1
-</a b>
+</a />
 
 <a b c>
 d = 1
@@ -242,7 +242,7 @@ d = 1
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a': [{'b': {'c': '1'}}, {'b c': {'d': '1'}}]})
+        self.assertEqual(config, {'a': [{'/': {'c': '1'}}, {'b c': {'d': '1'}}]})
 
     def testQuotedBlockTag(self):
         text = """\
