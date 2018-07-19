@@ -36,12 +36,26 @@ class ApacheConfigLoader(object):
 
         return config
 
+    @staticmethod
+    def _unquote_tag(tag):
+        if tag[0] == '"' and tag[-1] == '"':
+            tag = tag[1:-1]
+        if tag[0] == "'" and tag[-1] == "'":
+            tag = tag[1:-1]
+
+        if not tag:
+            raise ApacheConfigError('Empty block tag not allowed')
+
+        return tag
+
     def g_block(self, ast):
         tag = ast[0]
         values = {}
 
-        if re.match(r'.*?[ \t\r\n]+', tag):
+        if re.match(r'[^"\'].*?[ \t\r\n]+.*?[^"\']', tag):
             tag, name = re.split(r'[ \t\r\n]+', tag, maxsplit=1)
+
+            name = self._unquote_tag(name)
 
             block = {
                 tag: {
@@ -50,6 +64,8 @@ class ApacheConfigLoader(object):
             }
 
         else:
+            tag = self._unquote_tag(tag)
+
             block = {
                 tag: values
             }

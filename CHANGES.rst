@@ -1,3 +1,9 @@
+
+Revision 0.2.2, released XX-07-2018
+-----------------------------------
+
+- Added support for quoting named blocks
+
 Revision 0.2.1, released 18-07-2018
 -----------------------------------
 

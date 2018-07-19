@@ -230,6 +230,10 @@ b = 2
 <a b>
 c = 1
 </a b>
+
+<a b c>
+d = 1
+</a b c>
 """
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
@@ -238,7 +242,30 @@ c = 1
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a': {'b': {'c': '1'}}})
+        self.assertEqual(config, {'a': [{'b': {'c': '1'}}, {'b c': {'d': '1'}}]})
+
+    def testQuotedBlockTag(self):
+        text = """\
+<"a b">
+c = 1
+</"a b">
+
+<'d e'>
+f = 1
+</'d e'>
+
+<g 'h i'>
+j = 1
+</g 'h i'>
+    """
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a b': {'c': '1'}, 'd e': {'f': '1'}, 'g': {'h i': {'j': '1'}}})
 
     def testAutoTrue(self):
         text = """\
