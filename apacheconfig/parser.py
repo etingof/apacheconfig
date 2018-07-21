@@ -41,6 +41,11 @@ class ApacheIncludesParser(object):
         """
         p[0] = ['include', p[1]]
 
+    def p_apacheincludeoptional(self, p):
+        """includeoptional : APACHEINCLUDEOPTIONAL
+        """
+        p[0] = ['includeoptional', p[1]]
+
 
 class BaseApacheConfigParser(object):
 
@@ -92,10 +97,12 @@ class BaseApacheConfigParser(object):
         """contents : contents statements
                     | contents comment
                     | contents include
+                    | contents includeoptional
                     | contents block
                     | statements
                     | comment
                     | include
+                    | includeoptional
                     | block
         """
         n = len(p)

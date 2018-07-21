@@ -125,6 +125,17 @@ class PerlConfigGeneralTestCase(unittest.TestCase):
 
         self.assertTrue(config)
 
+    def testIncludeOptional(self):
+        samples_file = os.path.join(
+            os.path.dirname(__file__),
+            'samples', 'perl-config-general', 'include-optional-test.conf'
+        )
+
+        with make_loader() as loader:
+            config = loader.load(samples_file)
+
+        self.assertFalse(config)
+
     def testIncludeAgainDisabled(self):
         samples_file = os.path.join(
             os.path.dirname(__file__),

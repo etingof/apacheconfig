@@ -74,12 +74,18 @@ class CStyleCommentsLexer(object):
 class ApacheIncludesLexer(object):
     tokens = (
         'APACHEINCLUDE',
+        'APACHEINCLUDEOPTIONAL'
     )
 
     states = ()
 
     def t_APACHEINCLUDE(self, t):
         r'(?i)include[\t ]+[^\n\r]+'
+        t.value = t.value.split(None, 1)[1]
+        return t
+
+    def t_APACHEINCLUDEOPTIONAL(self, t):
+        r'(?i)includeoptional[\t ]+[^\n\r]+'
         t.value = t.value.split(None, 1)[1]
         return t
 

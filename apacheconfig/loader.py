@@ -190,6 +190,13 @@ class ApacheConfigLoader(object):
     def g_comment(self, ast):
         return []
 
+    def g_includeoptional(self, ast):
+        try:
+            return self.g_include(ast)
+
+        except ApacheConfigError:
+            return {}
+
     def g_include(self, ast):
         filepath = ast[0]
 

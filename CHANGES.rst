@@ -3,6 +3,7 @@ Revision 0.2.2, released XX-07-2018
 -----------------------------------
 
 - Added support for quoting named blocks
+- Added `includeoptinal` apacheinclude statement support
 - Include and Apache include statements made case-insensitive
 - Fixed parser grammar to distinguish <tag /> syntax from <tag/>
 
