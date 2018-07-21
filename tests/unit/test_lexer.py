@@ -105,7 +105,7 @@ a "b"
         text = """\
 <<include first.conf>>
 <a>
-<<include second.conf>>
+<<Include second.conf>>
 </a>
 """
         tokens = self.lexer.tokenize(text)
@@ -115,7 +115,7 @@ a "b"
         text = """\
 include first.conf
 <a>
-include second.conf
+Include second.conf
 </a>
 """
         tokens = self.lexer.tokenize(text)

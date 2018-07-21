@@ -79,7 +79,7 @@ class ApacheIncludesLexer(object):
     states = ()
 
     def t_APACHEINCLUDE(self, t):
-        r'include[\t ]+[^\n\r]+'
+        r'(?i)include[\t ]+[^\n\r]+'
         t.value = t.value.split(None, 1)[1]
         return t
 
@@ -130,7 +130,7 @@ class BaseApacheConfigLexer(object):
     # Tokenizer rules
 
     def t_INCLUDE(self, t):
-        r'<<include[\t ]+[^\n\r\t]+>>'
+        r'<<(?i)include[\t ]+[^\n\r\t]+>>'
         t.value = t.value[2:-2].split(None, 1)[1]
         return t
 
