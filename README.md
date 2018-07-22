@@ -121,6 +121,9 @@ provide case-in-sensitive configs. The values of the options will not lowercased
 If set to `True`, the parser will consider "include ..." as valid include statement (just like the well known
 Apache include statement).
 
+It also supports apache's "IncludeOptional" statement with the same behavior, that is, if the include file
+doesn't exist no error will be thrown.
+
 ### includeagain
 
 If set to `True`, you will be able to include a sub-configfile multiple times. With the default, `False`, duplicate
