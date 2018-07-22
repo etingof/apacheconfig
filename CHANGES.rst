@@ -1,5 +1,5 @@
 
-Revision 0.2.2, released XX-07-2018
+Revision 0.2.2, released 22-07-2018
 -----------------------------------
 
 - Added Apache expression tags (ap_expr) test case
