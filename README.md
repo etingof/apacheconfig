@@ -11,9 +11,6 @@ This is a pure-Python implementation of Apache-like configuration file parser in
 types. Similar file format is utilized by Perl's [Config::General](http://search.cpan.org/dist/Config-General/General.pm)
 module.
 
-WARNING: this implementation has not fully caught up with the its prototype from the functionality standpoint.
-In particular, `apacheconfig` does not support expression tags yet.
-
 ## How to use apacheconfig
 
 With apacheconfig you can build a tree of Python objects from Apache configuration

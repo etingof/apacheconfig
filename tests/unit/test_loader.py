@@ -614,6 +614,124 @@ b = 2
 
         self.assertEqual(config, {'a': '11'})
 
+    def testExpressionParse(self):
+        text = """\
+# Compare the host name to example.com and redirect to www.example.com if it matches
+<If "%{HTTP_HOST} == 'example.com'">
+    Redirect permanent "/" "http://www.example.com/"
+</If>
+
+# Force text/plain if requesting a file with the query string contains 'forcetext'
+<If "%{QUERY_STRING} =~ /forcetext/">
+    ForceType text/plain
+</If>
+
+# Only allow access to this content during business hours
+<Directory "/foo/bar/business">
+    Require expr %{TIME_HOUR} -gt 9 && %{TIME_HOUR} -lt 17
+</Directory>
+
+# Check a HTTP header for a list of values
+<If "%{HTTP:X-example-header} in { 'foo', 'bar', 'baz' }">
+    Header set matched true
+</If>
+
+# Check an environment variable for a regular expression, negated.
+<If "! reqenv('REDIRECT_FOO') =~ /bar/">
+    Header set matched true
+</If>
+
+# Check result of URI mapping by running in Directory context with -f
+<Directory "/var/www">
+    AddEncoding x-gzip gz
+<If "-f '%{REQUEST_FILENAME}.unzipme' && ! %{HTTP:Accept-Encoding} =~ /gzip/">
+      SetOutputFilter INFLATE
+</If>
+</Directory>
+
+# Check against the client IP
+<If "-R '192.168.1.0/24'">
+    Header set matched true
+</If>
+
+# Function example in boolean context
+<If "md5('foo') == 'acbd18db4cc2f85cedef654fccc4a4d8'">
+  Header set checksum-matched true
+</If>
+
+# Function example in string context
+Header set foo-checksum "expr=%{md5:foo}"
+
+# This delays the evaluation of the condition clause compared to <If>
+Header always set CustomHeader my-value "expr=%{REQUEST_URI} =~ m#^/special_path\.php$#"
+"""
+
+        expect_config = {
+            'If': [
+                {
+                    "%{HTTP_HOST} == 'example.com'": {
+                        'Redirect': 'permanent "/" "http://www.example.com/"'
+                    }
+                },
+                {
+                    '%{QUERY_STRING} =~ /forcetext/': {
+                        'ForceType': 'text/plain'
+                    }
+                },
+                {
+                    "%{HTTP:X-example-header} in { 'foo', 'bar', 'baz' }": {
+                        'Header': 'set matched true'
+                    }
+                },
+                {
+                    "! reqenv('REDIRECT_FOO') =~ /bar/": {
+                        'Header': 'set matched true'
+                    }
+                },
+                {
+                    "-R '192.168.1.0/24'": {
+                        'Header': 'set matched true'
+                    }
+                },
+                {
+                    "md5('foo') == 'acbd18db4cc2f85cedef654fccc4a4d8'": {
+                        'Header': 'set checksum-matched true'
+                    }
+                }
+            ],
+            'Directory': [
+                {
+                    '/foo/bar/business': {
+                        'Require': 'expr %{TIME_HOUR} -gt 9 && %{TIME_HOUR} -lt 17'
+                    }
+                },
+                {
+                    '/var/www': {
+                        'AddEncoding': 'x-gzip gz',
+                        'If': {
+                            "-f '%{REQUEST_FILENAME}.unzipme' && ! %{HTTP:Accept-Encoding} =~ /gzip/": {
+                                'SetOutputFilter': 'INFLATE'
+                            }
+                        }
+                    }
+                }
+            ],
+            'Header': [
+                'set foo-checksum "expr=%{md5:foo}"',
+                'always set CustomHeader my-value "expr=%{REQUEST_URI} =~ m#^/special_path\\.php$#"'
+            ]
+        }
+
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, expect_config)
+
+
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
