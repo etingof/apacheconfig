@@ -50,6 +50,11 @@ def main():
     )
 
     options.add_argument(
+        '--nostripvalues', action='store_true',
+        help='All values found in the config will not be right-stripped'
+    )
+
+    options.add_argument(
         '--useapacheinclude', action='store_true',
         help='Consider "include ..." as valid include statement'
     )

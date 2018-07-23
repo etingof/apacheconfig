@@ -83,6 +83,9 @@ class BaseApacheConfigParser(object):
         if self.options.get('lowercasenames'):
             p[0][1] = p[0][1].lower()
 
+        if not self.options.get('nostripvalues', False):
+            p[0][2] = p[0][2].rstrip()
+
     def p_statements(self, p):
         """statements : statements statement
                       | statement
