@@ -11,18 +11,21 @@ import os
 import tempfile
 
 from apacheconfig.error import ApacheConfigError
-from apacheconfig.host import LocalHost
+from apacheconfig.reader import LocalHostReader
 
 log = logging.getLogger(__name__)
 
 
 class ApacheConfigLoader(object):
 
-    def __init__(self, parser, host=LocalHost(), debug=False, **options):
+    def __init__(self, parser, debug=False, **options):
         self._parser = parser
-        self._host = host
         self._debug = debug
         self._options = dict(options)
+        if 'reader' in self._options:
+            self._reader = self._options['reader']
+        else:
+            self._reader = LocalHostReader()
         self._stack = []
         self._includes = set()
 
@@ -125,8 +128,8 @@ class ApacheConfigLoader(object):
                         return interpolate(frame[option])
 
                 if self._options.get('interpolateenv', False):
-                    if option in self._host.environ:
-                        return interpolate(self._host.environ[option])
+                    if option in self._reader.environ:
+                        return interpolate(self._reader.environ[option])
 
                 if self._options.get('strictvars', True):
                     raise ApacheConfigError('Undefined variable "${%s}" referenced' % option)
@@ -204,9 +207,9 @@ class ApacheConfigLoader(object):
 
         options = self._options
 
-        if self._host.path.isabs(filepath):
-            configpath = [self._host.path.dirname(filepath)]
-            filename = self._host.path.basename(filepath)
+        if self._reader.isabs(filepath):
+            configpath = [self._reader.dirname(filepath)]
+            filename = self._reader.basename(filepath)
 
         else:
             configpath = options.get('configpath', [])
@@ -219,7 +222,7 @@ class ApacheConfigLoader(object):
             else:
                 configpath.append('.')
 
-            if self._host.path.isdir(filepath):
+            if self._reader.isdir(filepath):
                 configpath.insert(0, filepath)
                 filename = '.'
             else:
@@ -227,14 +230,14 @@ class ApacheConfigLoader(object):
 
         for configdir in configpath:
 
-            filepath = self._host.path.join(configdir, filename)
+            filepath = self._reader.join(configdir, filename)
 
-            if self._host.path.isdir(filepath):
+            if self._reader.isdir(filepath):
                 if options.get('includedirectories'):
                     contents = {}
 
-                    for include_file in sorted(self._host.listdir(filepath)):
-                        items = self.load(self._host.path.join(
+                    for include_file in sorted(self._reader.listdir(filepath)):
+                        items = self.load(self._reader.join(
                             filepath, include_file), initialize=False)
                         self._merge_contents(contents, items)
 
@@ -249,7 +252,7 @@ class ApacheConfigLoader(object):
 
                 return contents
 
-            elif self._host.path.exists(filepath):
+            elif self._reader.exists(filepath):
                 return self.load(filepath, initialize=False)
 
         else:
@@ -326,12 +329,12 @@ class ApacheConfigLoader(object):
         try:
             pre_open = self._options['plug']['pre_open']
 
-            filename, basedir = self._host.path.basename(
-                filepath), self._host.path.dirname(filepath)
+            filename, basedir = self._reader.basename(
+                filepath), self._reader.dirname(filepath)
 
             process, filename, basedir = pre_open(filename, basedir)
 
-            filepath = self._host.path.join(
+            filepath = self._reader.join(
                 basedir, filename) if basedir else filename
 
             if not process:
@@ -346,7 +349,7 @@ class ApacheConfigLoader(object):
         self._includes.add(filepath)
 
         try:
-            with self._host.open(filepath) as f:
+            with self._reader.open(filepath) as f:
                 return self.loads(f.read(), source=filepath)
 
         except IOError as ex:
