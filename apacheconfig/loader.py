@@ -18,9 +18,8 @@ log = logging.getLogger(__name__)
 
 class ApacheConfigLoader(object):
 
-    def __init__(self, parser, host=LocalHost(), debug=False, **options):
+    def __init__(self, parser, debug=False, **options):
         self._parser = parser
-        self._host = host
         self._debug = debug
         self._options = dict(options)
         if 'reader' in self._options:
@@ -208,9 +207,9 @@ class ApacheConfigLoader(object):
 
         options = self._options
 
-        if self._host.path.isabs(filepath):
-            configpath = [self._host.path.dirname(filepath)]
-            filename = self._host.path.basename(filepath)
+        if self._reader.isabs(filepath):
+            configpath = [self._reader.dirname(filepath)]
+            filename = self._reader.basename(filepath)
 
         else:
             configpath = options.get('configpath', [])
@@ -231,7 +230,7 @@ class ApacheConfigLoader(object):
 
         for configdir in configpath:
 
-            filepath = self._host.path.join(configdir, filename)
+            filepath = self._reader.join(configdir, filename)
 
             if self._reader.isdir(filepath):
                 if options.get('includedirectories'):
