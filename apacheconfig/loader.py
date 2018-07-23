@@ -11,14 +11,16 @@ import os
 import tempfile
 
 from apacheconfig.error import ApacheConfigError
+from apacheconfig.host import LocalHost
 
 log = logging.getLogger(__name__)
 
 
 class ApacheConfigLoader(object):
 
-    def __init__(self, parser, debug=False, **options):
+    def __init__(self, parser, host=LocalHost(), debug=False, **options):
         self._parser = parser
+        self._host = host
         self._debug = debug
         self._options = dict(options)
         self._stack = []
@@ -123,8 +125,8 @@ class ApacheConfigLoader(object):
                         return interpolate(frame[option])
 
                 if self._options.get('interpolateenv', False):
-                    if option in os.environ:
-                        return interpolate(os.environ[option])
+                    if option in self._host.environ:
+                        return interpolate(self._host.environ[option])
 
                 if self._options.get('strictvars', True):
                     raise ApacheConfigError('Undefined variable "${%s}" referenced' % option)
@@ -202,9 +204,9 @@ class ApacheConfigLoader(object):
 
         options = self._options
 
-        if os.path.isabs(filepath):
-            configpath = [os.path.dirname(filepath)]
-            filename = os.path.basename(filepath)
+        if self._host.path.isabs(filepath):
+            configpath = [self._host.path.dirname(filepath)]
+            filename = self._host.path.basename(filepath)
 
         else:
             configpath = options.get('configpath', [])
@@ -217,7 +219,7 @@ class ApacheConfigLoader(object):
             else:
                 configpath.append('.')
 
-            if os.path.isdir(filepath):
+            if self._host.path.isdir(filepath):
                 configpath.insert(0, filepath)
                 filename = '.'
             else:
@@ -225,14 +227,15 @@ class ApacheConfigLoader(object):
 
         for configdir in configpath:
 
-            filepath = os.path.join(configdir, filename)
+            filepath = self._host.path.join(configdir, filename)
 
-            if os.path.isdir(filepath):
+            if self._host.path.isdir(filepath):
                 if options.get('includedirectories'):
                     contents = {}
 
-                    for include_file in sorted(os.listdir(filepath)):
-                        items = self.load(os.path.join(filepath, include_file), initialize=False)
+                    for include_file in sorted(self._host.listdir(filepath)):
+                        items = self.load(self._host.path.join(
+                            filepath, include_file), initialize=False)
                         self._merge_contents(contents, items)
 
                     return contents
@@ -246,7 +249,7 @@ class ApacheConfigLoader(object):
 
                 return contents
 
-            elif os.path.exists(filepath):
+            elif self._host.path.exists(filepath):
                 return self.load(filepath, initialize=False)
 
         else:
@@ -271,7 +274,7 @@ class ApacheConfigLoader(object):
                             contents[item].extend(vector)
                     elif isinstance(contents[item], dict) and isinstance(items[item], dict):
                         contents[item].update(items[item])  # this will override duplicates
-                    else:
+                     else:
                         raise ApacheConfigError('Cannot merge duplicate items "%s"' % item)
                 else:
                     if not isinstance(contents[item], list):
@@ -323,11 +326,13 @@ class ApacheConfigLoader(object):
         try:
             pre_open = self._options['plug']['pre_open']
 
-            filename, basedir = os.path.basename(filepath), os.path.dirname(filepath)
+            filename, basedir = self._host.path.basename(
+                filepath), self._host.path.dirname(filepath)
 
             process, filename, basedir = pre_open(filename, basedir)
 
-            filepath = os.path.join(basedir, filename)
+            filepath = self._host.path.join(
+                basedir, filename) if basedir else filename
 
             if not process:
                 return {}
@@ -341,7 +346,7 @@ class ApacheConfigLoader(object):
         self._includes.add(filepath)
 
         try:
-            with open(filepath) as f:
+            with self._host.open(filepath) as f:
                 return self.loads(f.read(), source=filepath)
 
         except IOError as ex:

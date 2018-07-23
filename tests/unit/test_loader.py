@@ -549,7 +549,7 @@ e 1
     def testHookPreOpen(self):
 
         def pre_open(filename, basedir):
-            return 'blah' in filename, basedir, filename
+            return 'blah' in filename, filename, basedir
 
         options = {
             'plug': {
