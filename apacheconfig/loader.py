@@ -274,7 +274,7 @@ class ApacheConfigLoader(object):
                             contents[item].extend(vector)
                     elif isinstance(contents[item], dict) and isinstance(items[item], dict):
                         contents[item].update(items[item])  # this will override duplicates
-                     else:
+                    else:
                         raise ApacheConfigError('Cannot merge duplicate items "%s"' % item)
                 else:
                     if not isinstance(contents[item], list):
