@@ -116,6 +116,10 @@ Will result in a single value array entry if the *forcearray* option is turned o
 If set to `True`, then all options found in the config will be converted to lowercase. This allows you to
 provide case-in-sensitive configs. The values of the options will not lowercased.
 
+### nostripvalues
+
+If set to `False`, then each value found in the config will not be right-stripped. This allows you to gather the options as long as their trailing whitespaces.
+
 ### useapacheinclude
 
 If set to `True`, the parser will consider "include ..." as valid include statement (just like the well known
@@ -431,15 +435,17 @@ options.
 
 ```bash
 $ apacheconfigtool  --help
-usage: apacheconfigtool [-h] [-v] [--allowmultioptions] [--forcearray]
-                        [--lowercasenames] [--useapacheinclude]
-                        [--includeagain] [--includerelative]
-                        [--includedirectories] [--includeglob]
-                        [--mergeduplicateblocks] [--mergeduplicateoptions]
-                        [--autotrue] [--interpolatevars] [--interpolateenv]
+usage: apacheconfigtool [-h] [-v] [--json-input] [--allowmultioptions]
+                        [--forcearray] [--lowercasenames] [--nostripvalues]
+                        [--useapacheinclude] [--includeagain]
+                        [--includerelative] [--includedirectories]
+                        [--includeglob] [--mergeduplicateblocks]
+                        [--mergeduplicateoptions] [--autotrue]
+                        [--interpolatevars] [--interpolateenv]
                         [--allowsinglequoteinterpolation] [--strictvars]
-                        [--noescape] [--ccomments] [--configpath CONFIGPATH]
-                        [--flagbits <JSON>] [--defaultconfig <JSON>]
+                        [--noescape] [--ccomments]
+                        [--configpath CONFIGPATH] [--flagbits <JSON>]
+                        [--defaultconfig <JSON>]
                         file [file ...]
 
 Dump Apache config files into JSON
@@ -450,6 +456,8 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -v, --version         show program's version number and exit
+  --json-input          Expect JSON file(s) on input, produce Apache
+                        configuration
 
 parsing options:
   --allowmultioptions   Collect multiple identical options into a list
@@ -458,6 +466,8 @@ parsing options:
                         of the config entry by []
   --lowercasenames      All options found in the config will be converted to
                         lowercase
+  --nostripvalues       All values found in the config will not be right-
+                        stripped
   --useapacheinclude    Consider "include ..." as valid include statement
   --includeagain        Allow including sub-configfiles multiple times
   --includerelative     Open included config files from within the location of
@@ -484,6 +494,8 @@ parsing options:
                         single quotes
   --strictvars          Do not fail on an undefined variable when performing
                         interpolation
+  --noescape            Preserve special escape characters left outs in the
+                        configuration values
   --ccomments           Do not parse C-style comments
   --configpath CONFIGPATH
                         Search path for the configuration files being
