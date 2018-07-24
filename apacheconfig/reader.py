@@ -31,11 +31,11 @@ class TestInfraHostReader(object):
 
     def __init__(self, host):
         self._host = host
-        self._env = host.env()
+        self._environ = host.env().environ
 
     @property
-    def env(self):
-        return self._env
+    def environ(self):
+        return self._environ
 
     def exists(self, filepath):
         return self._host.run_test("test -f %s", filepath).rc == 0

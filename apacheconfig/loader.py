@@ -207,9 +207,9 @@ class ApacheConfigLoader(object):
 
         options = self._options
 
-        if os.path.isabs(filepath):
-            configpath = [os.path.dirname(filepath)]
-            filename = os.path.basename(filepath)
+        if self._reader.isabs(filepath):
+            configpath = [self._reader.dirname(filepath)]
+            filename = self._reader.basename(filepath)
 
         else:
             configpath = options.get('configpath', [])
@@ -230,7 +230,7 @@ class ApacheConfigLoader(object):
 
         for configdir in configpath:
 
-            filepath = os.path.join(configdir, filename)
+            filepath = self._reader.join(configdir, filename)
 
             if self._reader.isdir(filepath):
                 if options.get('includedirectories'):
