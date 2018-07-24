@@ -10,7 +10,7 @@ import re
 import os
 import tempfile
 
-from apacheconfig.error import ApacheConfigError
+from apacheconfig import error
 from apacheconfig.reader import LocalHostReader
 
 log = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ class ApacheConfigLoader(object):
             tag = tag[1:-1]
 
         if not tag:
-            raise ApacheConfigError('Empty block tag not allowed')
+            raise error.ApacheConfigError('Empty block tag not allowed')
 
         return tag
 
@@ -107,7 +107,7 @@ class ApacheConfigLoader(object):
                     elif self._options.get('mergeduplicateoptions', False):
                         statements[item] = items[item]
                     else:
-                        raise ApacheConfigError('Duplicate option "%s" prohibited' % item)
+                        raise error.ApacheConfigError('Duplicate option "%s" prohibited' % item)
                 else:
                     statements[item] = items[item]
 
@@ -132,7 +132,7 @@ class ApacheConfigLoader(object):
                         return interpolate(self._reader.environ[option])
 
                 if self._options.get('strictvars', True):
-                    raise ApacheConfigError('Undefined variable "${%s}" referenced' % option)
+                    raise error.ApacheConfigError('Undefined variable "${%s}" referenced' % option)
 
                 return interpolate(match.string)
 
@@ -199,7 +199,7 @@ class ApacheConfigLoader(object):
         try:
             return self.g_include(ast)
 
-        except ApacheConfigError:
+        except error.ConfigFileReadError:
             return {}
 
     def g_include(self, ast):
@@ -207,9 +207,9 @@ class ApacheConfigLoader(object):
 
         options = self._options
 
-        if self._reader.isabs(filepath):
-            configpath = [self._reader.dirname(filepath)]
-            filename = self._reader.basename(filepath)
+        if os.path.isabs(filepath):
+            configpath = [os.path.dirname(filepath)]
+            filename = os.path.basename(filepath)
 
         else:
             configpath = options.get('configpath', [])
@@ -230,7 +230,7 @@ class ApacheConfigLoader(object):
 
         for configdir in configpath:
 
-            filepath = self._reader.join(configdir, filename)
+            filepath = os.path.join(configdir, filename)
 
             if self._reader.isdir(filepath):
                 if options.get('includedirectories'):
@@ -256,7 +256,7 @@ class ApacheConfigLoader(object):
                 return self.load(filepath, initialize=False)
 
         else:
-            raise ApacheConfigError('Config file "%s" not found in search path %s' % (filename, ':'.join(configpath)))
+            raise error.ConfigFileReadError('Config file "%s" not found in search path %s' % (filename, ':'.join(configpath)))
 
     def _merge_contents(self, contents, items):
         for item in items:
@@ -278,7 +278,7 @@ class ApacheConfigLoader(object):
                     elif isinstance(contents[item], dict) and isinstance(items[item], dict):
                         contents[item].update(items[item])  # this will override duplicates
                     else:
-                        raise ApacheConfigError('Cannot merge duplicate items "%s"' % item)
+                        raise error.ApacheConfigError('Cannot merge duplicate items "%s"' % item)
                 else:
                     if not isinstance(contents[item], list):
                         contents[item] = [contents[item]]
@@ -298,7 +298,7 @@ class ApacheConfigLoader(object):
             handler = getattr(self, 'g_' + node_type)
 
         except AttributeError:
-            raise ApacheConfigError('Unsupported AST node type %s' % node_type)
+            raise error.ApacheConfigError('Unsupported AST node type %s' % node_type)
 
         return handler(ast[1:])
 
@@ -353,11 +353,11 @@ class ApacheConfigLoader(object):
                 return self.loads(f.read(), source=filepath)
 
         except IOError as ex:
-            raise ApacheConfigError('File %s can\'t be open: %s' % (filepath, ex))
+            raise error.ConfigFileReadError('File %s can\'t be open: %s' % (filepath, ex))
 
     def _dumpdict(self, obj, indent=0):
         if not isinstance(obj, dict):
-            raise ApacheConfigError('Unknown object type "%r" to dump' % obj)
+            raise error.ApacheConfigError('Unknown object type "%r" to dump' % obj)
 
         text = ''
         spacing = ' ' * indent
@@ -403,4 +403,4 @@ class ApacheConfigLoader(object):
             except Exception:
                 pass
 
-            raise ApacheConfigError('File %s can\'t be written: %s' % (filepath, ex))
+            raise error.ApacheConfigError('File %s can\'t be written: %s' % (filepath, ex))
