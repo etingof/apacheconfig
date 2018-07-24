@@ -36,14 +36,12 @@ test_configs = {
     'combination-of-constructs.conf': {
         'cops': {
             'officer': [
-                {'randall':
-                    {'name': 'stein', 'age': '25'}},
-                    {'gordon': {'name': 'bird', 'age': '31'}}
-            ]
+                {'randall': {'name': 'stein', 'age': '25'}},
+                {'gordon': {'name': 'bird', 'age': '31'}}]
         },
         'domain': ['nix.to', 'b0fh.org', 'foo.bar'],
         'message': '  yes. we are not here. you\n  can reach us somewhere in\n  outerspace.',
-        'nocomment': 'Comments in a here-doc should not be treated as comments.\n/* So this should appear in the output */', 'command': "ssh -f -g orpheus.0x49.org           -l azrael -L:34777samir.okir.da.ru:22           -L:31773:shane.sol1.rocket.de:22           'exec sleep 99999990'", 'user': 'tom', 'passwd': 'sakkra', 'db': {'host': 'blah.blubber'}, 'beta': [{'user1': 'hans'}, {'user2': 'max'}], 'quoted': 'this one contains whitespace at the end', 'quotedwithquotes': ' holy crap, it contains "masked quotes" and \'single quotes\''
+        'nocomment': 'Comments in a here-doc should not be treated as comments.\n/* So this should appear in the output */', 'command': "ssh -f -g orpheus.0x49.org           -l azrael -L:34777samir.okir.da.ru:22           -L:31773:shane.sol1.rocket.de:22           'exec sleep 99999990'", 'user': 'tom', 'passwd': 'sakkra', 'db': {'host': 'blah.blubber'}, 'beta': [{'user1': 'hans'}, {'user2': 'max'}], 'quoted': 'this one contains whitespace at the end    ', 'quotedwithquotes': ' holy crap, it contains "masked quotes" and \'single quotes\'  '
     },
     'include-file-test.conf': {'seen_first_config': 'true',
                                'seen_second_config': 'true',
