@@ -238,7 +238,7 @@ class BaseApacheConfigLexer(object):
 
     def t_heredoc_OPTION_AND_VALUE(self, t):
         r'[^\r\n]+'
-        if t.value != t.lexer.heredoc_anchor:
+        if t.value.lstrip() != t.lexer.heredoc_anchor:
             return
 
         t.type = "OPTION_AND_VALUE"

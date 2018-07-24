@@ -6,6 +6,8 @@ Revision 0.2.3, released XX-07-2018
   and enabed by default
 - Added config file reading abstraction layer to allow for
   non-local config file handling
+- Fixed HEREDOC parsing to allow indented closing anchor as Perl
+  parser seems to do
 
 Revision 0.2.2, released 22-07-2018
 -----------------------------------

@@ -265,7 +265,16 @@ a = "b"
 
         ast = parser.parse(text)
 
-        self.assertEqual(ast, [])
+        self.assertEqual(ast, ['contents',
+                               ['block', 'main',
+                                ['contents',
+                                 ['statements',
+                                  ['statement',
+                                   'PYTHON', '        def a():\n            x = y\n            return'
+                                   ]
+                                  ]
+                                 ],
+                                'main']])
 
     def testWholeConfig(self):
         text = """\
