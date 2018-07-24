@@ -207,9 +207,9 @@ class ApacheConfigLoader(object):
 
         options = self._options
 
-        if self._reader.isabs(filepath):
-            configpath = [self._reader.dirname(filepath)]
-            filename = self._reader.basename(filepath)
+        if os.path.isabs(filepath):
+            configpath = [os.path.dirname(filepath)]
+            filename = os.path.basename(filepath)
 
         else:
             configpath = options.get('configpath', [])
@@ -230,14 +230,14 @@ class ApacheConfigLoader(object):
 
         for configdir in configpath:
 
-            filepath = self._reader.join(configdir, filename)
+            filepath = os.path.join(configdir, filename)
 
             if self._reader.isdir(filepath):
                 if options.get('includedirectories'):
                     contents = {}
 
                     for include_file in sorted(self._reader.listdir(filepath)):
-                        items = self.load(self._reader.join(
+                        items = self.load(os.path.join(
                             filepath, include_file), initialize=False)
                         self._merge_contents(contents, items)
 
@@ -329,12 +329,12 @@ class ApacheConfigLoader(object):
         try:
             pre_open = self._options['plug']['pre_open']
 
-            filename, basedir = self._reader.basename(
-                filepath), self._reader.dirname(filepath)
+            filename, basedir = os.path.basename(
+                filepath), os.path.dirname(filepath)
 
             process, filename, basedir = pre_open(filename, basedir)
 
-            filepath = self._reader.join(
+            filepath = os.path.join(
                 basedir, filename) if basedir else filename
 
             if not process:
