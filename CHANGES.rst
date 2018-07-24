@@ -1,4 +1,12 @@
 
+Revision 0.2.3, released XX-07-2018
+-----------------------------------
+
+- Added the `nostripvalues` option to right-strip values
+  and enabed by default
+- Added config file reading abstraction layer to allow for
+  non-local config file handling
+
 Revision 0.2.2, released 22-07-2018
 -----------------------------------
 
