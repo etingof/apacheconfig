@@ -28,31 +28,23 @@ test_configs = {
                                               "-l azrael -L:34777samir.okir.da.ru:22           "
                                               "-L:31773:shane.sol1.rocket.de:22           "
                                               "'exec sleep 99999990'"},
-    'here-document-test.conf': {'header': '  <table border="0">\n  </table>\n'},
+    'here-document-test.conf': {'header': '  <table border="0">\n  </table>'},
     'c-style-comment-test.conf': {'passwd': 'sakkra',
-                                  'foo':  {'bar': 'baz '},
+                                  'foo':  {'bar': 'baz'},
                                   'db': {'host': 'blah.blubber'},
                                   'user': 'tom'},
-    'combination-of-constructs.conf': {'nocomment':
-                                       'Comments in a here-doc should not be treated as comments.\n'
-                                       '/* So this should appear in the output */\n',
-                                       'domain': ['nix.to', 'b0fh.org', 'foo.bar'],
-                                       'quoted': 'this one contains whitespace at the end    ',
-                                       'passwd': 'sakkra',
-                                       'db': {'host': 'blah.blubber'},
-                                       'quotedwithquotes': ' holy crap, it contains "masked quotes" and '
-                                                           '\'single quotes\'  ',
-                                       'cops': {'officer':
-                                                    [{'randall': {'age': '25', 'name': 'stein'}},
-                                                     {'gordon': {'age': '31', 'name': 'bird'}}]},
-                                       'beta': [{'user1': 'hans'}, {'user2': 'max'}],
-                                       'command': "ssh -f -g orpheus.0x49.org           -l azrael "
-                                                  "-L:34777samir.okir.da.ru:22           "
-                                                  "-L:31773:shane.sol1.rocket.de:22           "
-                                                  "'exec sleep 99999990'",
-                                       'user': 'tom ',
-                                       'message': '  yes. we are not here. you\n  can reach us '
-                                                  'somewhere in\n  outerspace.\n'},
+    'combination-of-constructs.conf': {
+        'cops': {
+            'officer': [
+                {'randall':
+                    {'name': 'stein', 'age': '25'}},
+                    {'gordon': {'name': 'bird', 'age': '31'}}
+            ]
+        },
+        'domain': ['nix.to', 'b0fh.org', 'foo.bar'],
+        'message': '  yes. we are not here. you\n  can reach us somewhere in\n  outerspace.',
+        'nocomment': 'Comments in a here-doc should not be treated as comments.\n/* So this should appear in the output */', 'command': "ssh -f -g orpheus.0x49.org           -l azrael -L:34777samir.okir.da.ru:22           -L:31773:shane.sol1.rocket.de:22           'exec sleep 99999990'", 'user': 'tom', 'passwd': 'sakkra', 'db': {'host': 'blah.blubber'}, 'beta': [{'user1': 'hans'}, {'user2': 'max'}], 'quoted': 'this one contains whitespace at the end', 'quotedwithquotes': ' holy crap, it contains "masked quotes" and \'single quotes\''
+    },
     'include-file-test.conf': {'seen_first_config': 'true',
                                'seen_second_config': 'true',
                                'inner': {'final_include': 'true',

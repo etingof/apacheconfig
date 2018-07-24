@@ -248,6 +248,25 @@ a = "b"
                                  ['statements', ['statement', 'Bb', 'Cc   ']]],
                                 'aA']])
 
+    def testHereDoc(self):
+        text = """\
+<main>
+    PYTHON <<MYPYTHON
+        def a():
+            x = y
+            return
+    MYPYTHON
+</main>
+"""
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+
+        ast = parser.parse(text)
+
+        self.assertEqual(ast, [])
+
     def testWholeConfig(self):
         text = """\
 # a
