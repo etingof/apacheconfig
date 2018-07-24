@@ -225,17 +225,70 @@ a = "b"
                                  ['statements', ['statement', 'bb', 'Cc']]],
                                 'aa']])
 
+    def testNoStripValues(self):
+        text = """\
+    <aA>
+      Bb Cc   \
+
+    </aA>
+"""
+        options = {
+            'nostripvalues': True
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+
+        ast = parser.parse(text)
+        self.assertEqual(ast, ['contents',
+                               ['block', 'aA',
+                                ['contents',
+                                 ['statements', ['statement', 'Bb', 'Cc   ']]],
+                                'aA']])
+
+    def testHereDoc(self):
+        text = """\
+<main>
+    PYTHON <<MYPYTHON
+        def a():
+            x = y
+            return
+    MYPYTHON
+</main>
+"""
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+
+        ast = parser.parse(text)
+
+        self.assertEqual(ast, ['contents',
+                               ['block', 'main',
+                                ['contents',
+                                 ['statements',
+                                  ['statement',
+                                   'PYTHON', '        def a():\n            x = y\n            return'
+                                   ]
+                                  ]
+                                 ],
+                                'main']])
+
     def testWholeConfig(self):
         text = """\
 # a
 a = b
 
 <a>
-  a = b
+  a = b  \
+
 </a>
 a b
  <a a>
-  a b
+  a b  \
+
  </a a>
 # a
 """
