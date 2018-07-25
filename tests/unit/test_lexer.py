@@ -26,7 +26,6 @@ class LexerTestCase(unittest.TestCase):
 
     def testOptionAndValueSet(self):
         text = """\
-a 
 a b
 a = b
 a    b
@@ -37,7 +36,7 @@ a "b"
 a = "b"
 """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, [('a', ''), ('a', 'b'), ('a', 'b'), ('a', 'b'),
+        self.assertEqual(tokens, [('a', 'b'), ('a', 'b'), ('a', 'b'),
                                   ('a', 'b'), ('a', 'b'), ('a', 'b'),
                                   ('a', 'b'), ('a', 'b')])
 

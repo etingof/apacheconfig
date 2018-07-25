@@ -180,7 +180,7 @@ class BaseApacheConfigLexer(object):
             return True, option, value
 
     def t_OPTION_AND_VALUE(self, t):
-        r'[^ \n\r\t=]+[ =]*[\n\r]+|[^ \n\r\t=]+[ \n\r\t=]+[^\r\n]+'
+        r'[^ \n\r\t=#]+[ \t=]+[^\r\n#]+'  # TODO(etingof) escape hash
         if t.value.endswith('\\'):
             t.lexer.code_start = t.lexer.lexpos - len(t.value)
             t.lexer.begin('multiline')
