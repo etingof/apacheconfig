@@ -82,15 +82,26 @@ class ApacheConfigLoader(object):
 
         return block
 
+
     def g_contents(self, ast):
         # TODO(etingof): remove defaulted and overridden options from productions
         contents = self._options.get('defaultconfig', {})
+
+        ast = self._group_statements(ast)
 
         for subtree in ast:
             items = self._walkast(subtree)
             self._merge_contents(contents, items)
 
         return contents
+
+
+    def _group_statements(self, ast):
+        statements = filter(lambda x: x[0] == 'statements', ast)
+        rest = filter(lambda x: x[0] != 'statements', ast)
+        statements = reduce(lambda acc, statement: acc +  statement[1:], statements, ['statements'])
+        return [statements] + rest
+
 
     def g_statements(self, ast):
         statements = {}
