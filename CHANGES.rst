@@ -8,13 +8,15 @@ Revision 0.2.3, released XX-07-2018
   non-local config file handling
 - Fixed HEREDOC parsing to allow indented closing anchor as Perl
   parser seems to do
+- Fixed parser grammar inconsistency popping up when `useapacheinclude`
+  option is disabled
 
 Revision 0.2.2, released 22-07-2018
 -----------------------------------
 
 - Added Apache expression tags (ap_expr) test case
 - Added support for quoting named blocks
-- Added `includeoptinal` apacheinclude statement support
+- Added `includeoptional` apacheinclude statement support
 - Include and Apache include statements made case-insensitive
 - Fixed parser grammar to distinguish <tag /> syntax from <tag/>
 

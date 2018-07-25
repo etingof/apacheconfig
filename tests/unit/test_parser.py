@@ -282,13 +282,15 @@ a = "b"
 a = b
 
 <a>
-  a = b  \
+  a = b
 
 </a>
 a b
  <a a>
-  a b  \
+  a b \
 
+  c = d
+  # c
  </a a>
 # a
 """
@@ -298,22 +300,24 @@ a b
         parser = ApacheConfigParser(ApacheConfigLexer(), start='config')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, ['config',
-                               ['contents',
-                                ['comment', ' a'],
-                                ['statements',
-                                 ['statement', 'a', 'b']],
-                                ['block', 'a',
-                                 ['contents',
-                                  ['statements',
-                                   ['statement', 'a', 'b']]], 'a'],
-                                ['statements',
-                                 ['statement', 'a', 'b']],
-                                ['block', 'a a',
-                                 ['contents',
-                                  ['statements',
-                                   ['statement', 'a', 'b']]], 'a a'],
-                                ['comment', ' a']]])
+        self.assertEqual(ast, [
+            'config',
+            ['contents',
+                ['comment', ' a'],
+                ['statements', ['statement', 'a', 'b']],
+                ['block', 'a',
+                 ['contents', ['statements', ['statement', 'a', 'b']]],
+                 'a'],
+                ['statements', ['statement', 'a', 'b']],
+                ['block', 'a a',
+                 ['contents',
+                  ['statements',
+                   ['statement', 'a', 'b'],
+                   ['statement', 'c', 'd']],
+                  ['comment', ' c']],
+                 'a a'],
+                ['comment', ' a']]
+        ])
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])

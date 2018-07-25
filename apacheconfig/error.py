@@ -8,3 +8,7 @@
 
 class ApacheConfigError(Exception):
     pass
+
+
+class ConfigFileReadError(ApacheConfigError):
+    pass
