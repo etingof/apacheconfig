@@ -28,6 +28,7 @@ class ApacheConfigLoader(object):
             self._reader = LocalHostReader()
         self._stack = []
         self._includes = set()
+        self._ast_cache = {}
 
     # Code generation rules
 
@@ -87,7 +88,9 @@ class ApacheConfigLoader(object):
         # TODO(etingof): remove defaulted and overridden options from productions
         contents = self._options.get('defaultconfig', {})
 
-        ast = self._group_statements(ast)
+        if (self._options.get('mergeduplicateoptions', False) or
+            self._options.get('mergeduplicateblocks', False)):
+            ast = self._group_statements(ast)
 
         for subtree in ast:
             items = self._walkast(subtree)
@@ -323,6 +326,7 @@ class ApacheConfigLoader(object):
             process, source, text = pre_read(source, text)
 
             if not process:
+                self._ast_cache[source] = {}
                 return {}
 
         except KeyError:
@@ -330,12 +334,15 @@ class ApacheConfigLoader(object):
 
         ast = self._parser.parse(text)
 
-        return self._walkast(ast)
+        self._ast_cache[source] = self._walkast(ast)
+        return self._ast_cache[source]
 
     def load(self, filepath, initialize=True):
         if initialize:
             self._stack = []
             self._includes = set()
+            self._ast_cache = {}
+
 
         try:
             pre_open = self._options['plug']['pre_open']
@@ -358,6 +365,9 @@ class ApacheConfigLoader(object):
             return {}
 
         self._includes.add(filepath)
+
+        if filepath in self._ast_cache:
+            return self._ast_cache[filepath]
 
         try:
             with self._reader.open(filepath) as f:
