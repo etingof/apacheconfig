@@ -30,18 +30,19 @@ class CStyleCommentsParser(object):
 class IncludesParser(object):
     def p_include(self, p):
         """include : INCLUDE
+           includeoptional : INCLUDE
         """
         p[0] = ['include', p[1]]
 
 
 class ApacheIncludesParser(object):
-    def p_apacheinclude(self, p):
+    def p_include(self, p):
         """include : INCLUDE
                    | APACHEINCLUDE
         """
         p[0] = ['include', p[1]]
 
-    def p_apacheincludeoptional(self, p):
+    def p_includeoptional(self, p):
         """includeoptional : APACHEINCLUDEOPTIONAL
         """
         p[0] = ['includeoptional', p[1]]
