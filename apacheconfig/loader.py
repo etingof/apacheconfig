@@ -28,6 +28,7 @@ class ApacheConfigLoader(object):
             self._reader = LocalHostReader()
         self._stack = []
         self._includes = set()
+        self._ast_cache = {}
 
     # Code generation rules
 
@@ -82,6 +83,7 @@ class ApacheConfigLoader(object):
 
         return block
 
+
     def g_contents(self, ast):
         # TODO(etingof): remove defaulted and overridden options from productions
         contents = self._options.get('defaultconfig', {})
@@ -91,6 +93,7 @@ class ApacheConfigLoader(object):
             self._merge_contents(contents, items)
 
         return contents
+
 
     def g_statements(self, ast):
         statements = {}
@@ -270,15 +273,7 @@ class ApacheConfigLoader(object):
             if item in contents:
                 # TODO(etingof): keep block/statements merging at one place
                 if self._options.get('mergeduplicateblocks'):
-                    if isinstance(contents[item], list):
-                        for itm in vector:
-                            while itm in contents[item]:
-                                contents[item].remove(itm)  # remove duplicates
-                            contents[item].extend(vector)
-                    elif isinstance(contents[item], dict) and isinstance(items[item], dict):
-                        contents[item].update(items[item])  # this will override duplicates
-                    else:
-                        raise error.ApacheConfigError('Cannot merge duplicate items "%s"' % item)
+                    contents = self._merge_dicts(contents, items)
                 else:
                     if not isinstance(contents[item], list):
                         contents[item] = [contents[item]]
@@ -287,6 +282,27 @@ class ApacheConfigLoader(object):
                 contents[item] = items[item]
 
         return contents
+
+    def _merge_dicts(self, dict1, dict2):
+        "merges dict2 into dict1"
+        for key in dict2:
+            if key in dict1:
+                if isinstance(dict1[key], dict) and isinstance(dict2[key], dict):
+                    self._merge_dicts(dict1[key], dict2[key])
+                elif dict1[key] == dict2[key]:
+                    pass # same leaf value
+                else:
+                    if self._options.get('allowmultioptions', True):
+                        if not isinstance(dict1[key], list):
+                            dict1[key] = [dict1[key]]
+                        if not isinstance(dict2[key], list):
+                            dict2[key] = [dict2[key]]
+                        dict1[key] = list(set(dict1[key]).union(dict2[key]))
+                    else:
+                        dict1[key] = dict2[key]
+            else:
+                dict1[key] = dict2[key]
+        return dict1
 
     def _walkast(self, ast):
         if not ast:
@@ -312,6 +328,7 @@ class ApacheConfigLoader(object):
             process, source, text = pre_read(source, text)
 
             if not process:
+                self._ast_cache[source] = {}
                 return {}
 
         except KeyError:
@@ -319,12 +336,15 @@ class ApacheConfigLoader(object):
 
         ast = self._parser.parse(text)
 
-        return self._walkast(ast)
+        self._ast_cache[source] = self._walkast(ast)
+        return self._ast_cache[source]
 
     def load(self, filepath, initialize=True):
         if initialize:
             self._stack = []
             self._includes = set()
+            self._ast_cache = {}
+
 
         try:
             pre_open = self._options['plug']['pre_open']
@@ -347,6 +367,9 @@ class ApacheConfigLoader(object):
             return {}
 
         self._includes.add(filepath)
+
+        if filepath in self._ast_cache:
+            return self._ast_cache[filepath]
 
         try:
             with self._reader.open(filepath) as f:

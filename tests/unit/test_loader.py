@@ -137,7 +137,8 @@ b = 2
 </a>
 """
         options = {
-            'mergeduplicateblocks': True
+            'mergeduplicateblocks': True,
+            'allowmultioptions': False
         }
 
         ApacheConfigLexer = make_lexer(**options)
