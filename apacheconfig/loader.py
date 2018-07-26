@@ -88,22 +88,11 @@ class ApacheConfigLoader(object):
         # TODO(etingof): remove defaulted and overridden options from productions
         contents = self._options.get('defaultconfig', {})
 
-        if (self._options.get('mergeduplicateoptions', False) or
-            self._options.get('mergeduplicateblocks', False)):
-            ast = self._group_statements(ast)
-
         for subtree in ast:
             items = self._walkast(subtree)
             self._merge_contents(contents, items)
 
         return contents
-
-
-    def _group_statements(self, ast):
-        statements = filter(lambda x: x[0] == 'statements', ast)
-        rest = filter(lambda x: x[0] != 'statements', ast)
-        statements = reduce(lambda acc, statement: acc +  statement[1:], statements, ['statements'])
-        return [statements] + rest
 
 
     def g_statements(self, ast):
@@ -284,15 +273,7 @@ class ApacheConfigLoader(object):
             if item in contents:
                 # TODO(etingof): keep block/statements merging at one place
                 if self._options.get('mergeduplicateblocks'):
-                    if isinstance(contents[item], list):
-                        for itm in vector:
-                            while itm in contents[item]:
-                                contents[item].remove(itm)  # remove duplicates
-                            contents[item].extend(vector)
-                    elif isinstance(contents[item], dict) and isinstance(items[item], dict):
-                        contents[item].update(items[item])  # this will override duplicates
-                    else:
-                        raise error.ApacheConfigError('Cannot merge duplicate items "%s"' % item)
+                    contents = self._merge_dicts(contents, items)
                 else:
                     if not isinstance(contents[item], list):
                         contents[item] = [contents[item]]
@@ -301,6 +282,27 @@ class ApacheConfigLoader(object):
                 contents[item] = items[item]
 
         return contents
+
+    def _merge_dicts(self, dict1, dict2):
+        "merges dict2 into dict1"
+        for key in dict2:
+            if key in dict1:
+                if isinstance(dict1[key], dict) and isinstance(dict2[key], dict):
+                    self._merge_dicts(dict1[key], dict2[key])
+                elif dict1[key] == dict2[key]:
+                    pass # same leaf value
+                else:
+                    if self._options.get('allowmultioptions', True):
+                        if not isinstance(dict1[key], list):
+                            dict1[key] = [dict1[key]]
+                        if not isinstance(dict2[key], list):
+                            dict2[key] = [dict2[key]]
+                        dict1[key] = list(set(dict1[key]).union(dict2[key]))
+                    else:
+                        dict1[key] = dict2[key]
+            else:
+                dict1[key] = dict2[key]
+        return dict1
 
     def _walkast(self, ast):
         if not ast:
