@@ -36,6 +36,8 @@ class ParserTestCase(unittest.TestCase):
             text = """\
 #a
 # b
+c c# c
+c \# # c
 """
             ApacheConfigLexer = make_lexer()
             ApacheConfigParser = make_parser()
@@ -43,7 +45,12 @@ class ParserTestCase(unittest.TestCase):
             parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
 
             ast = parser.parse(text)
-            self.assertEqual(ast, ['contents', ['comment', 'a'], ['comment', ' b']])
+            self.assertEqual(ast, ['contents',
+                                   ['comment', 'a'],
+                                   ['comment', ' b'],
+                                   ['statements', ['statement', 'c', 'c']],
+                                   ['comment', ' c'],
+                                   ['statements', ['statement', 'c', '# # c']]])
 
     def testCStyleComments(self):
         text = """\
@@ -76,13 +83,7 @@ class ParserTestCase(unittest.TestCase):
 
             parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
 
-            ast = parser.parse(text)
-
-            # C comments parsed as statements
-            self.assertEqual(ast, ['contents',
-                                   ['statements', ['statement', '/*a*/', ''], ['statement', '/*', '']],
-                                   ['comment', ' b'],
-                                   ['statements', ['statement', '*/', '']]])
+            self.assertRaises(ApacheConfigError, parser.parse, text)
 
     def testIncludes(self):
         text = """\

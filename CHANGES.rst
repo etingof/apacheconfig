@@ -10,6 +10,7 @@ Revision 0.2.3, released XX-07-2018
   parser seems to do
 - Fixed parser grammar inconsistency popping up when `useapacheinclude`
   option is disabled
+- Fixed parser grammar to support in-line hash comments
 
 Revision 0.2.2, released 22-07-2018
 -----------------------------------

@@ -692,8 +692,7 @@ Header always set CustomHeader my-value "expr=%{REQUEST_URI} =~ m#^/special_path
                     "-R '192.168.1.0/24'": {
                         'Header': 'set matched true'
                     }
-                },
-                {
+                }, {
                     "md5('foo') == 'acbd18db4cc2f85cedef654fccc4a4d8'": {
                         'Header': 'set checksum-matched true'
                     }
@@ -707,8 +706,7 @@ Header always set CustomHeader my-value "expr=%{REQUEST_URI} =~ m#^/special_path
                 },
                 {
                     '/var/www': {
-                        'AddEncoding': 'x-gzip gz',
-                        'If': {
+                        'AddEncoding': 'x-gzip gz', 'If': {
                             "-f '%{REQUEST_FILENAME}.unzipme' && ! %{HTTP:Accept-Encoding} =~ /gzip/": {
                                 'SetOutputFilter': 'INFLATE'
                             }
@@ -718,7 +716,7 @@ Header always set CustomHeader my-value "expr=%{REQUEST_URI} =~ m#^/special_path
             ],
             'Header': [
                 'set foo-checksum "expr=%{md5:foo}"',
-                'always set CustomHeader my-value "expr=%{REQUEST_URI} =~ m#^/special_path\\.php$#"'
+                'always set CustomHeader my-value "expr=%{REQUEST_URI} =~ m'  # TODO(etingof) escape hash
             ]
         }
 
