@@ -301,6 +301,12 @@ class ApacheConfigLoader(object):
                 dict1[key] = dict2[key]
         return dict1
 
+    def _merge_lists(self, list1, list2):
+        for item in list2:
+            if item not in list1:
+                list1.append(item)
+        return list1
+
     def _walkast(self, ast):
         if not ast:
             return

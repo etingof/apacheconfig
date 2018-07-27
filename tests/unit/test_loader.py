@@ -730,7 +730,50 @@ Header always set CustomHeader my-value "expr=%{REQUEST_URI} =~ m#^/special_path
 
         self.assertEqual(config, expect_config)
 
+    def testMergeEmptyLists(self):
+        options = {}
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
 
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        self.assertEqual(loader._merge_lists([],[]), [])
+
+    def testMergeListWithEmptyList(self):
+        options = {}
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        self.assertEqual(loader._merge_lists([1],[]), [1])
+
+    def testMergeListsWithDifferentValues(self):
+        options = {}
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        self.assertEqual(loader._merge_lists([1],[2]), [1, 2])
+
+    def testMergeListsWithSameValues(self):
+        options = {}
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        self.assertEqual(loader._merge_lists([1],[1]), [1])
+
+    def testMergeListsWithSameAndDifferentValues(self):
+        options = {}
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        self.assertEqual(loader._merge_lists([1,2],[3,1]), [1,2,3])
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
