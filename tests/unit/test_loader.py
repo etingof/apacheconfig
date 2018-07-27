@@ -127,7 +127,7 @@ b = 2
 
         self.assertEqual(config, {'a': [{'b': '1'}, {'b': '2'}]})
 
-    def testDuplicateBlocksMerged(self):
+    def testDuplicateBlocksMerged_noMultiOptions_noMergeDuplicateOptions(self):
         text = """\
 <a>
 b = 1
@@ -146,9 +146,54 @@ b = 2
 
         loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
 
+        self.assertRaises(ApacheConfigError, loader.loads, text)
+
+    def testDuplicateBlocksMerged_noMultiOptions_MergeDuplicateOptions(self):
+        text = """\
+<a>
+b = 1
+</a>
+<a>
+b = 2
+</a>
+"""
+        options = {
+            'mergeduplicateblocks': True,
+            'allowmultioptions': False,
+            'mergeduplicateoptions': True
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
         config = loader.loads(text)
 
         self.assertEqual(config, {'a': {'b': '2'}})
+
+    def testDuplicateBlocksMerged_allowMultiOptions(self):
+        text = """\
+<a>
+b = 1
+</a>
+<a>
+b = 2
+</a>
+"""
+        options = {
+            'mergeduplicateblocks': True,
+            'allowmultioptions': True
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': {'b': ['1', '2']}})
 
     def testDuplicateOptionsAllowed(self):
         text = """\
