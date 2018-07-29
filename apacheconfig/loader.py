@@ -82,7 +82,6 @@ class ApacheConfigLoader(object):
 
         return block
 
-
     def g_contents(self, ast):
         # TODO(etingof): remove defaulted and overridden options from productions
         contents = self._options.get('defaultconfig', {})
@@ -92,7 +91,6 @@ class ApacheConfigLoader(object):
             self._merge_contents(contents, items)
 
         return contents
-
 
     def g_statements(self, ast):
         statements = {}
@@ -294,7 +292,7 @@ class ApacheConfigLoader(object):
                             dict1[key] = [dict1[key]]
                         if not isinstance(dict2[key], list):
                             dict2[key] = [dict2[key]]
-                        dict1[key] = list(set(dict1[key]).union(dict2[key]))
+                        dict1[key] = self._merge_lists(dict1[key], dict2[key])
                     else:
                         if self._options.get('mergeduplicateoptions', False):
                             dict1[key] = dict2[key]
