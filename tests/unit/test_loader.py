@@ -127,7 +127,7 @@ b = 2
 
         self.assertEqual(config, {'a': [{'b': '1'}, {'b': '2'}]})
 
-    def testDuplicateBlocksMerged(self):
+    def testDuplicateBlocksMerged_noMultiOptions_noMergeDuplicateOptions(self):
         text = """\
 <a>
 b = 1
@@ -137,7 +137,30 @@ b = 2
 </a>
 """
         options = {
-            'mergeduplicateblocks': True
+            'mergeduplicateblocks': True,
+            'allowmultioptions': False
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        self.assertRaises(ApacheConfigError, loader.loads, text)
+
+    def testDuplicateBlocksMerged_noMultiOptions_MergeDuplicateOptions(self):
+        text = """\
+<a>
+b = 1
+</a>
+<a>
+b = 2
+</a>
+"""
+        options = {
+            'mergeduplicateblocks': True,
+            'allowmultioptions': False,
+            'mergeduplicateoptions': True
         }
 
         ApacheConfigLexer = make_lexer(**options)
@@ -148,6 +171,29 @@ b = 2
         config = loader.loads(text)
 
         self.assertEqual(config, {'a': {'b': '2'}})
+
+    def testDuplicateBlocksMerged_allowMultiOptions(self):
+        text = """\
+<a>
+b = 1
+</a>
+<a>
+b = 2
+</a>
+"""
+        options = {
+            'mergeduplicateblocks': True,
+            'allowmultioptions': True
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': {'b': ['1', '2']}})
 
     def testDuplicateOptionsAllowed(self):
         text = """\
@@ -729,7 +775,50 @@ Header always set CustomHeader my-value "expr=%{REQUEST_URI} =~ m#^/special_path
 
         self.assertEqual(config, expect_config)
 
+    def testMergeEmptyLists(self):
+        options = {}
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
 
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        self.assertEqual(loader._merge_lists([],[]), [])
+
+    def testMergeListWithEmptyList(self):
+        options = {}
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        self.assertEqual(loader._merge_lists([1],[]), [1])
+
+    def testMergeListsWithDifferentValues(self):
+        options = {}
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        self.assertEqual(loader._merge_lists([1],[2]), [1, 2])
+
+    def testMergeListsWithSameValues(self):
+        options = {}
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        self.assertEqual(loader._merge_lists([1],[1]), [1])
+
+    def testMergeListsWithSameAndDifferentValues(self):
+        options = {}
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        self.assertEqual(loader._merge_lists([1,2],[3,1]), [1,2,3])
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
