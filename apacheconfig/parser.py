@@ -145,7 +145,7 @@ class BaseApacheConfigParser(object):
             p[0] = ['config', p[1]]
 
     def p_error(self, p):
-        raise ApacheConfigError("Parser error at '%s'" % p.value if p else 'Unexpected eof')
+        raise ApacheConfigError("Parser error at '%s'" % p.value if p else 'Unexpected EOF')
 
 
 def make_parser(**options):
