@@ -1,5 +1,5 @@
 
-Revision 0.2.3, released XX-07-2018
+Revision 0.2.3, released 12-08-2018
 -----------------------------------
 
 - Added the `nostripvalues` option to right-strip values
