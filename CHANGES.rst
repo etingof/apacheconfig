@@ -6,6 +6,9 @@ Revision 0.2.3, released XX-07-2018
   and enabed by default
 - Added config file reading abstraction layer to allow for
   non-local config file handling
+- Added AST caching to save on repetitive config files includes
+- Improved error reporting on parsing errors
+- Fixed bug in `mergeduplicateblocks` option implementation
 - Fixed HEREDOC parsing to allow indented closing anchor as Perl
   parser seems to do
 - Fixed parser grammar inconsistency popping up when `useapacheinclude`
