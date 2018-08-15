@@ -1,4 +1,9 @@
 
+Revision 0.2.4, released 15-08-2018
+-----------------------------------
+
+- Fixed empty named tag parsing
+
 Revision 0.2.3, released 12-08-2018
 -----------------------------------
 

@@ -202,12 +202,28 @@ a = "b"
                                ['block', 'a', [], 'a'],
                                ['block', 'b', [], 'b']])
 
+    def testNamedEmptyBlocks(self):
+        text = """\
+<a A/>
+<b B />
+</b B />
+"""
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+
+        ast = parser.parse(text)
+        self.assertEqual(ast, ['contents',
+                               ['block', 'a A', [], 'a A'],
+                               ['block', 'b B /', [], 'b B /']])
+
     def testLowerCaseNames(self):
         text = """\
-    <A/>
-    <aA>
-      Bb Cc
-    </aA>
+<A/>
+<aA>
+  Bb Cc
+</aA>
 """
         options = {
             'lowercasenames': True
@@ -228,10 +244,10 @@ a = "b"
 
     def testNoStripValues(self):
         text = """\
-    <aA>
-      Bb Cc   \
+<aA>
+  Bb Cc   \
 
-    </aA>
+</aA>
 """
         options = {
             'nostripvalues': True
