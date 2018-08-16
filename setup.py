@@ -47,7 +47,8 @@ def howto_install_setuptools():
    Then you could make eggs from this package.
 """)
 
-requires = ['ply>=3.0']
+
+requires = open('requirements.txt').read()
 
 if sys.version_info[:2] < (2, 6):
     print("ERROR: this package requires Python 2.6 or later!")
@@ -92,9 +93,9 @@ params.update(
     }
 )
 
-# handle unittest discovery feature
 try:
     import unittest2 as unittest
+
 except ImportError:
     import unittest
 
@@ -114,6 +115,7 @@ class PyTest(Command):
         )
 
         unittest.TextTestRunner(verbosity=2).run(suite)
+
 
 params['cmdclass'] = {
     'test': PyTest,
