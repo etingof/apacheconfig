@@ -1,4 +1,9 @@
 
+Revision 0.2.5, released 15-08-2018
+-----------------------------------
+
+- Fixed ply warning on duplicate grammar handler
+
 Revision 0.2.4, released 15-08-2018
 -----------------------------------
 
