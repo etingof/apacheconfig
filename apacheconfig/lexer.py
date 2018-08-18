@@ -163,10 +163,11 @@ class BaseApacheConfigLexer(object):
         if not option:
             raise ApacheConfigError('Syntax error in option-value pair %s' % token)
         if value:
-            if value[0] == '"' and value[-1] == '"':
-                value = DoubleQuotedString(value[1:-1])
-            if value[0] == "'" and value[-1] == "'":
-                value = SingleQuotedString(value[1:-1])
+            stripped = value.strip()
+            if stripped[0] == '"' and stripped[-1] == '"':
+                value = DoubleQuotedString(stripped[1:-1])
+            if stripped[0] == "'" and stripped[-1] == "'":
+                value = SingleQuotedString(stripped[1:-1])
         if '#' in value:
             value = value.replace('\\#', '#')
         return option, value

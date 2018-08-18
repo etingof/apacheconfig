@@ -124,7 +124,8 @@ a= b
 a =b
 a   b
 a "b"
-a = "b"
+   a = "b"   
+   a =        'b'   
 """
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
@@ -133,6 +134,7 @@ a = "b"
 
         ast = parser.parse(text)
         self.assertEqual(ast, ['statements',
+                               ['statement', 'a', 'b'],
                                ['statement', 'a', 'b'],
                                ['statement', 'a', 'b'],
                                ['statement', 'a', 'b'],

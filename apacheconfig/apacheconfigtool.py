@@ -167,7 +167,6 @@ def main():
             sys.stderr.write('Malformed defaultconfig %s: %s\n' % (options['defaultconfig'], ex))
             return 1
 
-
     if args.json_input:
 
         with make_loader(**options) as loader:
