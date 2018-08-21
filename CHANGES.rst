@@ -1,6 +1,4 @@
-
-
-Revision 0.2.6, released XX-08-2018
+Revision 0.2.6, released 21-08-2018
 -----------------------------------
 
 - Fixed unquoting values when followed by space
