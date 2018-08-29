@@ -209,7 +209,7 @@ This effect is case-insensitive, i.e. both *Yes* or *No* will result in *1*.
 ### namedblocks
 
 This option enables tag splitting by the first whitespace and turning the trailing
-piece into a nested block. `True by default`.
+piece into a nested block. `True` by default.
 
 ### flagbits
 
