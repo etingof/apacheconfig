@@ -1,3 +1,9 @@
+Revision 0.2.7, released XX-08-2018
+-----------------------------------
+
+- The `namedblocks` options implemented to allow for disabling tag
+  split by the first whitespace and turning it into a nested block.
+
 Revision 0.2.6, released 21-08-2018
 -----------------------------------
 

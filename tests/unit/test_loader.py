@@ -290,6 +290,29 @@ d = 1
 
         self.assertEqual(config, {'a': [{'/': {'c': '1'}}, {'b c': {'d': '1'}}]})
 
+    def testDisabledNamedBlocks(self):
+        text = """\
+<a />
+c = 1
+</a />
+
+<a b c>
+d = 1
+</a b c>
+"""
+        options = {
+            'namedblocks': False
+        }
+
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a /': {'c': '1'}, 'a b c': {'d': '1'}})
+
     def testQuotedBlockTag(self):
         text = """\
 <"a b">

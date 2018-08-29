@@ -95,6 +95,11 @@ def main():
     )
 
     options.add_argument(
+        '--namedblocks', action='store_false',
+        help='Do not split tags by the first whitespace and turn the trailing '
+             'part into a nested block')
+
+    options.add_argument(
         '--autotrue', action='store_true',
         help='Turn various forms of binary values in config into "1" and "0"'
     )

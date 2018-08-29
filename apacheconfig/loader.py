@@ -58,7 +58,8 @@ class ApacheConfigLoader(object):
         tag = ast[0]
         values = {}
 
-        if re.match(r'[^"\'].*?[ \t\r\n]+.*?[^"\']', tag):
+        if (self._options.get('namedblocks', True) and
+                re.match(r'[^"\'].*?[ \t\r\n]+.*?[^"\']', tag)):
             tag, name = re.split(r'[ \t\r\n]+', tag, maxsplit=1)
 
             name = self._unquote_tag(name)

@@ -206,6 +206,11 @@ The following values will be considered as *false*:
 
 This effect is case-insensitive, i.e. both *Yes* or *No* will result in *1*.
 
+### namedblocks
+
+This option enables tag splitting by the first whitespace and turning the trailing
+piece into a nested block. `True by default`.
+
 ### flagbits
 
 This option takes one required parameter, which must be a dictionary defining variables for which you want to preset
@@ -440,7 +445,7 @@ usage: apacheconfigtool [-h] [-v] [--json-input] [--allowmultioptions]
                         [--useapacheinclude] [--includeagain]
                         [--includerelative] [--includedirectories]
                         [--includeglob] [--mergeduplicateblocks]
-                        [--mergeduplicateoptions] [--autotrue]
+                        [--mergeduplicateoptions] [--namedblocks] [--autotrue]
                         [--interpolatevars] [--interpolateenv]
                         [--allowsinglequoteinterpolation] [--strictvars]
                         [--noescape] [--ccomments]
@@ -485,6 +490,8 @@ parsing options:
   --mergeduplicateoptions
                         If the same option occurs more than once, the last one
                         will be used in the resulting config dictionary
+  --namedblocks         Do not split tags by the first whitespace and turn the
+                        trailing part into a nested block
   --autotrue            Turn various forms of binary values in config into "1"
                         and "0"
   --interpolatevars     Enable variable interpolation
