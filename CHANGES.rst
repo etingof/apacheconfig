@@ -1,4 +1,4 @@
-Revision 0.2.7, released XX-08-2018
+Revision 0.2.7, released 01-09-2018
 -----------------------------------
 
 - The `namedblocks` options implemented to allow for disabling tag
