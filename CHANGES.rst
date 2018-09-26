@@ -1,7 +1,7 @@
-Revision 0.2.8, released XX-09-2018
+Revision 0.2.8, released XX-10-2018
 -----------------------------------
 
-No changed so far
+- Fix to allow quoted and bare paths in the `Include` statement
 
 Revision 0.2.7, released 01-09-2018
 -----------------------------------
