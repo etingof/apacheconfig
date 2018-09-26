@@ -205,7 +205,7 @@ class ApacheConfigLoader(object):
             return {}
 
     def g_include(self, ast):
-        filepath = ast[0]
+        filepath = self._unquote_tag(ast[0])
 
         options = self._options
 
