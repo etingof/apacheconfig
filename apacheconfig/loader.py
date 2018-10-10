@@ -387,7 +387,7 @@ class ApacheConfigLoader(object):
             if initialize:
                 self._ast_cache = {}
 
-    def _dumpdict(self, obj, indent=0):
+    def _dumpdict(self, obj, indent=0, flag=False):
         if not isinstance(obj, dict):
             raise error.ApacheConfigError('Unknown object type "%r" to dump' % obj)
 
@@ -409,12 +409,15 @@ class ApacheConfigLoader(object):
                         else:
                             text += '%s%s "%s"\n' % (spacing, key, dup)
                     else:
-                        text += '%s<%s>\n%s%s</%s>\n' % (spacing, key, self._dumpdict(dup, indent + 2), spacing, key)
+                        text += '%s<%s %s%s</%s>\n' % (spacing, key, self._dumpdict(dup, indent + 2,flag=True), spacing, key)
 
             else:
-                text += '%s<%s>\n%s%s</%s>\n' % (spacing, key, self._dumpdict(val, indent + 2), spacing, key)
-
+                if flag:
+                    text += '%s>\n%s' % (key, self._dumpdict(val, indent + 2))
+                else:
+                    text += '%s<%s %s%s</%s>\n' % (spacing, key, self._dumpdict(val, indent + 2,flag=True), spacing, key)
         return text
+
 
     def dumps(self, dct):
         return self._dumpdict(dct)
