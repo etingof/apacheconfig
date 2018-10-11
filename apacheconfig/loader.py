@@ -387,7 +387,7 @@ class ApacheConfigLoader(object):
             if initialize:
                 self._ast_cache = {}
 
-    def _dumpdict(self, obj, indent=0, flag=False):
+    def _dumpdict(self, obj, indent=0, continue_tag=False):
         if not isinstance(obj, dict):
             raise error.ApacheConfigError('Unknown object type "%r" to dump' % obj)
 
@@ -409,13 +409,19 @@ class ApacheConfigLoader(object):
                         else:
                             text += '%s%s "%s"\n' % (spacing, key, dup)
                     else:
-                        text += '%s<%s %s%s</%s>\n' % (spacing, key, self._dumpdict(dup, indent + 2,flag=True), spacing, key)
+                        if self._options.get('namedblocks', True):
+                            text += '%s<%s>\n%s%s</%s>\n' % (spacing, key, self._dumpdict(dup, indent + 2), spacing, key)
+                        else:
+                            text += '%s<%s %s%s</%s>\n' % (spacing, key, self._dumpdict(dup, indent + 2, continue_tag=True), spacing, key)
 
             else:
-                if flag:
-                    text += '%s>\n%s' % (key, self._dumpdict(val, indent + 2))
+                if self._options.get('namedblocks', True):
+                    text += '%s<%s>\n%s%s</%s>\n' % (spacing, key, self._dumpdict(val, indent + 2), spacing, key)
                 else:
-                    text += '%s<%s %s%s</%s>\n' % (spacing, key, self._dumpdict(val, indent + 2,flag=True), spacing, key)
+                    if continue_tag:
+                        text += '%s>\n%s' % (key, self._dumpdict(val, indent + 2))
+                    else:
+                        text += '%s<%s %s%s</%s>\n' % (spacing, key, self._dumpdict(val, indent + 2, continue_tag=True), spacing, key)
         return text
 
 

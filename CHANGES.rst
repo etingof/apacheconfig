@@ -2,6 +2,8 @@ Revision 0.2.8, released XX-10-2018
 -----------------------------------
 
 - Fix to allow quoted and bare paths in the `Include` statement
+- The `apacheconfigtool` to respect `--namedblocks` option when
+  running in `--json-input` mode
 
 Revision 0.2.7, released 01-09-2018
 -----------------------------------
