@@ -269,8 +269,9 @@ class BaseApacheConfigLexer(object):
         r'[ \t]+'
 
     def t_NEWLINE(self, t):
-        r'\r\n|\n|\r'
-        t.lexer.lineno += 1
+        r'\r\n|\n|\r|\\'
+        if t.value != '\\':
+            t.lexer.lineno += 1
 
     def t_error(self, t):
         raise ApacheConfigError("Illegal character '%s'" % t.value[0])

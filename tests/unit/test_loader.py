@@ -465,6 +465,24 @@ b
         self.assertEqual(config, {'a': {'b': 'abc         pqr',
                                         'aa': {'c': 'value2'}}})
 
+    def testLineContinuationOnEmptyLine(self):
+        text = """\
+\\
+# comment
+\\
+<a>
+    key value
+</a>
+"""
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': {'key': 'value'}})
+
     @mock.patch('os.path.exists')
     def testConfigPath(self, path_exists_mock):
         text = """\
