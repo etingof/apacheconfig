@@ -1,6 +1,8 @@
-Revision 0.2.8, released XX-10-2018
+Revision 0.2.8, released XX-11-2018
 -----------------------------------
 
+- Fixed multiline (line continuation) state termination (by an
+  empty line)
 - Fix to allow quoted and bare paths in the `Include` statement
 - The `apacheconfigtool` to respect `--namedblocks` option when
   running in `--json-input` mode

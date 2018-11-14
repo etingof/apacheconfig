@@ -411,6 +411,60 @@ a = \\$b
 
         self.assertEqual(config, {'a': '\\$b'})
 
+    def testLineContinuation(self):
+        text = """\
+a = \\
+b
+"""
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': 'b'})
+
+    def testLineContinuationInBlock(self):
+        text = """\
+<a>
+   b abc \\
+        pqr\\
+
+   c value2
+</a>
+"""
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': {'b': 'abc         pqr',
+                                        'c': 'value2'}})
+
+    def testLineContinuationInNestedBlock(self):
+        text = """\
+<a>
+   b abc \\
+        pqr\\
+
+   <aa>
+     c value2
+   </aa>
+</a>
+"""
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+
+        config = loader.loads(text)
+
+        self.assertEqual(config, {'a': {'b': 'abc         pqr',
+                                        'aa': {'c': 'value2'}}})
+
     @mock.patch('os.path.exists')
     def testConfigPath(self, path_exists_mock):
         text = """\

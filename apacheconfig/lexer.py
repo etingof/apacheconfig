@@ -183,6 +183,7 @@ class BaseApacheConfigLexer(object):
     def t_OPTION_AND_VALUE(self, t):
         r'[^ \n\r\t=#]+[ \t=]+[^\r\n#]+'  # TODO(etingof) escape hash
         if t.value.endswith('\\'):
+            t.lexer.multiline_newline_seen = False
             t.lexer.code_start = t.lexer.lexpos - len(t.value)
             t.lexer.begin('multiline')
             return
@@ -210,6 +211,8 @@ class BaseApacheConfigLexer(object):
 
     def t_multiline_OPTION_AND_VALUE(self, t):
         r'[^\r\n]+'
+        t.lexer.multiline_newline_seen = False
+
         if t.value.endswith('\\'):
             return
 
@@ -232,7 +235,9 @@ class BaseApacheConfigLexer(object):
 
     def t_multiline_NEWLINE(self, t):
         r'\r\n|\n|\r'
-        t.lexer.lineno += 1
+        if t.lexer.multiline_newline_seen:
+            return self.t_multiline_OPTION_AND_VALUE(t)
+        t.lexer.multiline_newline_seen = True
 
     def t_multiline_error(self, t):
         raise ApacheConfigError("Illegal character '%s' in multiline text" % t.value[0])
