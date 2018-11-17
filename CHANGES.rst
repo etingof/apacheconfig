@@ -3,7 +3,9 @@ Revision 0.2.8, released XX-11-2018
 
 - Fixed multiline (line continuation) state termination (by an
   empty line)
-= Fixed empty continuation line parsing (e.g. just '\')
+- Fixed empty continuation line parsing (e.g. just '\')
+- Fix to the parser to process empty text on input (and produce
+  empty AST)
 - Fix to allow quoted and bare paths in the `Include` statement
 - The `apacheconfigtool` to respect `--namedblocks` option when
   running in `--json-input` mode
