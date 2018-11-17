@@ -915,6 +915,16 @@ Header always set CustomHeader my-value "expr=%{REQUEST_URI} =~ m#^/special_path
 
         self.assertEqual(loader._merge_lists([1,2],[3,1]), [1,2,3])
 
+    def testLoadEmptyText(self):
+        text = ""
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+
+        config = loader.loads(text)
+        self.assertEqual(config, {})
+
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
 if __name__ == '__main__':
