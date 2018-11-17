@@ -325,7 +325,7 @@ class ApacheConfigLoader(object):
         return handler(ast[1:])
 
     def loads(self, text, initialize=True, source=None):
-        if len(text) == 0:
+        if not text:
             self._ast_cache[source] = {}
             return {}
 
