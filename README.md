@@ -537,4 +537,4 @@ You could `pip install apacheconfig` or download it from [PyPI](https://pypi.org
 If something does not work as expected, 
 [open an issue](https://github.com/etingof/apacheconfig/issues) at GitHub.
 
-Copyright (c) 2018, [Ilya Etingof](mailto:etingof@gmail.com). All rights reserved.
+Copyright (c) 2018-2019, [Ilya Etingof](mailto:etingof@gmail.com). All rights reserved.

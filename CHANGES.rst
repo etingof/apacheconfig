@@ -1,6 +1,8 @@
-Revision 0.2.8, released XX-11-2018
+
+Revision 0.2.8, released 29-12-2018
 -----------------------------------
 
+- Copyright notice extended to the year 2019
 - Fixed multiline (line continuation) state termination (by an
   empty line)
 - Fixed empty continuation line parsing (e.g. just '\')
