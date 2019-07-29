@@ -152,19 +152,6 @@ class ApacheConfigLoader(object):
                     else:
                         statements[option] = interpolate(value)
 
-        def remove_escapes(value):
-            if self._options.get('noescape'):
-                return value
-            if not isinstance(value, str):
-                return value
-            return re.sub(r'\\([$\\"#])', lambda x: x.groups()[0], value)
-
-        for option, value in tuple(statements.items()):
-            if isinstance(value, list):
-                statements[option] = [remove_escapes(x) for x in value]
-            else:
-                statements[option] = remove_escapes(value)
-
         self._stack.insert(0, statements)
 
         return statements
@@ -189,6 +176,18 @@ class ApacheConfigLoader(object):
         if self._options.get('forcearray'):
             if value.startswith('[') and value.endswith(']'):
                 value = [value[1:-1]]
+
+        def remove_escapes(value):
+            if self._options.get('noescape'):
+                return value
+            if not isinstance(value, str):
+                return value
+            return re.sub(r'\\([$\\"#])', lambda x: x.groups()[0], value)
+
+        if isinstance(value, list):
+            value = [remove_escapes(x) for x in value]
+        else:
+            value = remove_escapes(value)
 
         return {
             option: value
