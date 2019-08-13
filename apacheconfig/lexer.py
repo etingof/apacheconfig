@@ -98,6 +98,7 @@ class BaseApacheConfigLexer(object):
         'CLOSE_TAG',
         'OPEN_CLOSE_TAG',
         'OPTION_AND_VALUE',
+        'OPTION_AND_VALUE_NOSTRIP',
         'WHITESPACE',
         'NEWLINE',
     )
@@ -186,8 +187,7 @@ class BaseApacheConfigLexer(object):
         except KeyError:
             return True, option, value
 
-    def t_OPTION_AND_VALUE(self, t):
-        r'[^ \n\r\t=#]+([ \t=]+[^ \t\n\r#]+)+'  # TODO(etingof) escape hash
+    def _lex_option(self, t):
         if t.value.endswith('\\'):
             t.lexer.multiline_newline_seen = False
             t.lexer.code_start = t.lexer.lexpos - len(t.value)
@@ -302,10 +302,21 @@ class BaseApacheConfigLexer(object):
         raise ApacheConfigError(
             "Illegal character '%s' on line %d" % (t.value[0], t.lineno))
 
+class OptionLexer(BaseApacheConfigLexer):
+    def t_OPTION_AND_VALUE(self, t):
+        r'[^ \n\r\t=#]+([ \t=]+[^ \t\r\n#]+)+'
+        return self._lex_option(t)
+
+class NoStripLexer(BaseApacheConfigLexer):
+    def t_OPTION_AND_VALUE_NOSTRIP(self, t):
+        r'[^ \n\r\t=#]+[ \t=]+[^\r\n#]+'  # TODO(etingof) escape hash
+        return self._lex_option(t)
 
 def make_lexer(**options):
 
-    lexer_class = BaseApacheConfigLexer
+    lexer_class = OptionLexer
+    if options.get('nostripvalues'):
+        lexer_class = NoStripLexer
 
     lexer_class = type('ApacheConfigLexer',
                        (lexer_class, HashCommentsLexer),

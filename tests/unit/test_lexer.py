@@ -129,6 +129,23 @@ c b  \\
         tokens = self.lexer.tokenize(text)
         self.assertEqual(tokens, [('a', ' ', 'c b'), '  \\\n  '])
 
+    def testNoStripValues(self):
+        text = """  a b    """
+        options = { 'nostripvalues': True }
+        ApacheConfigLexer = make_lexer(**options)
+        tokens = ApacheConfigLexer().tokenize(text)
+        self.assertEqual(tokens, ['  ', ('a', ' ', 'b    ')])
+
+    def testNoStripValuesMultiline(self):
+        text = """\
+  Bb Cc\
+ \
+ """
+        options = { 'nostripvalues': True }
+        ApacheConfigLexer = make_lexer(**options)
+        tokens = ApacheConfigLexer().tokenize(text)
+        self.assertEqual(tokens, ['  ', ('Bb', ' ', 'Cc  ')])
+
     def testConfiguration(self):
         text = """\
 # h
