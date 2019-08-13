@@ -74,12 +74,24 @@ class BaseApacheConfigParser(object):
         self.reset()
         return self.engine.parse(text)
 
-    # Parsing rules
+    # PARSING RULES
+    # =============
+
+    def p_requirednewline(self, p):
+        """requirednewline : NEWLINE
+        """
+        p[0] = p[1:][0]
+
+    def p_whitespace(self, p):
+        """whitespace : requirednewline
+                      | WHITESPACE
+        """
+        p[0] = p[1:][0]
 
     def p_statement(self, p):
         """statement : OPTION_AND_VALUE
         """
-        p[0] = ['statement', p[1][0], p[1][1]]
+        p[0] = ['statement', p[1][0], p[1][2]]
 
         if self.options.get('lowercasenames'):
             p[0][1] = p[0][1].lower()
@@ -89,35 +101,70 @@ class BaseApacheConfigParser(object):
                 not hasattr(p[0][2], 'is_double_quoted')):
             p[0][2] = p[0][2].rstrip()
 
+    # Note: item vs comment
+    # ---------------------
+    # `item` and `comment` are differentiated since there can be in-line
+    # comments. Comments do not necessarily need a newline to separate it
+    # from a previous item, but an item needs a newline to
+    # separate it from a previous item or comment.
+
     def p_item(self, p):
         """item : statement
-                | comment
                 | include
                 | includeoptional
                 | block
         """
         p[0] = p[1:][0]
 
+    def p_startitem(self, p):
+        """startitem : whitespace item
+                     | whitespace comment
+                     | item
+                     | comment
+        """
+        if len(p) == 3:
+            p[0] = p[1:][1]
+        else:
+            p[0] = p[1:][0]
+
+    def p_miditem(self, p):
+        """miditem : requirednewline item
+                   | whitespace comment
+                   | comment
+        """
+        if len(p) == 3:
+            p[0] = p[1:][1]
+        else:
+            p[0] = p[1:][0]
+
     def p_contents(self, p):
-        """contents : contents item
-                    | item
+        """contents : contents miditem
+                    | contents whitespace
+                    | startitem
+                    | whitespace
         """
         n = len(p)
         if n == 3:
-            p[0] = p[1] + [p[2]]
+            if isinstance(p[2], str) and p[2].isspace():
+                p[0] = p[1]
+            else:
+                p[0] = p[1] + [p[2]]
         else:
-            p[0] = ['contents', p[1]]
+            if isinstance(p[1], str) and p[1].isspace():
+                p[0] = ['contents', []]
+            else:
+                p[0] = ['contents', p[1]]
 
     def p_block(self, p):
         """block : OPEN_TAG contents CLOSE_TAG
-                 | OPEN_TAG CLOSE_TAG
+                 | OPEN_TAG requirednewline CLOSE_TAG
                  | OPEN_CLOSE_TAG
         """
         n = len(p)
         if n == 4:
+            if isinstance(p[2], str) and p[2].isspace():
+                p[2] = []
             p[0] = ['block', p[1], p[2], p[3]]
-        elif n == 3:
-            p[0] = ['block', p[1],  [], p[2]]
         else:
             p[0] = ['block', p[1], [], p[1]]
 
