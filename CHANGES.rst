@@ -2,7 +2,7 @@
 Revision 0.2.9, released XX-09-2019
 -----------------------------------
 
-No changes yet
+- Added line number to the exception message on parsing error
 
 Revision 0.2.8, released 29-12-2018
 -----------------------------------

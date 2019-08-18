@@ -156,12 +156,16 @@ class BaseApacheConfigLexer(object):
         return t
 
     @staticmethod
-    def _parse_option_value(token):
+    def _parse_option_value(token, lineno):
         if not re.match(r'.*?[ \n\r\t=]+', token):
-            raise ApacheConfigError('Syntax error in option-value pair %s' % token)
+            raise ApacheConfigError(
+                'Syntax error in option-value pair %s on line '
+                '%d' % (token, lineno))
         option, value = re.split(r'[ \n\r\t=]+', token, maxsplit=1)
         if not option:
-            raise ApacheConfigError('Syntax error in option-value pair %s' % token)
+            raise ApacheConfigError(
+                'Syntax error in option-value pair %s on line '
+                '%d' % (token, lineno))
         if value:
             stripped = value.strip()
             if stripped[0] == '"' and stripped[-1] == '"':
@@ -190,7 +194,7 @@ class BaseApacheConfigLexer(object):
 
         lineno = len(re.findall(r'\r\n|\n|\r', t.value))
 
-        option, value = self._parse_option_value(t.value)
+        option, value = self._parse_option_value(t.value, t.lineno)
 
         process, option, value = self._pre_parse_value(option, value)
         if not process:
@@ -223,7 +227,7 @@ class BaseApacheConfigLexer(object):
         t.lexer.lineno += len(re.findall(r'\r\n|\n|\r', value))
         value = value.replace('\\\n', '').replace('\r', '').replace('\n', '')
 
-        option, value = self._parse_option_value(value)
+        option, value = self._parse_option_value(value, t.lineno)
 
         process, option, value = self._pre_parse_value(option, value)
         if not process:
@@ -240,7 +244,9 @@ class BaseApacheConfigLexer(object):
         t.lexer.multiline_newline_seen = True
 
     def t_multiline_error(self, t):
-        raise ApacheConfigError("Illegal character '%s' in multiline text" % t.value[0])
+        raise ApacheConfigError(
+            "Illegal character '%s' in multi-line text on line "
+            "%d" % (t.value[0], t.lineno))
 
     def t_heredoc_OPTION_AND_VALUE(self, t):
         r'[^\r\n]+'
@@ -263,7 +269,9 @@ class BaseApacheConfigLexer(object):
         t.lexer.lineno += 1
 
     def t_heredoc_error(self, t):
-        raise ApacheConfigError("Illegal character '%s' in here-document text" % t.value[0])
+        raise ApacheConfigError(
+            "Illegal character '%s' in here-document text on line "
+            "%d" % (t.value[0], t.lineno))
 
     def t_WHITESPACE(self, t):
         r'[ \t]+'
@@ -274,7 +282,8 @@ class BaseApacheConfigLexer(object):
             t.lexer.lineno += 1
 
     def t_error(self, t):
-        raise ApacheConfigError("Illegal character '%s'" % t.value[0])
+        raise ApacheConfigError(
+            "Illegal character '%s' on line %d" % (t.value[0], t.lineno))
 
 
 def make_lexer(**options):
