@@ -92,7 +92,6 @@ a b
 
         self.assertEqual(expect_text, gen_text)
 
-
     def testForceArray(self):
         text = """\
 b = [1]
@@ -218,6 +217,7 @@ a = 3
     def testDuplicateOptionsDenied(self):
         text = """\
 a = 1
+<b/>
 a = 2
 """
         options = {
@@ -259,7 +259,7 @@ b = 2
                 'b': '4',
                 'c': '3'
             },
-            'mergeduplicateoptions': True
+            'mergeduplicateoptions': False
         }
 
         ApacheConfigLexer = make_lexer(**options)

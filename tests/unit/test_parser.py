@@ -48,9 +48,9 @@ c \# # c
             self.assertEqual(ast, ['contents',
                                    ['comment', 'a'],
                                    ['comment', ' b'],
-                                   ['statements', ['statement', 'c', 'c']],
+                                   ['statement', 'c', 'c'],
                                    ['comment', ' c'],
-                                   ['statements', ['statement', 'c', '# # c']]])
+                                   ['statement', 'c', '# # c']])
 
     def testCStyleComments(self):
         text = """\
@@ -130,10 +130,10 @@ a "b"
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        parser = ApacheConfigParser(ApacheConfigLexer(), start='statements')
+        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, ['statements',
+        self.assertEqual(ast, ['contents',
                                ['statement', 'a', 'b'],
                                ['statement', 'a', 'b'],
                                ['statement', 'a', 'b'],
@@ -162,11 +162,9 @@ a "b"
         self.assertEqual(ast, ['block', 'a',
                                ['contents',
                                 ['comment', 'a'],
-                                ['statements',
-                                 ['statement', 'a', 'b b']],
+                                 ['statement', 'a', 'b b'],
                                 ['comment', ' a b'],
-                                ['statements',
-                                 ['statement', 'a', 'b b']]], 'a'])
+                                 ['statement', 'a', 'b b']], 'a'])
 
     def testNestedBlock(self):
             text = """\
@@ -241,7 +239,7 @@ a "b"
                                ['block', 'a', [], 'a'],
                                ['block', 'aa',
                                 ['contents',
-                                 ['statements', ['statement', 'bb', 'Cc']]],
+                                 ['statement', 'bb', 'Cc']],
                                 'aa']])
 
     def testNoStripValues(self):
@@ -264,7 +262,7 @@ a "b"
         self.assertEqual(ast, ['contents',
                                ['block', 'aA',
                                 ['contents',
-                                 ['statements', ['statement', 'Bb', 'Cc   ']]],
+                                 ['statement', 'Bb', 'Cc   ']],
                                 'aA']])
 
     def testHereDoc(self):
@@ -287,10 +285,8 @@ a "b"
         self.assertEqual(ast, ['contents',
                                ['block', 'main',
                                 ['contents',
-                                 ['statements',
-                                  ['statement',
-                                   'PYTHON', '        def a():\n            x = y\n            return'
-                                   ]
+                                 ['statement',
+                                  'PYTHON', '        def a():\n            x = y\n            return'
                                   ]
                                  ],
                                 'main']])
@@ -323,16 +319,15 @@ a b
             'config',
             ['contents',
                 ['comment', ' a'],
-                ['statements', ['statement', 'a', 'b']],
+                ['statement', 'a', 'b'],
                 ['block', 'a',
-                 ['contents', ['statements', ['statement', 'a', 'b']]],
+                 ['contents', ['statement', 'a', 'b']],
                  'a'],
-                ['statements', ['statement', 'a', 'b']],
+                ['statement', 'a', 'b'],
                 ['block', 'a a',
                  ['contents',
-                  ['statements',
-                   ['statement', 'a', 'b'],
-                   ['statement', 'c', 'd']],
+                  ['statement', 'a', 'b'],
+                  ['statement', 'c', 'd'],
                   ['comment', ' c']],
                  'a a'],
                 ['comment', ' a']]

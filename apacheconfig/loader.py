@@ -94,36 +94,17 @@ class ApacheConfigLoader(object):
 
         return contents
 
-    def g_statements(self, ast):
-        statements = {}
-
-        for subtree in ast:
-            items = self._walkast(subtree)
-            for item in items:
-                if item in statements:
-                    if (self._options.get('allowmultioptions', True) and
-                            not self._options.get('mergeduplicateoptions', False)):
-                        if not isinstance(statements[item], list):
-                            statements[item] = [statements[item]]
-                        statements[item].append(items[item])
-                    elif self._options.get('mergeduplicateoptions', False):
-                        statements[item] = items[item]
-                    else:
-                        raise error.ApacheConfigError('Duplicate option "%s" prohibited' % item)
-                else:
-                    statements[item] = items[item]
-
+    def _interpolate_vars(self, option, value):
+        """Store option / values in `stack` and interpolate value when referenced.
+        Returns `value` with any interpolated variables.
+        """
         if (self._options.get('interpolateenv', False) or
                 self._options.get('allowsinglequoteinterpolation', False)):
             self._options['interpolatevars'] = True
 
         if self._options.get('interpolatevars', False):
-
             def lookup(match):
                 option = match.groups()[0]
-
-                if option in statements:
-                    return interpolate(statements[option])
 
                 for frame in self._stack:
                     if option in frame:
@@ -144,13 +125,21 @@ class ApacheConfigLoader(object):
                     return expanded
                 return re.sub(r'(?<!\\)\$([^\n\r $]+?)', lookup, value)
 
-            for option, value in tuple(statements.items()):
-                if (not getattr(value, 'is_single_quoted', False) or
-                        self._options.get('allowsinglequoteinterpolation', False)):
-                    if isinstance(value, list):
-                        statements[option] = [interpolate(x) for x in value]
-                    else:
-                        statements[option] = interpolate(value)
+            if (not getattr(value, 'is_single_quoted', False) or
+                    self._options.get('allowsinglequoteinterpolation', False)):
+                if isinstance(value, list):
+                    value = [interpolate(x) for x in value]
+                else:
+                    value = interpolate(value)
+
+        self._stack.insert(0, {option: value})
+        return value
+
+    def g_statement(self, ast):
+        """Performs postprocessing on a statement. Returns an {option: value} dict.
+        """
+        option, value = ast[:2]
+        value = self._interpolate_vars(option, value)
 
         def remove_escapes(value):
             if self._options.get('noescape'):
@@ -158,19 +147,10 @@ class ApacheConfigLoader(object):
             if not isinstance(value, str):
                 return value
             return re.sub(r'\\([$\\"#])', lambda x: x.groups()[0], value)
-
-        for option, value in tuple(statements.items()):
-            if isinstance(value, list):
-                statements[option] = [remove_escapes(x) for x in value]
-            else:
-                statements[option] = remove_escapes(value)
-
-        self._stack.insert(0, statements)
-
-        return statements
-
-    def g_statement(self, ast):
-        option, value = ast[:2]
+        if isinstance(value, list):
+            value = [remove_escapes(x) for x in value]
+        else:
+            value = remove_escapes(value)
 
         flagbits = self._options.get('flagbits')
         if flagbits and option in flagbits:
@@ -261,47 +241,50 @@ class ApacheConfigLoader(object):
             raise error.ConfigFileReadError('Config file "%s" not found in search path %s' % (filename, ':'.join(configpath)))
 
     def _merge_contents(self, contents, items):
+        """Merges items into existing contents dictionary.
+        Returns new contents.
+        """
         for item in items:
-            # In case of duplicate keys, AST can contain a list of values.
-            # Here all values forced into being a list to unify further processing.
-            if isinstance(items[item], list):
-                vector = items[item]
-            else:
-                vector = [items[item]]
+            contents = self._merge_item(contents, item, items[item])
+        return contents
 
-            if item in contents:
-                # TODO(etingof): keep block/statements merging at one place
-                if self._options.get('mergeduplicateblocks'):
-                    contents = self._merge_dicts(contents, items)
-                else:
-                    if not isinstance(contents[item], list):
-                        contents[item] = [contents[item]]
-                    contents[item].extend(vector)
-            else:
-                contents[item] = items[item]
+    def _merge_item(self, contents, key, value, path=[]):
+        """Merges a single "key, value" item into contents dictionary, and returns new contents.
+        Merging rules differ depending on flags set, and whether `value` is a dictionary (block).
+        """
+        if key not in contents:
+            contents[key] = value
+            return contents
 
+        # In case of duplicate keys, AST can contain a list of values.
+        # Here all values forced into being a list to unify further processing.
+        if isinstance(value, list):
+            vector = value
+        else:
+            vector = [value]
+
+        if isinstance(value, dict): # Merge block into contents
+            if self._options.get('mergeduplicateblocks'):
+                contents = self._merge_dicts(contents[key], value)
+            else:
+                if not isinstance(contents[key], list):
+                    contents[key] = [contents[key]]
+                contents[key] += vector
+        else: # Merge statement/option into contents
+            if not self._options.get('allowmultioptions', True) and not self._options.get('mergeduplicateoptions', False):
+                raise error.ApacheConfigError('Duplicate option "%s" prohibited' % '.'.join(path + [str(key)]))
+            if self._options.get('mergeduplicateoptions', False):
+                contents[key] = value
+            else:
+                if not isinstance(contents[key], list):
+                    contents[key] = [contents[key]]
+                contents[key] += vector
         return contents
 
     def _merge_dicts(self, dict1, dict2, path=[]):
-        "merges dict2 into dict1"
+        """Merges items from dict2 into dict1."""
         for key in dict2:
-            if key in dict1:
-                if isinstance(dict1[key], dict) and isinstance(dict2[key], dict):
-                    self._merge_dicts(dict1[key], dict2[key], path + [str(key)])
-                elif dict1[key] != dict2[key]:
-                    if self._options.get('allowmultioptions', True):
-                        if not isinstance(dict1[key], list):
-                            dict1[key] = [dict1[key]]
-                        if not isinstance(dict2[key], list):
-                            dict2[key] = [dict2[key]]
-                        dict1[key] = self._merge_lists(dict1[key], dict2[key])
-                    else:
-                        if self._options.get('mergeduplicateoptions', False):
-                            dict1[key] = dict2[key]
-                        else:
-                            raise error.ApacheConfigError('Duplicate option "%s" prohibited' % '.'.join(path + [str(key)]))
-            else:
-                dict1[key] = dict2[key]
+            dict1 = self._merge_item(dict1, key, dict2[key], path)
         return dict1
 
     def _merge_lists(self, list1, list2):

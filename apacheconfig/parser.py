@@ -89,27 +89,18 @@ class BaseApacheConfigParser(object):
                 not hasattr(p[0][2], 'is_double_quoted')):
             p[0][2] = p[0][2].rstrip()
 
-    def p_statements(self, p):
-        """statements : statements statement
-                      | statement
+    def p_item(self, p):
+        """item : statement
+                | comment
+                | include
+                | includeoptional
+                | block
         """
-        n = len(p)
-        if n == 3:
-            p[0] = p[1] + [p[2]]
-        elif n == 2:
-            p[0] = ['statements', p[1]]
+        p[0] = p[1:][0]
 
     def p_contents(self, p):
-        """contents : contents statements
-                    | contents comment
-                    | contents include
-                    | contents includeoptional
-                    | contents block
-                    | statements
-                    | comment
-                    | include
-                    | includeoptional
-                    | block
+        """contents : contents item
+                    | item
         """
         n = len(p)
         if n == 3:
