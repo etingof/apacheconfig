@@ -37,9 +37,11 @@ matrix:
     python: 'pypy3'
 install:
   - pip install codecov
+  - pip install flake8
   - pip install -r requirements.txt -r test-requirements.txt
   - pip install -e .
 script:
+  - flake8 ./apacheconfig
   - PYTHONPATH=.:$PYTHONPATH python tests/__main__.py
 after_success:
   - PYTHONPATH=.:$PYTHONPATH coverage run --omit=*test* tests/__main__.py

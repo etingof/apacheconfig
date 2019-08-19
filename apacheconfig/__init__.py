@@ -14,4 +14,9 @@ def make_loader(**options):
     ApacheConfigLexer = make_lexer(**options)
     ApacheConfigParser = make_parser(**options)
 
-    yield ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+    yield ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()),
+                             **options)
+
+
+__all__ = ['make_lexer', 'make_parser', 'make_loader', 'ApacheConfigLoader',
+           'ApacheConfigError']
