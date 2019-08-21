@@ -134,26 +134,30 @@ class BaseApacheConfigParser(object):
             p[0] = p[1:][0]
 
     def p_contents(self, p):
-        """contents : contents miditem
-                    | contents whitespace
-                    | startitem
+        """contents : contents whitespace
+                    | contents miditem
                     | whitespace
+                    | startitem
         """
         n = len(p)
         if n == 3:
             if isinstance(p[2], str) and p[2].isspace():
+                # contents whitespace
                 p[0] = p[1]
             else:
+                # contents miditem
                 p[0] = p[1] + [p[2]]
         else:
             if isinstance(p[1], str) and p[1].isspace():
-                p[0] = ['contents', []]
+                # whitespace
+                # (if contents only consists of whitespace)
+                p[0] = []
             else:
+                # startitem
                 p[0] = ['contents', p[1]]
 
     def p_block(self, p):
         """block : OPEN_TAG contents CLOSE_TAG
-                 | OPEN_TAG requirednewline CLOSE_TAG
                  | OPEN_CLOSE_TAG
         """
         n = len(p)

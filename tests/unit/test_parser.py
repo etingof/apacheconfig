@@ -308,7 +308,7 @@ a "b"
         parser = ApacheConfigParser(ApacheConfigLexer(), start='config')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, ['config', ['contents', []]])
+        self.assertEqual(ast, ['config', []])
 
     def testWholeConfig(self):
         text = """\
