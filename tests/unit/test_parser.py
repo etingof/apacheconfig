@@ -32,6 +32,17 @@ class ParserTestCase(unittest.TestCase):
         ast = parser.parse('a "b c"')
         self.assertEqual(ast, ['statement', 'a', 'b c'])
 
+    def testContentsWhitespace(self):
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+
+        tests = ['a b', 'a b\n', '\n a b', '\n a b  \n', '\n a \\\n b  \n']
+        for test in tests:
+            ast = parser.parse(test)
+            self.assertEqual(ast, ['contents', ['statement', 'a', 'b']])
+
     def testHashComments(self):
             text = """\
 #a
@@ -290,7 +301,7 @@ a "b"
                                 'main']])
 
     def testEmptyConfig(self):
-        text = " "
+        text = " \n "
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
