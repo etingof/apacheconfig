@@ -9,13 +9,14 @@ import sys
 import os
 import json
 
-from apacheconfig import *
+from apacheconfig import make_loader, ApacheConfigError
 from apacheconfig import __version__
 
 
 def main():
 
-    parser = argparse.ArgumentParser(description='Dump Apache config files into JSON')
+    parser = argparse.ArgumentParser(
+                description='Dump Apache config files into JSON')
 
     parser.add_argument(
         '-v', '--version', action='version', version='%(prog)s ' + __version__
@@ -40,8 +41,9 @@ def main():
 
     options.add_argument(
         '--forcearray', action='store_true',
-        help=('Force a single config line to get parsed into a list by turning '
-              'on this option and by surrounding the value of the config entry by []')
+        help=('Force a single config line to get parsed into a list by '
+              'turning on this option and by surrounding the value of the '
+              'config entry by []')
     )
 
     options.add_argument(
@@ -121,12 +123,14 @@ def main():
 
     options.add_argument(
         '--strictvars', action='store_false',
-        help='Do not fail on an undefined variable when performing interpolation'
+        help=('Do not fail on an undefined variable when performing '
+              'interpolation')
     )
 
     options.add_argument(
         '--noescape', action='store_true',
-        help='Preserve special escape characters left outs in the configuration values'
+        help=('Preserve special escape characters left outs in the '
+              'configuration values')
     )
 
     options.add_argument(
@@ -136,12 +140,14 @@ def main():
 
     options.add_argument(
         '--configpath', action='append', default=[],
-        help='Search path for the configuration files being included. Can repeat.'
+        help=('Search path for the configuration files being included. Can '
+              'repeat.')
     )
 
     options.add_argument(
         '--flagbits', metavar='<JSON>', type=str,
-        help='Named bits for an option in form of a JSON object of the following structure {"OPTION": {"NAME": "VALUE"}}'
+        help=('Named bits for an option in form of a JSON object of the '
+              'following structure {"OPTION": {"NAME": "VALUE"}}')
     )
 
     options.add_argument(
@@ -152,7 +158,8 @@ def main():
     args = parser.parse_args()
 
     options = dict([(option, getattr(args, option)) for option in dir(args)
-                    if not option.startswith('_') and getattr(args, option) is not None])
+                    if not option.startswith('_') and
+                    getattr(args, option) is not None])
 
     options['programpath'] = os.path.dirname(sys.argv[0])
 
@@ -161,7 +168,8 @@ def main():
             options['flagbits'] = json.loads(options['flagbits'])
 
         except Exception as ex:
-            sys.stderr.write('Malformed flagbits %s: %s\n' % (options['flagbits'], ex))
+            sys.stderr.write('Malformed flagbits %s: %s\n' %
+                             (options['flagbits'], ex))
             return 1
 
     if 'defaultconfig' in options:
@@ -169,7 +177,8 @@ def main():
             options['defaultconfig'] = json.loads(options['defaultconfig'])
 
         except Exception as ex:
-            sys.stderr.write('Malformed defaultconfig %s: %s\n' % (options['defaultconfig'], ex))
+            sys.stderr.write('Malformed defaultconfig %s: %s\n' %
+                             (options['defaultconfig'], ex))
             return 1
 
     if args.json_input:
@@ -182,7 +191,8 @@ def main():
                         sys.stdout.write(loader.dumps(json.load(f)))
 
                 except Exception as ex:
-                    sys.stderr.write('Failed to dump JSON document %s into Apache config: %s\n' % (json_file, ex))
+                    sys.stderr.write(('Failed to dump JSON document %s into '
+                                      'Apache config: %s\n') % (json_file, ex))
                     return 1
 
     else:
@@ -197,7 +207,8 @@ def main():
                     config = loader.load(config_file)
 
                 except ApacheConfigError as ex:
-                    sys.stderr.write('Failed to parse Apache config %s: %s\n' % (config_file, ex))
+                    sys.stderr.write('Failed to parse Apache config %s: %s\n'
+                                     % (config_file, ex))
                     return 1
 
                 sys.stdout.write(json.dumps(config, indent=2) + '\n')

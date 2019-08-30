@@ -85,7 +85,8 @@ class ApacheConfigLoader(object):
         return block
 
     def g_contents(self, ast):
-        # TODO(etingof): remove defaulted and overridden options from productions
+        # TODO(etingof): remove defaulted and overridden options from
+        # productions
         contents = self._options.get('defaultconfig', {})
 
         for subtree in ast:
@@ -115,7 +116,8 @@ class ApacheConfigLoader(object):
                         return interpolate(self._reader.environ[option])
 
                 if self._options.get('strictvars', True):
-                    raise error.ApacheConfigError('Undefined variable "${%s}" referenced' % option)
+                    raise error.ApacheConfigError(
+                        'Undefined variable "${%s}" referenced' % option)
 
                 return interpolate(match.string)
 
@@ -238,7 +240,9 @@ class ApacheConfigLoader(object):
                 return self.load(filepath, initialize=False)
 
         else:
-            raise error.ConfigFileReadError('Config file "%s" not found in search path %s' % (filename, ':'.join(configpath)))
+            raise error.ConfigFileReadError(
+                'Config file "%s" not found in search path %s'
+                % (filename, ':'.join(configpath)))
 
     def _merge_contents(self, contents, items):
         """Merges items into existing contents dictionary.
@@ -249,8 +253,9 @@ class ApacheConfigLoader(object):
         return contents
 
     def _merge_item(self, contents, key, value, path=[]):
-        """Merges a single "key, value" item into contents dictionary, and returns new contents.
-        Merging rules differ depending on flags set, and whether `value` is a dictionary (block).
+        """Merges a single "key, value" item into contents dictionary, and
+        returns new contents. Merging rules differ depending on flags set,
+        and whether `value` is a dictionary (block).
         """
         if key not in contents:
             contents[key] = value
@@ -263,16 +268,19 @@ class ApacheConfigLoader(object):
         else:
             vector = [value]
 
-        if isinstance(value, dict): # Merge block into contents
+        if isinstance(value, dict):  # Merge block into contents
             if self._options.get('mergeduplicateblocks'):
                 contents = self._merge_dicts(contents[key], value)
             else:
                 if not isinstance(contents[key], list):
                     contents[key] = [contents[key]]
                 contents[key] += vector
-        else: # Merge statement/option into contents
-            if not self._options.get('allowmultioptions', True) and not self._options.get('mergeduplicateoptions', False):
-                raise error.ApacheConfigError('Duplicate option "%s" prohibited' % '.'.join(path + [str(key)]))
+        else:  # Merge statement/option into contents
+            if not self._options.get('allowmultioptions', True) \
+                    and not self._options.get('mergeduplicateoptions', False):
+                raise error.ApacheConfigError(
+                    'Duplicate option "%s" prohibited'
+                    % '.'.join(path + [str(key)]))
             if self._options.get('mergeduplicateoptions', False):
                 contents[key] = value
             else:
@@ -303,7 +311,8 @@ class ApacheConfigLoader(object):
             handler = getattr(self, 'g_' + node_type)
 
         except AttributeError:
-            raise error.ApacheConfigError('Unsupported AST node type %s' % node_type)
+            raise error.ApacheConfigError(
+                'Unsupported AST node type %s' % node_type)
 
         return handler(ast[1:])
 
@@ -355,7 +364,8 @@ class ApacheConfigLoader(object):
         except KeyError:
             pass
 
-        if filepath in self._includes and not self._options.get('includeagain'):
+        if filepath in self._includes and not self._options.get(
+                'includeagain'):
             return {}
 
         self._includes.add(filepath)
@@ -368,7 +378,8 @@ class ApacheConfigLoader(object):
                 return self.loads(f.read(), source=filepath)
 
         except IOError as ex:
-            raise error.ConfigFileReadError('File %s can\'t be open: %s' % (filepath, ex))
+            raise error.ConfigFileReadError('File %s can\'t be open: %s'
+                                            % (filepath, ex))
 
         finally:
             if initialize:
@@ -376,7 +387,8 @@ class ApacheConfigLoader(object):
 
     def _dumpdict(self, obj, indent=0, continue_tag=False):
         if not isinstance(obj, dict):
-            raise error.ApacheConfigError('Unknown object type "%r" to dump' % obj)
+            raise error.ApacheConfigError('Unknown object type "%r" to dump'
+                                          % obj)
 
         text = ''
         spacing = ' ' * indent
@@ -397,26 +409,40 @@ class ApacheConfigLoader(object):
                             text += '%s%s "%s"\n' % (spacing, key, dup)
                     else:
                         if self._options.get('namedblocks', True):
-                            text += '%s<%s>\n%s%s</%s>\n' % (spacing, key, self._dumpdict(dup, indent + 2), spacing, key)
+                            text += ('%s<%s>\n%s%s</%s>\n'
+                                     % (spacing, key,
+                                        self._dumpdict(dup, indent + 2),
+                                        spacing, key))
                         else:
-                            text += '%s<%s %s%s</%s>\n' % (spacing, key, self._dumpdict(dup, indent + 2, continue_tag=True), spacing, key)
+                            text += ('%s<%s %s%s</%s>\n'
+                                     % (spacing, key,
+                                        self._dumpdict(dup, indent + 2,
+                                                       continue_tag=True),
+                                        spacing, key))
 
             else:
                 if self._options.get('namedblocks', True):
-                    text += '%s<%s>\n%s%s</%s>\n' % (spacing, key, self._dumpdict(val, indent + 2), spacing, key)
+                    text += ('%s<%s>\n%s%s</%s>\n'
+                             % (spacing, key, self._dumpdict(val, indent + 2),
+                                spacing, key))
                 else:
                     if continue_tag:
-                        text += '%s>\n%s' % (key, self._dumpdict(val, indent + 2))
+                        text += ('%s>\n%s'
+                                 % (key, self._dumpdict(val, indent + 2)))
                     else:
-                        text += '%s<%s %s%s</%s>\n' % (spacing, key, self._dumpdict(val, indent + 2, continue_tag=True), spacing, key)
+                        text += ('%s<%s %s%s</%s>\n'
+                                 % (spacing, key,
+                                    self._dumpdict(val, indent + 2,
+                                                   continue_tag=True),
+                                    spacing, key))
         return text
-
 
     def dumps(self, dct):
         return self._dumpdict(dct)
 
     def dump(self, filepath, dct):
-        tmpf = tempfile.NamedTemporaryFile(dir=os.path.dirname(filepath), delete=False)
+        tmpf = tempfile.NamedTemporaryFile(dir=os.path.dirname(filepath),
+                                           delete=False)
 
         try:
             with open(tmpf.name, 'w') as f:
@@ -431,4 +457,5 @@ class ApacheConfigLoader(object):
             except Exception:
                 pass
 
-            raise error.ApacheConfigError('File %s can\'t be written: %s' % (filepath, ex))
+            raise error.ApacheConfigError('File %s can\'t be written: %s'
+                                          % (filepath, ex))
