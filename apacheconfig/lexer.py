@@ -58,7 +58,8 @@ class CStyleCommentsLexer(object):
         t.lexer.ccomment_level -= 1
 
         if t.lexer.ccomment_level == 0:
-            t.value = t.lexer.lexdata[t.lexer.code_start:t.lexer.lexpos + 1 - 3]
+            t.value = t.lexer.lexdata[t.lexer.code_start:
+                                      t.lexer.lexpos + 1 - 3]
             t.type = "CCOMMENT"
             t.lexer.lineno += t.value.count('\n')
             t.lexer.begin('INITIAL')
@@ -68,7 +69,8 @@ class CStyleCommentsLexer(object):
         r'.+?'
 
     def t_ccomment_error(self, t):
-        raise ApacheConfigError("Illegal character '%s' in C-style comment" % t.value[0])
+        raise ApacheConfigError("Illegal character '%s' in C-style comment"
+                                % t.value[0])
 
 
 class ApacheIncludesLexer(object):
@@ -271,8 +273,10 @@ class BaseApacheConfigLexer(object):
         t.type = "OPTION_AND_VALUE"
         t.lexer.begin('INITIAL')
 
-        value = t.lexer.lexdata[t.lexer.code_start:t.lexer.lexpos - len(t.lexer.heredoc_anchor)]
+        value = t.lexer.lexdata[t.lexer.code_start:
+                                t.lexer.lexpos - len(t.lexer.heredoc_anchor)]
         value = self._remove_trailing_whitespace(value)
+
         t.lexer.lineno += len(re.findall(r'\r\n|\n|\r', t.value))
 
         t.value = t.lexer.heredoc_option, t.lexer.heredoc_whitespace, value
@@ -320,22 +324,28 @@ def make_lexer(**options):
 
     lexer_class = type('ApacheConfigLexer',
                        (lexer_class, HashCommentsLexer),
-                       {'tokens': lexer_class.tokens + HashCommentsLexer.tokens,
-                        'states': lexer_class.states + HashCommentsLexer.states,
+                       {'tokens': lexer_class.tokens +
+                        HashCommentsLexer.tokens,
+                        'states': lexer_class.states +
+                        HashCommentsLexer.states,
                         'options': options})
 
     if options.get('ccomments', True):
         lexer_class = type('ApacheConfigLexer',
                            (lexer_class, CStyleCommentsLexer),
-                           {'tokens': lexer_class.tokens + CStyleCommentsLexer.tokens,
-                            'states': lexer_class.states + CStyleCommentsLexer.states,
+                           {'tokens': lexer_class.tokens +
+                            CStyleCommentsLexer.tokens,
+                            'states': lexer_class.states +
+                            CStyleCommentsLexer.states,
                             'options': options})
 
     if options.get('useapacheinclude', True):
         lexer_class = type('ApacheConfigLexer',
                            (lexer_class, ApacheIncludesLexer),
-                           {'tokens': lexer_class.tokens + ApacheIncludesLexer.tokens,
-                            'states': lexer_class.states + ApacheIncludesLexer.states,
+                           {'tokens': lexer_class.tokens +
+                            ApacheIncludesLexer.tokens,
+                            'states': lexer_class.states +
+                            ApacheIncludesLexer.states,
                             'options': options})
 
     return lexer_class
