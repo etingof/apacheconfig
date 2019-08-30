@@ -32,7 +32,8 @@ class IncludesParser(object):
         """include : INCLUDE
            includeoptional : INCLUDE
         """
-        p[0] = ['include', p[1]]
+        # lexer returns ['<<', include, whitespace, value, '>>']
+        p[0] = ['include', p[1][3]]
 
 
 class ApacheIncludesParser(object):
@@ -40,12 +41,18 @@ class ApacheIncludesParser(object):
         """include : INCLUDE
                    | APACHEINCLUDE
         """
-        p[0] = ['include', p[1]]
+        # lexer could return ['<<', include, whitespace, value, '>>'] or
+        #                    [include, whitespace, value]
+        filename_index = 2
+        if p[1][0] == '<<':
+            filename_index = 3
+        p[0] = ['include', p[1][filename_index]]
 
     def p_includeoptional(self, p):
         """includeoptional : APACHEINCLUDEOPTIONAL
         """
-        p[0] = ['includeoptional', p[1]]
+        # lexer returns [includeoptional, whitespace, value]
+        p[0] = ['includeoptional', p[1][2]]
 
 
 class BaseApacheConfigParser(object):

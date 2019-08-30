@@ -109,7 +109,8 @@ a "b"
 </a>
 """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, ['first.conf', '\n', 'a', '\n', 'second.conf', '\n', 'a', '\n'])
+        self.assertEqual(tokens, [('<<', 'include', ' ', 'first.conf', '>>'), '\n', 'a', '\n',
+                                ('<<', 'Include', ' ', 'second.conf', '>>'), '\n', 'a', '\n'])
 
     def testIncludesApache(self):
         text = """\
@@ -119,7 +120,8 @@ Include second.conf
 </a>
 """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, ['first.conf', '\n', 'a', '\n', 'second.conf', '\n', 'a', '\n'])
+        self.assertEqual(tokens, [('include', ' ', 'first.conf'), '\n', 'a', '\n',
+                            ('Include', ' ', 'second.conf'), '\n', 'a', '\n'])
 
     def testMultilineOption(self):
         text = """\
