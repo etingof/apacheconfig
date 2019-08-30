@@ -257,7 +257,7 @@ class BaseApacheConfigLexer(object):
 
     def _remove_trailing_whitespace(self, value):
         # if stripped_value ends with an odd number of backslashes, the first
-        # trailing whitespace character was escaped and should be included in `value`
+        # trailing whitespace character was escaped, should be in `value`
         def trailing_escape(s):
             return (len(s) - len(s.rstrip('\\'))) % 2 == 1
         value = value.rstrip()
@@ -306,18 +306,20 @@ class BaseApacheConfigLexer(object):
         raise ApacheConfigError(
             "Illegal character '%s' on line %d" % (t.value[0], t.lineno))
 
+
 class OptionLexer(BaseApacheConfigLexer):
     def t_OPTION_AND_VALUE(self, t):
         r'[^ \n\r\t=#]+([ \t=]+[^ \t\r\n#]+)+'
         return self._lex_option(t)
+
 
 class NoStripLexer(BaseApacheConfigLexer):
     def t_OPTION_AND_VALUE_NOSTRIP(self, t):
         r'[^ \n\r\t=#]+[ \t=]+[^\r\n#]+'  # TODO(etingof) escape hash
         return self._lex_option(t)
 
-def make_lexer(**options):
 
+def make_lexer(**options):
     lexer_class = OptionLexer
     if options.get('nostripvalues'):
         lexer_class = NoStripLexer
