@@ -57,10 +57,10 @@ c \# # c
 
             ast = parser.parse(text)
             self.assertEqual(ast, ['contents',
-                                   ['comment', 'a'],
-                                   ['comment', ' b'],
+                                   ['comment', '#a'],
+                                   ['comment', '# b'],
                                    ['statement', 'c', 'c'],
-                                   ['comment', ' c'],
+                                   ['comment', '# c'],
                                    ['statement', 'c', '# # c']])
 
     def testCStyleComments(self):
@@ -171,9 +171,9 @@ a "b"
         ast = parser.parse(text)
         self.assertEqual(ast, ['block', 'a',
                                ['contents',
-                                ['comment', 'a'],
+                                ['comment', '#a'],
                                  ['statement', 'a', 'b b'],
-                                ['comment', ' a b'],
+                                ['comment', '# a b'],
                                  ['statement', 'a', 'b b']], 'a'])
 
     def testNestedBlock(self):
@@ -337,7 +337,7 @@ a b
         self.assertEqual(ast, [
             'config',
             ['contents',
-                ['comment', ' a'],
+                ['comment', '# a'],
                 ['statement', 'a', 'b'],
                 ['block', 'a',
                  ['contents', ['statement', 'a', 'b']],
@@ -347,9 +347,9 @@ a b
                  ['contents',
                   ['statement', 'a', 'b'],
                   ['statement', 'c', 'd'],
-                  ['comment', ' c']],
+                  ['comment', '# c']],
                  'a a'],
-                ['comment', ' a']]
+                ['comment', '# a']]
         ])
 
 

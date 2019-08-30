@@ -30,7 +30,6 @@ class HashCommentsLexer(object):
 
     def t_HASHCOMMENT(self, t):
         r'(?<!\\)\#[^\n\r]*'
-        t.value = t.value[1:]
         return t
 
 
