@@ -65,7 +65,7 @@ a = "b"
 # a b
 """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, ['', '\n', ' a', '\n', 'a', '\n', ' a b', '\n'])
+        self.assertEqual(tokens, ['#', '\n', '# a', '\n', '#a', '\n', '# a b', '\n'])
 
     def testBlockOptionsAndValues(self):
         text = """\
@@ -89,7 +89,7 @@ a "b"
 </a>
 """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, ['a', '\n', '', '\n', ' a', '\n', ' a b', '\n', 'a', '\n'])
+        self.assertEqual(tokens, ['a', '\n', '#', '\n', '# a', '\n', '# a b', '\n', 'a', '\n'])
 
     def testBlockBlankLines(self):
         text = """\
@@ -155,7 +155,7 @@ a = b
 </a>
 """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, [' h', '\n', ('a', ' = ', 'b'), '\n', 'a', '\n  ', ('a', ' ', 'b'), '\n', 'a', '\n'])
+        self.assertEqual(tokens, ['# h', '\n', ('a', ' = ', 'b'), '\n', 'a', '\n  ', ('a', ' ', 'b'), '\n', 'a', '\n'])
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
