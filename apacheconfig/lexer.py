@@ -82,12 +82,14 @@ class ApacheIncludesLexer(object):
 
     def t_APACHEINCLUDE(self, t):
         r'(?i)include[\t ]+[^\n\r]+'
-        t.value = t.value.split(None, 1)[1]
+        include, whitespace, value = re.split(r'([ \t]+)', t.value, maxsplit=1)
+        t.value = include, whitespace, value
         return t
 
     def t_APACHEINCLUDEOPTIONAL(self, t):
         r'(?i)includeoptional[\t ]+[^\n\r]+'
-        t.value = t.value.split(None, 1)[1]
+        include, whitespace, value = re.split(r'([ \t]+)', t.value, maxsplit=1)
+        t.value = include, whitespace, value
         return t
 
 
@@ -141,7 +143,9 @@ class BaseApacheConfigLexer(object):
 
     def t_INCLUDE(self, t):
         r'<<(?i)include[\t ]+[^\n\r\t]+>>'
-        t.value = t.value[2:-2].split(None, 1)[1]
+        include, whitespace, value = re.split(r'([ \t]+)',
+                                              t.value[2:-2], maxsplit=1)
+        t.value = '<<', include, whitespace, value, '>>'
         return t
 
     def t_CLOSE_TAG(self, t):
