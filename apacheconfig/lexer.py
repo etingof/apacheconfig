@@ -144,7 +144,8 @@ class BaseApacheConfigLexer(object):
 
     def t_INCLUDE(self, t):
         r'<<(?i)include[\t ]+[^\n\r\t]+>>'
-        include, whitespace, value = re.split(r'([ \t]+)', t.value[2:-2], maxsplit=1)
+        include, whitespace, value = re.split(r'([ \t]+)',
+                                              t.value[2:-2], maxsplit=1)
         t.value = '<<', include, whitespace, value, '>>'
         return t
 
