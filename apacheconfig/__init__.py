@@ -8,6 +8,8 @@ from apacheconfig.parser import make_parser
 from apacheconfig.loader import ApacheConfigLoader
 from apacheconfig.error import ApacheConfigError
 
+from apacheconfig.wloader import parse_item, ItemNode
+
 
 @contextmanager
 def make_loader(**options):
@@ -18,5 +20,6 @@ def make_loader(**options):
                              **options)
 
 
-__all__ = ['make_lexer', 'make_parser', 'make_loader', 'ApacheConfigLoader',
-           'ApacheConfigError']
+__all__ = ['parse_item', 'ItemNode',
+           'make_lexer', 'make_parser', 'make_loader',
+           'ApacheConfigLoader', 'ApacheConfigError']
