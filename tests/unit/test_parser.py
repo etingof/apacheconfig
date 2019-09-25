@@ -49,6 +49,7 @@ class ParserTestCase(unittest.TestCase):
 # b
 c c# c
 c \# # c
+key value\#123
 """
             ApacheConfigLexer = make_lexer()
             ApacheConfigParser = make_parser()
@@ -61,8 +62,9 @@ c \# # c
                                    ['comment', '# b'],
                                    ['statement', 'c', 'c'],
                                    ['comment', '# c'],
-                                   ['statement', 'c', '#'],
-                                   ['comment', '# c']])
+                                   ['statement', 'c', '\#'],
+                                   ['comment', '# c'],
+                                   ['statement', 'key', 'value\#123']])
 
     def testCStyleComments(self):
         text = """\
