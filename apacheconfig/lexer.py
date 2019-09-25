@@ -165,11 +165,11 @@ class BaseApacheConfigLexer(object):
 
     @staticmethod
     def _parse_option_value(token, lineno):
-        if not re.match(r'.*?[ \n\r\t=]+', token):
+        if not re.match(r'.*?(?:\s|=|\\\s)+', token):
             raise ApacheConfigError(
                 'Syntax error in option-value pair %s on line '
                 '%d' % (token, lineno))
-        option, middle, value = re.split(r'([ \n\r\t=]+)', token, maxsplit=1)
+        option, middle, value = re.split(r'((?:\s|=|\\\s)+)', token, maxsplit=1)
         if not option:
             raise ApacheConfigError(
                 'Syntax error in option-value pair %s on line '
@@ -235,7 +235,6 @@ class BaseApacheConfigLexer(object):
         value = self._remove_trailing_whitespace(value)
         t.lexer.lexpos = t.lexer.code_start + len(value)
         t.lexer.lineno += len(re.findall(r'\r\n|\n|\r', value))
-        value = re.sub(r'(\\\n|\r|\n)', '', value)
 
         option, whitespace, value = self._parse_option_value(value, t.lineno)
 

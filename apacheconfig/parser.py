@@ -5,6 +5,7 @@
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
 import logging
+import re
 import ply.yacc as yacc
 
 from apacheconfig.error import ApacheConfigError
@@ -99,7 +100,13 @@ class BaseApacheConfigParser(object):
         """statement : OPTION_AND_VALUE
                      | OPTION_AND_VALUE_NOSTRIP
         """
-        p[0] = ['statement', p[1][0], p[1][2]]
+        p[0] = ['statement']
+        # To match perl parser behavior, when the value is split on
+        # multiple lines, whitespace between text is normalized.
+        value = p[1][2]
+        if "\\\n" in value:
+            value = " ".join(re.split(r'(?:\s|\\\s)+', p[1][2]))
+        p[0] += [p[1][0], value]
 
         if self.options.get('lowercasenames'):
             p[0][1] = p[0][1].lower()
