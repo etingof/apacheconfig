@@ -57,6 +57,16 @@ a = "b"
         tokens = self.lexer.tokenize(text)
         self.assertEqual(tokens, ['    ', 'if a == 1', '\n    ', 'if', '\n    '])
 
+    def testHashEscapes(self):
+        text = "favorite_color \#000000"
+        tokens = self.lexer.tokenize(text)
+        self.assertEqual(tokens, [('favorite_color', ' ', '\#000000')])
+
+    def testHashEscapesAndComments(self):
+        text = "favorite_color \#000000 # comment"
+        tokens = self.lexer.tokenize(text)
+        self.assertEqual(tokens, [('favorite_color', ' ', '\#000000'), ' ', '# comment'])
+
     def testComments(self):
         text = """\
 #

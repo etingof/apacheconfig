@@ -49,6 +49,7 @@ class ParserTestCase(unittest.TestCase):
 # b
 c c# c
 c \# # c
+key value\#123
 """
             ApacheConfigLexer = make_lexer()
             ApacheConfigParser = make_parser()
@@ -61,7 +62,9 @@ c \# # c
                                    ['comment', '# b'],
                                    ['statement', 'c', 'c'],
                                    ['comment', '# c'],
-                                   ['statement', 'c', '# # c']])
+                                   ['statement', 'c', '\#'],
+                                   ['comment', '# c'],
+                                   ['statement', 'key', 'value\#123']])
 
     def testCStyleComments(self):
         text = """\
@@ -256,6 +259,8 @@ a "b"
 <aA>
   Bb Cc   \
 
+  key value \# 123 \t  \
+
 </aA>
 """
         options = {
@@ -271,7 +276,8 @@ a "b"
         self.assertEqual(ast, ['contents',
                                ['block', 'aA',
                                 ['contents',
-                                 ['statement', 'Bb', 'Cc   ']],
+                                 ['statement', 'Bb', 'Cc   '],
+                                 ['statement', 'key', 'value \# 123 \t  ']],
                                 'aA']])
 
     def testHereDoc(self):
