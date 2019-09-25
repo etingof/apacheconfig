@@ -180,8 +180,6 @@ class BaseApacheConfigLexer(object):
                 value = DoubleQuotedString(stripped[1:-1])
             if stripped[0] == "'" and stripped[-1] == "'":
                 value = SingleQuotedString(stripped[1:-1])
-        if '#' in value:
-            value = value.replace('\\#', '#')
         return option, middle, value
 
     def _pre_parse_value(self, option, value):
@@ -312,7 +310,9 @@ class BaseApacheConfigLexer(object):
 
 class OptionLexer(BaseApacheConfigLexer):
     def t_OPTION_AND_VALUE(self, t):
-        r'[^ \n\r\t=#]+([ \t=]+[^ \t\r\n#]+)+'
+        r'[^ \n\r\t=#]+([ \t=]+(?:\\#|[^ \t\r\n#])+)+'
+        # Regex above matches (text, (spaces, text)+) where text
+        # can include escaped hashes but not regular ones.
         return self._lex_option(t)
 
 

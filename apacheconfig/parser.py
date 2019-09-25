@@ -99,7 +99,10 @@ class BaseApacheConfigParser(object):
         """statement : OPTION_AND_VALUE
                      | OPTION_AND_VALUE_NOSTRIP
         """
-        p[0] = ['statement', p[1][0], p[1][2]]
+        value = p[1][2]
+        if "#" in value:
+            value = value.replace('\\#', '#')
+        p[0] = ['statement', p[1][0], value]
 
         if self.options.get('lowercasenames'):
             p[0][1] = p[0][1].lower()

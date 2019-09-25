@@ -61,7 +61,8 @@ c \# # c
                                    ['comment', '# b'],
                                    ['statement', 'c', 'c'],
                                    ['comment', '# c'],
-                                   ['statement', 'c', '# # c']])
+                                   ['statement', 'c', '#'],
+                                   ['comment', '# c']])
 
     def testCStyleComments(self):
         text = """\
