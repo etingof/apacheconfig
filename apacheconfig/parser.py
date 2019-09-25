@@ -34,7 +34,10 @@ class IncludesParser(object):
            includeoptional : INCLUDE
         """
         # lexer returns ['<<', include, whitespace, value, '>>']
-        p[0] = ['include', p[1][3]]
+        if self._preserve_whitespace:
+            p[0] = ['include'] + p[1]
+        else:
+            p[0] = ['include', p[1][3]]
 
 
 class ApacheIncludesParser(object):
@@ -44,6 +47,9 @@ class ApacheIncludesParser(object):
         """
         # lexer could return ['<<', include, whitespace, value, '>>'] or
         #                    [include, whitespace, value]
+        if self._preserve_whitespace:
+            p[0] = ['include'] + list(p[1])
+            return
         filename_index = 2
         if p[1][0] == '<<':
             filename_index = 3
@@ -53,7 +59,10 @@ class ApacheIncludesParser(object):
         """includeoptional : APACHEINCLUDEOPTIONAL
         """
         # lexer returns [includeoptional, whitespace, value]
-        p[0] = ['includeoptional', p[1][2]]
+        if self._preserve_whitespace:
+            p[0] = ['includeoptional'] + list(p[1])
+        else:
+            p[0] = ['includeoptional', p[1][2]]
 
 
 class BaseApacheConfigParser(object):
@@ -64,6 +73,8 @@ class BaseApacheConfigParser(object):
         self._tempdir = tempdir
         self._debug = debug
         self._start = start
+        self._preserve_whitespace = self.options.get('preserve_whitespace',
+                                                     False)
         self.engine = None
         self.reset()
 
@@ -88,25 +99,28 @@ class BaseApacheConfigParser(object):
     def p_requirednewline(self, p):
         """requirednewline : NEWLINE
         """
-        p[0] = p[1:][0]
+        p[0] = p[1]
 
     def p_whitespace(self, p):
         """whitespace : requirednewline
                       | WHITESPACE
         """
-        p[0] = p[1:][0]
+        p[0] = p[1]
 
     def p_statement(self, p):
         """statement : OPTION_AND_VALUE
                      | OPTION_AND_VALUE_NOSTRIP
         """
         p[0] = ['statement']
-        # To match perl parser behavior, when the value is split on
-        # multiple lines, whitespace between text is normalized.
-        value = p[1][2]
-        if "\\\n" in value:
-            value = " ".join(re.split(r'(?:\s|\\\s)+', p[1][2]))
-        p[0] += [p[1][0], value]
+        if self._preserve_whitespace:
+            p[0] += p[1]
+        else:
+            # To match perl parser behavior, when the value is split on
+            # multiple lines, whitespace between text is normalized.
+            value = p[1][2]
+            if "\\\n" in value:
+                value = " ".join(re.split(r'(?:\s|\\\s)+', p[1][2]))
+            p[0] += [p[1][0], value]
 
         if self.options.get('lowercasenames'):
             p[0][1] = p[0][1].lower()
@@ -124,7 +138,7 @@ class BaseApacheConfigParser(object):
                 | includeoptional
                 | block
         """
-        p[0] = p[1:][0]
+        p[0] = p[1]
 
     def p_startitem(self, p):
         """startitem : whitespace item
@@ -133,9 +147,13 @@ class BaseApacheConfigParser(object):
                      | comment
         """
         if len(p) == 3:
-            p[0] = p[1:][1]
+            if self._preserve_whitespace:
+                item = p[2]
+                p[0] = [item[0]] + [p[1]] + item[1:]
+            else:
+                p[0] = p[2]
         else:
-            p[0] = p[1:][0]
+            p[0] = p[1]
 
     def p_miditem(self, p):
         """miditem : requirednewline item
@@ -143,7 +161,11 @@ class BaseApacheConfigParser(object):
                    | comment
         """
         if len(p) == 3:
-            p[0] = p[1:][1]
+            if self._preserve_whitespace:
+                item = p[2]
+                p[0] = [item[0]] + [p[1]] + item[1:]
+            else:
+                p[0] = p[2]
         else:
             p[0] = p[1:][0]
 
@@ -157,12 +179,16 @@ class BaseApacheConfigParser(object):
         if n == 3:
             if isinstance(p[2], str) and p[2].isspace():
                 # contents whitespace
-                p[0] = p[1]
+                if self._preserve_whitespace:
+                    p[0] = p[1] + [p[2]]
+                else:
+                    p[0] = p[1]
             else:
                 # contents miditem
                 p[0] = p[1] + [p[2]]
         else:
-            if isinstance(p[1], str) and p[1].isspace():
+            if (not self._preserve_whitespace and
+               isinstance(p[1], str) and p[1].isspace()):
                 # whitespace
                 # (if contents only consists of whitespace)
                 p[0] = []
