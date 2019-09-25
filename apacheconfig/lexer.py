@@ -169,7 +169,8 @@ class BaseApacheConfigLexer(object):
             raise ApacheConfigError(
                 'Syntax error in option-value pair %s on line '
                 '%d' % (token, lineno))
-        option, middle, value = re.split(r'((?:\s|=|\\\s)+)', token, maxsplit=1)
+        option, middle, value = re.split(r'((?:\s|=|\\\s)+)', token,
+                                         maxsplit=1)
         if not option:
             raise ApacheConfigError(
                 'Syntax error in option-value pair %s on line '
