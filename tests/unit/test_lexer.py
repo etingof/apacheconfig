@@ -129,7 +129,7 @@ a \\
 c b  \\
   """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, [('a', ' ', 'c b'), '  \\\n  '])
+        self.assertEqual(tokens, [('a', ' \\\n', 'c b'), '  \\\n  '])
 
     def testNoStripValues(self):
         text = """  a b    """

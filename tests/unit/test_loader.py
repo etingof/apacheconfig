@@ -441,7 +441,7 @@ b
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a': {'b': 'abc         pqr',
+        self.assertEqual(config, {'a': {'b': 'abc pqr',
                                         'c': 'value2'}})
 
     def testLineContinuationInNestedBlock(self):
@@ -462,7 +462,7 @@ b
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a': {'b': 'abc         pqr',
+        self.assertEqual(config, {'a': {'b': 'abc pqr',
                                         'aa': {'c': 'value2'}}})
 
     def testLineContinuationOnEmptyLine(self):
