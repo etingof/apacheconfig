@@ -259,6 +259,8 @@ a "b"
 <aA>
   Bb Cc   \
 
+  key value \# 123 \t  \
+
 </aA>
 """
         options = {
@@ -274,7 +276,8 @@ a "b"
         self.assertEqual(ast, ['contents',
                                ['block', 'aA',
                                 ['contents',
-                                 ['statement', 'Bb', 'Cc   ']],
+                                 ['statement', 'Bb', 'Cc   '],
+                                 ['statement', 'key', 'value \# 123 \t  ']],
                                 'aA']])
 
     def testHereDoc(self):

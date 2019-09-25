@@ -318,7 +318,7 @@ class OptionLexer(BaseApacheConfigLexer):
 
 class NoStripLexer(BaseApacheConfigLexer):
     def t_OPTION_AND_VALUE_NOSTRIP(self, t):
-        r'[^ \n\r\t=#]+[ \t=]+[^\r\n#]+'  # TODO(etingof) escape hash
+        r'[^ \n\r\t=#]+[ \t=]+(?:\\#|[^\r\n#])+'
         return self._lex_option(t)
 
 
