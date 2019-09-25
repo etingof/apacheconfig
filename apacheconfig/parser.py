@@ -60,8 +60,9 @@ class ApacheIncludesParser(object):
         """
         # lexer returns [includeoptional, whitespace, value]
         if self._preserve_whitespace:
-            p[0] = ['includeoptional'] + p[1]
-        p[0] = ['includeoptional', p[1][2]]
+            p[0] = ['includeoptional'] + list(p[1])
+        else:
+            p[0] = ['includeoptional', p[1][2]]
 
 
 class BaseApacheConfigParser(object):
@@ -186,8 +187,8 @@ class BaseApacheConfigParser(object):
                 # contents miditem
                 p[0] = p[1] + [p[2]]
         else:
-            if isinstance(p[1], str) and p[1].isspace()\
-             and not self._preserve_whitespace:
+            if (not self._preserve_whitespace and
+               isinstance(p[1], str) and p[1].isspace()):
                 # whitespace
                 # (if contents only consists of whitespace)
                 p[0] = []

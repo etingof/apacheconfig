@@ -45,6 +45,13 @@ class WhitespaceParserTestCase(unittest.TestCase):
         ]
         self._test_cases(tests, tag='include')
 
+    def testIncludeOptional(self):
+        tests = [
+            ('includeoptional   file.conf',  ['includeoptional', 'includeoptional', '   ', 'file.conf']),
+        ]
+        self._test_cases(tests, tag='includeoptional')
+
+
     def testHashComment(self):
         comment = '# hello there !!! yep'
         tests = [(comment, ['comment', comment])]
