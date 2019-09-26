@@ -23,6 +23,9 @@ class ParserTestCase(unittest.TestCase):
 
         parser = ApacheConfigParser(ApacheConfigLexer(), start='statement')
 
+        ast = parser.parse('a')
+        self.assertEqual(ast, ['statement', 'a'])
+
         ast = parser.parse('a b')
         self.assertEqual(ast, ['statement', 'a', 'b'])
 
@@ -96,8 +99,11 @@ key value\#123
             ApacheConfigParser = make_parser(**options)
 
             parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
-
-            self.assertRaises(ApacheConfigError, parser.parse, text)
+            self.assertEqual(parser.parse(text), ['contents',
+                                                  ['statement', '/*a*/'],
+                                                  ['statement', '/*'],
+                                                  ['comment', '# b'],
+                                                  ['statement', '*/']])
 
     def testIncludes(self):
         text = """\

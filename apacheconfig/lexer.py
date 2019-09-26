@@ -166,9 +166,7 @@ class BaseApacheConfigLexer(object):
     @staticmethod
     def _parse_option_value(token, lineno):
         if not re.match(r'.*?(?:\s|=|\\\s)+', token):
-            raise ApacheConfigError(
-                'Syntax error in option-value pair %s on line '
-                '%d' % (token, lineno))
+            return token, None, None
         option, middle, value = re.split(r'((?:\s|=|\\\s)+)', token,
                                          maxsplit=1)
         if not option:
@@ -201,6 +199,9 @@ class BaseApacheConfigLexer(object):
         lineno = len(re.findall(r'\r\n|\n|\r', t.value))
 
         option, whitespace, value = self._parse_option_value(t.value, t.lineno)
+        if not value:
+            t.value = (option,)
+            return t
 
         process, option, value = self._pre_parse_value(option, value)
         if not process:
@@ -310,8 +311,8 @@ class BaseApacheConfigLexer(object):
 
 class OptionLexer(BaseApacheConfigLexer):
     def t_OPTION_AND_VALUE(self, t):
-        r'[^ \n\r\t=#]+([ \t=]+(?:\\#|[^ \t\r\n#])+)+'
-        # Regex above matches (text, (spaces, text)+) where text
+        r'[^ \n\r\t=#]+([ \t=]+(?:\\#|[^ \t\r\n#])+)*'
+        # Regex above matches (text, (spaces, text)*) where text
         # can include escaped hashes but not regular ones.
         return self._lex_option(t)
 
