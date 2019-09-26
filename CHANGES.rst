@@ -5,7 +5,7 @@ Revision 0.2.9, released XX-10-2019
 - Added line number to the exception message on parsing error
 - Fixed the issue of not collapsing trailing whitespaces into
   one in line continuation (as Perl parser does)
-- Added `preserve_whitespace` option to control parser behaviour
+- Added `preservewhitespace` option to control parser behaviour
   concerning insignificant whitespaces. When this option is
   enabled, the parser would collect all whitespaces into AST
   and (potentially) use them for codegeneration.

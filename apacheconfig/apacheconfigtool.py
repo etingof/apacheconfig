@@ -134,6 +134,12 @@ def main():
     )
 
     options.add_argument(
+        '--preservewhitespace', action='store_true',
+        help=('Preserve insignificant whitespaces, dump them them as is '
+              'on code generation')
+    )
+
+    options.add_argument(
         '--ccomments', action='store_false',
         help='Do not parse C-style comments'
     )
