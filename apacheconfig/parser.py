@@ -73,7 +73,7 @@ class BaseApacheConfigParser(object):
         self._tempdir = tempdir
         self._debug = debug
         self._start = start
-        self._preserve_whitespace = self.options.get('preserve_whitespace',
+        self._preserve_whitespace = self.options.get('preservewhitespace',
                                                      False)
         self.engine = None
         self.reset()

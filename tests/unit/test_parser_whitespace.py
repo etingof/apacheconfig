@@ -22,7 +22,7 @@ def _create_parser(options={}, start='contents'):
 
 class WhitespaceParserTestCase(unittest.TestCase):
     def _test_cases(self, cases, tag='contents', options={}):
-        options['preserve_whitespace'] = True
+        options['preservewhitespace'] = True
         parser = _create_parser(start=tag, options=options)
         for x, expected in cases:
             got = parser.parse(x)
