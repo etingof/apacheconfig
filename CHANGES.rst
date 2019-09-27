@@ -16,6 +16,7 @@ Revision 0.2.9, released XX-10-2019
   the line
 - Fixed the issue of not operational `allowmultioptions` option
   when the statement spans multiple lines
+- Fixed the issue of key-only statements parsing
 
 Revision 0.2.8, released 29-12-2018
 -----------------------------------
