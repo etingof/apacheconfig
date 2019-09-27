@@ -48,7 +48,7 @@ a = "b"
 </a>
 """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, ['a', '\n', 'a', '\n'])
+        self.assertEqual(tokens, [('a',), '\n', 'a', '\n'])
 
     def testExpressionTags(self):
         text = """\
@@ -56,7 +56,7 @@ a = "b"
     </if>
     """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, ['    ', 'if a == 1', '\n    ', 'if', '\n    '])
+        self.assertEqual(tokens, ['    ', ('if', ' ',  'a == 1'), '\n    ', 'if', '\n    '])
 
     def testHashEscapes(self):
         text = "favorite_color \#000000"
@@ -89,7 +89,7 @@ a "b"
 </a>
 """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, ['a', '\n', ('a', ' ', 'b'), '\n', ('a', '=', 'b'), '\n', ('a', ' =  ', 'b'), '\n', ('a', ' = ', 'b'), '\n', ('a',' ', 'b'), '\n', 'a', '\n'])
+        self.assertEqual(tokens, [('a',), '\n', ('a', ' ', 'b'), '\n', ('a', '=', 'b'), '\n', ('a', ' =  ', 'b'), '\n', ('a', ' = ', 'b'), '\n', ('a',' ', 'b'), '\n', 'a', '\n'])
 
     def testBlockComments(self):
         text = """\
@@ -100,7 +100,12 @@ a "b"
 </a>
 """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, ['a', '\n', '#', '\n', '# a', '\n', '# a b', '\n', 'a', '\n'])
+        self.assertEqual(tokens, [('a',), '\n', '#', '\n', '# a', '\n', '# a b', '\n', 'a', '\n'])
+
+    def testEmptyBlock(self):
+        text = "<im   a empty block/>"
+        tokens = self.lexer.tokenize(text)
+        self.assertEqual(tokens, [('im', '   ', 'a empty block')])
 
     def testBlockBlankLines(self):
         text = """\
@@ -110,7 +115,7 @@ a "b"
 </a>
 """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, ['a', '\n\n\n', 'a', '\n'])
+        self.assertEqual(tokens, [('a',), '\n\n\n', 'a', '\n'])
 
     def testIncludesConfigGeneral(self):
         text = """\
@@ -120,7 +125,7 @@ a "b"
 </a>
 """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, [('<<', 'include', ' ', 'first.conf', '>>'), '\n', 'a', '\n',
+        self.assertEqual(tokens, [('<<', 'include', ' ', 'first.conf', '>>'), '\n', ('a',), '\n',
                                 ('<<', 'Include', ' ', 'second.conf', '>>'), '\n', 'a', '\n'])
 
     def testIncludesApache(self):
@@ -131,7 +136,7 @@ Include second.conf
 </a>
 """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, [('include', ' ', 'first.conf'), '\n', 'a', '\n',
+        self.assertEqual(tokens, [('include', ' ', 'first.conf'), '\n', ('a',), '\n',
                             ('Include', ' ', 'second.conf'), '\n', 'a', '\n'])
 
     def testMultilineOption(self):
@@ -168,7 +173,7 @@ a = b
 </a>
 """
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, ['# h', '\n', ('a', ' = ', 'b'), '\n', 'a', '\n  ', ('a', ' ', 'b'), '\n', 'a', '\n'])
+        self.assertEqual(tokens, ['# h', '\n', ('a', ' = ', 'b'), '\n', ('a',), '\n  ', ('a', ' ', 'b'), '\n', 'a', '\n'])
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])

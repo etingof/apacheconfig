@@ -156,12 +156,12 @@ class BaseApacheConfigLexer(object):
     def t_OPEN_CLOSE_TAG(self, t):
         r'<[^\n\r/]*?[^\n\r/ ]/>'
         t.value = t.value[1:-2]
-        return t
+        return self._lex_option(t)
 
     def t_OPEN_TAG(self, t):
         r'<[^\n\r]+>'
         t.value = t.value[1:-1]
-        return t
+        return self._lex_option(t)
 
     @staticmethod
     def _parse_option_value(token, lineno):

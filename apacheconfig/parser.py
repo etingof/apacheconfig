@@ -204,6 +204,7 @@ class BaseApacheConfigParser(object):
                  | OPEN_CLOSE_TAG
         """
         n = len(p)
+        p[1] = "".join(p[1])
         if n == 4:
             if isinstance(p[2], str) and p[2].isspace():
                 p[2] = []
