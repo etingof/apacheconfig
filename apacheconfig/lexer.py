@@ -172,7 +172,7 @@ class BaseApacheConfigLexer(object):
             return token, None, None
         # If there's more, split it out into whitespace and value.
         _, middle, value = re.split(r'((?:\s|=|\\\s)+)',
-                                        token[len(option):], maxsplit=1)
+                                    token[len(option):], maxsplit=1)
         if not option:
             raise ApacheConfigError(
                 'Syntax error in option-value pair %s on line '
