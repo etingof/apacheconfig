@@ -170,7 +170,7 @@ class BaseApacheConfigLexer(object):
         if not match:
             raise ApacheConfigError(
                 'Syntax error in option-value pair %s on line '
-                '%d' % (token, lineno)))
+                '%d' % (token, lineno))
         option = match.group(0)
         if len(token) == len(option):
             return token, None, None
