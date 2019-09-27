@@ -167,6 +167,10 @@ class BaseApacheConfigLexer(object):
     def _parse_option_value(token, lineno):
         # Grabs the first token before the first non-quoted whitespace.
         match = re.search(r'[^=\s"\']+|"([^"]*)"|\'([^\']*)\'', token)
+        if not match:
+            raise ApacheConfigError(
+                'Syntax error in option-value pair %s on line '
+                '%d' % (token, lineno)))
         option = match.group(0)
         if len(token) == len(option):
             return token, None, None

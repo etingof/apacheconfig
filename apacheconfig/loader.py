@@ -58,7 +58,7 @@ class ApacheConfigLoader(object):
         tag = ast[0]
         values = {}
 
-        if not (self._options.get('namedblocks', True)):
+        if not self._options.get('namedblocks', True):
             tag = ("".join(tag),)
         if len(tag) > 1:
             name, _, value = tag

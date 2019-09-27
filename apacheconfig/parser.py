@@ -212,7 +212,7 @@ class BaseApacheConfigParser(object):
             p[0] = ['block', p[1], [], "".join(p[1])]
 
         if self.options.get('lowercasenames'):
-            p[0][1] = tuple([x.lower() for x in p[0][1]])
+            p[0][1] = tuple(x.lower() for x in p[0][1])
             p[0][3] = p[0][3].lower()
 
     def p_config(self, p):

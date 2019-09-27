@@ -33,6 +33,10 @@ class LexerTestCase(unittest.TestCase):
         tokens = self.lexer.tokenize(text)
         self.assertEqual(tokens, [('"a"',), '\n', ('"a b c d e"',), '\n'])
 
+    def testOptionAndValueEdgeCases(self):
+        text = "="
+        self.assertRaises(ApacheConfigError, self.lexer.tokenize, text)
+
     def testOptionAndValueSet(self):
         text = """\
 a
