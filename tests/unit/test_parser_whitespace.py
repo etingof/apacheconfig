@@ -94,20 +94,20 @@ class WhitespaceParserTestCase(unittest.TestCase):
 
     def testNamedBlocks(self):
         tests = [
-            ('<a name/>', ['block', 'a name', [], 'a name']),
-            ('<a name>\n</a>', ['block', 'a name', ['contents', '\n'], 'a']),
+            ('<a name/>', ['block', ('a', ' ', 'name'), [], 'a name']),
+            ('<a name>\n</a>', ['block', ('a', ' ', 'name'), ['contents', '\n'], 'a']),
         ]
         self._test_cases(tests, tag='block')
 
     def testBlocks(self):
         tests = [
-            ('<a/>', ['block', 'a', [], 'a']),
-            ('<a>\n</a>', ['block', 'a', ['contents', '\n'], 'a']),
+            ('<a/>', ['block', ('a',), [], 'a']),
+            ('<a>\n</a>', ['block', ('a',), ['contents', '\n'], 'a']),
             ('<a> #comment\n</a>',
-             ['block', 'a', ['contents',
+             ['block', ('a',), ['contents',
                         ['comment', ' ', '#comment'], '\n'], 'a']),
             ('<a> #comment\n a b #comment2\n</a>',
-             ['block', 'a', ['contents',
+             ['block', ('a',), ['contents',
                         ['comment', ' ', '#comment'],
                         ['statement', '\n ', 'a', ' ', 'b'],
                         ['comment', ' ', '#comment2'], '\n'], 'a']),

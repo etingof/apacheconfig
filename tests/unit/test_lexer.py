@@ -25,6 +25,14 @@ class LexerTestCase(unittest.TestCase):
         tokens = self.lexer.tokenize(space)
         self.assertEqual(tokens, [space])
 
+    def testOptionAndValueWeirdQuotes(self):
+        text = """\
+"a"
+"a b c d e"
+"""
+        tokens = self.lexer.tokenize(text)
+        self.assertEqual(tokens, [('"a"',), '\n', ('"a b c d e"',), '\n'])
+
     def testOptionAndValueSet(self):
         text = """\
 a

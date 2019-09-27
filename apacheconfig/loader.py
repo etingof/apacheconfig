@@ -58,20 +58,17 @@ class ApacheConfigLoader(object):
         tag = ast[0]
         values = {}
 
-        if (self._options.get('namedblocks', True) and
-                re.match(r'[^"\'].*?[ \t\r\n]+.*?[^"\']', tag)):
-            tag, name = re.split(r'[ \t\r\n]+', tag, maxsplit=1)
-
-            name = self._unquote_tag(name)
-
+        if not (self._options.get('namedblocks', True)):
+            tag = ("".join(tag),)
+        if len(tag) > 1:
+            name, _, value = tag
             block = {
-                tag: {
-                    name: values
+                name: {
+                    value: values
                 }
             }
-
         else:
-            tag = self._unquote_tag(tag)
+            tag = self._unquote_tag(tag[0])
 
             block = {
                 tag: values

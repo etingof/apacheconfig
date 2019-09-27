@@ -165,10 +165,14 @@ class BaseApacheConfigLexer(object):
 
     @staticmethod
     def _parse_option_value(token, lineno):
-        if not re.match(r'.*?(?:\s|=|\\\s)+', token):
+        # Grabs the first token before the first non-quoted whitespace.
+        match = re.search(r'[^=\s"\']+|"([^"]*)"|\'([^\']*)\'', token)
+        option = match.group(0)
+        if len(token) == len(option):
             return token, None, None
-        option, middle, value = re.split(r'((?:\s|=|\\\s)+)', token,
-                                         maxsplit=1)
+        # If there's more, split it out into whitespace and value.
+        _, middle, value = re.split(r'((?:\s|=|\\\s)+)',
+                                        token[len(option):], maxsplit=1)
         if not option:
             raise ApacheConfigError(
                 'Syntax error in option-value pair %s on line '

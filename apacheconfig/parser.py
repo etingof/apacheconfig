@@ -204,17 +204,16 @@ class BaseApacheConfigParser(object):
                  | OPEN_CLOSE_TAG
         """
         n = len(p)
-        p[1] = "".join(p[1])
         if n == 4:
             if isinstance(p[2], str) and p[2].isspace():
                 p[2] = []
             p[0] = ['block', p[1], p[2], p[3]]
         else:
-            p[0] = ['block', p[1], [], p[1]]
+            p[0] = ['block', p[1], [], "".join(p[1])]
 
         if self.options.get('lowercasenames'):
-            for tag in (1, 3):
-                p[0][tag] = p[0][tag].lower()
+            p[0][1] = tuple([x.lower() for x in p[0][1]])
+            p[0][3] = p[0][3].lower()
 
     def p_config(self, p):
         """config : config contents
