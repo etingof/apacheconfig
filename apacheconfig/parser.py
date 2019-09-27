@@ -115,12 +115,15 @@ class BaseApacheConfigParser(object):
         if self._preserve_whitespace:
             p[0] += p[1]
         else:
-            # To match perl parser behavior, when the value is split on
-            # multiple lines, whitespace between text is normalized.
-            value = p[1][2]
-            if "\\\n" in value:
-                value = " ".join(re.split(r'(?:\s|\\\s)+', p[1][2]))
-            p[0] += [p[1][0], value]
+            if len(p[1]) > 1:
+                # To match perl parser behavior, when the value is split on
+                # multiple lines, whitespace between text is normalized.
+                value = p[1][2]
+                if "\\\n" in value:
+                    value = " ".join(re.split(r'(?:\s|\\\s)+', p[1][2]))
+                p[0] += [p[1][0], value]
+            else:
+                p[0] += p[1]
 
         if self.options.get('lowercasenames'):
             p[0][1] = p[0][1].lower()

@@ -32,6 +32,7 @@ class WhitespaceParserTestCase(unittest.TestCase):
 
     def testOptionAndValue(self):
         tests = [
+            ('a',  ['statement', 'a']),
             ('a  b',  ['statement', 'a', '  ', 'b']),
             ('a = b', ['statement', 'a', ' = ', 'b']),
             ('a "b c"', ['statement', 'a', ' ', 'b c']),
@@ -60,6 +61,7 @@ class WhitespaceParserTestCase(unittest.TestCase):
     def testContentsWhitespaces(self):
         tests = [
             ('\n', ['contents', '\n']),
+            ('\na', ['contents', ['statement', '\n', 'a']]),
             ('a b', ['contents', ['statement', 'a', ' ', 'b']]),
             ('a b\n ', ['contents', ['statement', 'a', ' ', 'b'], '\n ']),
             ('\n a b', ['contents', ['statement', '\n ', 'a', ' ', 'b']]),
