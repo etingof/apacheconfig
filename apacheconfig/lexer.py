@@ -180,7 +180,7 @@ class BaseApacheConfigLexer(object):
         return self._lex_option(t)
 
     def t_OPEN_TAG(self, t):
-        r'<[^\n\r]+>'
+        r'<[^\n\r]+>|<[^\n\r]+\\\n'
         t.value = t.value[1:-1]
         return self._lex_option(t)
 
@@ -193,7 +193,7 @@ class BaseApacheConfigLexer(object):
                 'Syntax error in option-value pair %s on line '
                 '%d' % (token, lineno))
         option = match.group(0)
-        if len(token) == len(option):
+        if len(token.strip()) == len(option):
             return token, None, None
         # If there's more, split it out into whitespace and value.
         _, middle, value = re.split(r'((?:\s|=|\\\s)+)',
@@ -222,7 +222,10 @@ class BaseApacheConfigLexer(object):
         if t.value.endswith('\\'):
             t.lexer.multiline_newline_seen = False
             t.lexer.code_start = t.lexer.lexpos - len(t.value)
+            if "TAG" in t.type:
+                t.lexer.code_start -= 1
             t.lexer.begin('multiline')
+            self._current_type = t.type
             return
 
         lineno = len(re.findall(r'\r\n|\n|\r', t.value))
@@ -257,7 +260,7 @@ class BaseApacheConfigLexer(object):
         if t.value.endswith('\\'):
             return
 
-        t.type = "OPTION_AND_VALUE"
+        t.type = self._current_type
         t.lexer.begin('INITIAL')
 
         value = t.lexer.lexdata[t.lexer.code_start:t.lexer.lexpos + 1]
@@ -271,6 +274,11 @@ class BaseApacheConfigLexer(object):
         if not process:
             return
 
+        if t.type == "OPEN_TAG":
+            if value.endswith("/>"):
+                t.type = "OPEN_CLOSE_TAG"
+                value = value[:-1]
+            value = value[:-1]
         t.value = option, whitespace, value
 
         return t
