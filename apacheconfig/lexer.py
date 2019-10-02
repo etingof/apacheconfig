@@ -26,10 +26,31 @@ class HashCommentsLexer(object):
         'HASHCOMMENT',
     )
 
-    states = ()
+    states = (('hashcomment', 'exclusive'),)
+
+    def t_hashcomment_body(self, t):
+        r'.*(\\\n)$'
+
+    def t_hashcomment_error(self, t):
+        raise ApacheConfigError("Illegal character '%s' in hash comment"
+                                % t.value[0])
+
+    def t_hashcomment_end(self, t):
+        r'.+$'
+        t.value = t.lexer.lexdata[t.lexer.code_start:
+                                  t.lexer.lexpos + len(t.value)]
+        t.type = "HASHCOMMENT"
+        t.lexer.lineno += t.value.count('\n')
+        return t
 
     def t_HASHCOMMENT(self, t):
         r'(?<!\\)\#[^\n\r]*'
+
+        if self.options.get('multilinehashcomments'):
+            if t.value.endswith('\\'):
+                t.lexer.code_start = t.lexer.lexpos - len(t.value)
+                t.lexer.begin('hashcomment')
+                return
         return t
 
 

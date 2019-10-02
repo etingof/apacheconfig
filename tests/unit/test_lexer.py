@@ -68,6 +68,13 @@ a = "b"
         tokens = self.lexer.tokenize(text)
         self.assertEqual(tokens, [('favorite_color', ' ', '\#000000'), ' ', '# comment'])
 
+    def testCommentContinuations(self):
+        text = "# comment \\\n continues"
+        options = { 'multilinehashcomments': True }
+        ApacheConfigLexer = make_lexer(**options)
+        tokens = ApacheConfigLexer().tokenize(text)
+        self.assertEqual(tokens, ['# comment \\\n continues',])
+
     def testComments(self):
         text = """\
 #
