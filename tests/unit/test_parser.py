@@ -178,7 +178,7 @@ a "b"
         parser = ApacheConfigParser(ApacheConfigLexer(), start='block')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, ['block', 'a',
+        self.assertEqual(ast, ['block', ('a',),
                                ['contents',
                                 ['comment', '#a'],
                                  ['statement', 'a', 'b b'],
@@ -199,11 +199,11 @@ a "b"
             parser = ApacheConfigParser(ApacheConfigLexer(), start='block')
 
             ast = parser.parse(text)
-            self.assertEqual(ast, ['block', 'a',
+            self.assertEqual(ast, ['block', ('a',),
                                    ['contents',
-                                    ['block', 'b',
+                                    ['block', ('b',),
                                      ['contents',
-                                      ['block', 'c', [], 'c']], 'b']], 'a'])
+                                      ['block', ('c',), [], 'c']], 'b']], 'a'])
 
     def testEmptyBlocks(self):
         text = """\
@@ -217,8 +217,8 @@ a "b"
 
         ast = parser.parse(text)
         self.assertEqual(ast, ['contents',
-                               ['block', 'a', [], 'a'],
-                               ['block', 'b', [], 'b']])
+                               ['block', ('a',), [], 'a'],
+                               ['block', ('b',), [], 'b']])
 
     def testNamedEmptyBlocks(self):
         text = """\
@@ -233,8 +233,8 @@ a "b"
 
         ast = parser.parse(text)
         self.assertEqual(ast, ['contents',
-                               ['block', 'a A', [], 'a A'],
-                               ['block', 'b B /', [], 'b B /']])
+                               ['block', ('a', ' ', 'A'), [], 'a A'],
+                               ['block', ('b', ' ', 'B /'), [], 'b B /']])
 
     def testLowerCaseNames(self):
         text = """\
@@ -254,8 +254,8 @@ a "b"
 
         ast = parser.parse(text)
         self.assertEqual(ast, ['contents',
-                               ['block', 'a', [], 'a'],
-                               ['block', 'aa',
+                               ['block', ('a',), [], 'a'],
+                               ['block', ('aa',),
                                 ['contents',
                                  ['statement', 'bb', 'Cc']],
                                 'aa']])
@@ -280,7 +280,7 @@ a "b"
 
         ast = parser.parse(text)
         self.assertEqual(ast, ['contents',
-                               ['block', 'aA',
+                               ['block', ('aA',),
                                 ['contents',
                                  ['statement', 'Bb', 'Cc   '],
                                  ['statement', 'key', 'value \# 123 \t  ']],
@@ -304,7 +304,7 @@ a "b"
         ast = parser.parse(text)
 
         self.assertEqual(ast, ['contents',
-                               ['block', 'main',
+                               ['block', ('main',),
                                 ['contents',
                                  ['statement',
                                   'PYTHON', '        def a():\n            x = y\n            return'
@@ -351,11 +351,11 @@ a b
             ['contents',
                 ['comment', '# a'],
                 ['statement', 'a', 'b'],
-                ['block', 'a',
+                ['block', ('a',),
                  ['contents', ['statement', 'a', 'b']],
                  'a'],
                 ['statement', 'a', 'b'],
-                ['block', 'a a',
+                ['block', ('a', ' ', 'a'),
                  ['contents',
                   ['statement', 'a', 'b'],
                   ['statement', 'c', 'd'],

@@ -177,19 +177,27 @@ class BaseApacheConfigLexer(object):
     def t_OPEN_CLOSE_TAG(self, t):
         r'<[^\n\r/]*?[^\n\r/ ]/>'
         t.value = t.value[1:-2]
-        return t
+        return self._lex_option(t)
 
     def t_OPEN_TAG(self, t):
         r'<[^\n\r]+>'
         t.value = t.value[1:-1]
-        return t
+        return self._lex_option(t)
 
     @staticmethod
     def _parse_option_value(token, lineno):
-        if not re.match(r'.*?(?:\s|=|\\\s)+', token):
+        # Grabs the first token before the first non-quoted whitespace.
+        match = re.search(r'[^=\s"\']+|"([^"]*)"|\'([^\']*)\'', token)
+        if not match:
+            raise ApacheConfigError(
+                'Syntax error in option-value pair %s on line '
+                '%d' % (token, lineno))
+        option = match.group(0)
+        if len(token) == len(option):
             return token, None, None
-        option, middle, value = re.split(r'((?:\s|=|\\\s)+)', token,
-                                         maxsplit=1)
+        # If there's more, split it out into whitespace and value.
+        _, middle, value = re.split(r'((?:\s|=|\\\s)+)',
+                                    token[len(option):], maxsplit=1)
         if not option:
             raise ApacheConfigError(
                 'Syntax error in option-value pair %s on line '
