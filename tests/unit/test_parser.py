@@ -237,12 +237,7 @@ a "b"
                                ['block', ('b', ' ', 'B /'), [], 'b B /']])
 
     def testMultilineBlocks(self):
-        text = """\
-<long \
- bloc \
- name\
-/>
-"""
+        text = "<long \\\n bloc \\\n name\\\n/>"
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
@@ -250,7 +245,7 @@ a "b"
 
         ast = parser.parse(text)
         self.assertEqual(ast, ['contents',
-                               ['block', ('long', '  ', 'bloc  name'), [], 'long  bloc  name']])
+                               ['block', ('long', ' \\\n ', 'bloc \\\n name\\\n'), [], 'long \\\n bloc \\\n name\\\n']])
 
 
     def testLowerCaseNames(self):
