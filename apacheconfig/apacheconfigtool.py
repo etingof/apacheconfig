@@ -145,6 +145,11 @@ def main():
     )
 
     options.add_argument(
+        '--multilinehashcomments', action='store_true',
+        help='Enable multi-line hash comments.'
+    )
+
+    options.add_argument(
         '--configpath', action='append', default=[],
         help=('Search path for the configuration files being included. Can '
               'repeat.')

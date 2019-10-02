@@ -370,6 +370,10 @@ When this option is enabled, the parser would collect insignificant whitespaces
 into AST. This information could then be used for code generation. The default
 is `False`.
 
+### multilinehashcomments
+
+Escaped newlines at the end of hash comments add the following line to the comment. Apache's native config parser processes hash comments this way. Set to `False` by default.
+
 ## Parser plugins
 
 You can alter the behavior of the parser by supplying callables which will be invoked on certain hooks during
