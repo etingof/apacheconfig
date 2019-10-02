@@ -377,7 +377,9 @@ Escaped newlines at the end of hash comments add the following line to the comme
 ### disableselfclosingtags
 
 When this option is enabled, the parser does not recognize self-closing tags
-such as `<block/>`. The default is `False`.
+such as `<block name/>`. The former, for instance, would be re-interpreted
+as opening tag with tag name `block`, and argument `name/`.
+The default is `False`.
 
 ## Parser plugins
 

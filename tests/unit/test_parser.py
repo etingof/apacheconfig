@@ -236,6 +236,30 @@ a "b"
                                ['block', 'a A', [], 'a A'],
                                ['block', 'b B /', [], 'b B /']])
 
+    def testNamedBlocksEmptyBlocksDisabled(self):
+        text = """\
+<hello/>
+</hello/>
+<a A/>
+</a A/>
+<b B />
+</b B />
+"""
+
+        options = {
+            'disableselfclosingtags': True
+        }
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+
+        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+
+        ast = parser.parse(text)
+        self.assertEqual(ast, ['contents',
+                               ['block', 'hello/', [], 'hello/'],
+                               ['block', 'a A/', [], 'a A/'],
+                               ['block', 'b B /', [], 'b B /']])
+
     def testLowerCaseNames(self):
         text = """\
 <A/>
