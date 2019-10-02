@@ -176,6 +176,9 @@ class BaseApacheConfigLexer(object):
 
     def t_OPEN_CLOSE_TAG(self, t):
         r'<[^\n\r/]*?[^\n\r/ ]/>'
+        if self.options.get('disableselfclosingtags', False):
+            t.type = 'OPEN_TAG'
+            return self.t_OPEN_TAG(t)
         t.value = t.value[1:-2]
         return t
 

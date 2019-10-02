@@ -374,6 +374,11 @@ is `False`.
 
 Escaped newlines at the end of hash comments add the following line to the comment. Apache's native config parser processes hash comments this way. Set to `False` by default.
 
+### disableselfclosingtags
+
+When this option is enabled, the parser does not recognize self-closing tags
+such as `<block/>`. The default is `False`.
+
 ## Parser plugins
 
 You can alter the behavior of the parser by supplying callables which will be invoked on certain hooks during
