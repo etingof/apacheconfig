@@ -248,7 +248,6 @@ a "b"
 
         parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
 
-        print ApacheConfigLexer().tokenize(text)
         ast = parser.parse(text)
         self.assertEqual(ast, ['contents',
                                ['block', ('long', '  ', 'bloc  name'), [], 'long  bloc  name']])
