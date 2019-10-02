@@ -119,17 +119,21 @@ a "b"
         tokens = self.lexer.tokenize(text)
         self.assertEqual(tokens, ['a', '\n\n\n', 'a', '\n'])
 
-    def testSelfClosingTags(self):
+    def testEmptyElementTags(self):
         text = "<block/>"
         tokens = self.lexer.tokenize(text)
         self.assertEqual(tokens, ['block'])
 
-    def testSelfClosingTagsDisabled(self):
-        options = { 'disableselfclosingtags': True }
-        text = "<block/>\n<block />\n<block hello/>"
+    def testEmptyElementTagsDisabled(self):
+        options = { 'disableemptyelementtags': True }
+        text = """\
+<block/>
+<block />
+<block hello/>
+"""
         ApacheConfigLexer = make_lexer(**options)
         tokens = ApacheConfigLexer().tokenize(text)
-        self.assertEqual(tokens, ['block/', '\n', 'block /', '\n', 'block hello/'])
+        self.assertEqual(tokens, ['block/', '\n', 'block /', '\n', 'block hello/', '\n'])
 
     def testIncludesConfigGeneral(self):
         text = """\

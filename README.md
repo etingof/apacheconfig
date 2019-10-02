@@ -374,9 +374,9 @@ is `False`.
 
 Escaped newlines at the end of hash comments add the following line to the comment. Apache's native config parser processes hash comments this way. Set to `False` by default.
 
-### disableselfclosingtags
+### disableemptyelementtags
 
-When this option is enabled, the parser does not recognize self-closing tags
+When this option is enabled, the parser does not recognize empty element tags
 such as `<block name/>`. The former, for instance, would be re-interpreted
 as opening tag with tag name `block`, and argument `name/`.
 The default is `False`.

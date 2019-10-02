@@ -140,8 +140,8 @@ def main():
     )
 
     options.add_argument(
-        '--disableselfclosingtags', action='store_true',
-        help=('Disables the parsing of empty, self-closing tags like <block/>')
+        '--disableemptyelementtags', action='store_true',
+        help=('Disables the parsing of empty element tags like <block/>')
     )
 
     options.add_argument(

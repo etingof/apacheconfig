@@ -247,7 +247,7 @@ a "b"
 """
 
         options = {
-            'disableselfclosingtags': True
+            'disableemptyelementtags': True
         }
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
