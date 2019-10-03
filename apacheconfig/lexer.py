@@ -351,7 +351,7 @@ class BaseApacheConfigLexer(object):
 
 class OptionLexer(BaseApacheConfigLexer):
     def t_OPTION_AND_VALUE(self, t):
-        r'[^ \n\r\t=#]+([ \t=]+(?:\\#|[^ \t\r\n#])+)*'
+        r'[^ \n\r\t=\#]+([ \t=]+(?:\\\#|[^ \t\r\n\#])+)*'
         # Regex above matches (text, (spaces, text)*) where text
         # can include escaped hashes but not regular ones.
         return self._lex_option(t)
@@ -359,7 +359,7 @@ class OptionLexer(BaseApacheConfigLexer):
 
 class NoStripLexer(BaseApacheConfigLexer):
     def t_OPTION_AND_VALUE_NOSTRIP(self, t):
-        r'[^ \n\r\t=#]+[ \t=]+(?:\\#|[^\r\n#])+'
+        r'[^ \n\r\t=\#]+[ \t=]+(?:\\\#|[^\r\n\#])+'
         return self._lex_option(t)
 
 
