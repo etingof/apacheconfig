@@ -268,9 +268,9 @@ a "b"
 
         ast = parser.parse(text)
         self.assertEqual(ast, ['contents',
-                               ['block', 'hello/', [], 'hello/'],
-                               ['block', 'a A/', [], 'a A/'],
-                               ['block', 'b B /', [], 'b B /']])
+                               ['block', ('hello/',), [], 'hello/'],
+                               ['block', ('a', ' ', 'A/',), [], 'a A/'],
+                               ['block', ('b', ' ', 'B /',), [], 'b B /']])
 
     def testLowerCaseNames(self):
         text = """\

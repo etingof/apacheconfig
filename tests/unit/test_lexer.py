@@ -154,7 +154,7 @@ a "b"
     def testEmptyElementTags(self):
         text = "<block/>"
         tokens = self.lexer.tokenize(text)
-        self.assertEqual(tokens, ['block'])
+        self.assertEqual(tokens, [('block',)])
 
     def testEmptyElementTagsDisabled(self):
         options = { 'disableemptyelementtags': True }
@@ -165,7 +165,7 @@ a "b"
 """
         ApacheConfigLexer = make_lexer(**options)
         tokens = ApacheConfigLexer().tokenize(text)
-        self.assertEqual(tokens, ['block/', '\n', 'block /', '\n', 'block hello/', '\n'])
+        self.assertEqual(tokens, [('block/',), '\n', ('block', ' ', '/'), '\n', ('block', ' ', 'hello/'), '\n'])
 
     def testIncludesConfigGeneral(self):
         text = """\
