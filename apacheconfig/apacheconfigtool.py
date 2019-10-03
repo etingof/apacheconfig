@@ -140,6 +140,11 @@ def main():
     )
 
     options.add_argument(
+        '--disableemptyelementtags', action='store_true',
+        help=('Disables the parsing of empty element tags like <block/>')
+    )
+
+    options.add_argument(
         '--ccomments', action='store_false',
         help='Do not parse C-style comments'
     )
