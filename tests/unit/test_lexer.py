@@ -136,6 +136,21 @@ a "b"
         tokens = self.lexer.tokenize(text)
         self.assertEqual(tokens, [('a',), '\n\n\n', 'a', '\n'])
 
+    def testBlockTagWithSpaces(self):
+        text = "<  \t a  >\n</a>"
+        tokens = self.lexer.tokenize(text)
+        self.assertEqual(tokens, [('  \t a  ',), '\n', 'a'])
+
+    def testMultilineBlockNameEmpty(self):
+        text = "<long \\\n bloc\\\n name\\\n     \\\n/>"
+        tokens = self.lexer.tokenize(text)
+        self.assertEqual(tokens, [('long', ' \\\n ', 'bloc\\\n name\\\n     \\\n')])
+
+    def testMultilineBlockName(self):
+        text = "<long \\\n bloc\\\n name\\\n     \\\n>\n</long>"
+        tokens = self.lexer.tokenize(text)
+        self.assertEqual(tokens, [('long', ' \\\n ', 'bloc\\\n name\\\n     \\\n'), '\n', 'long'])
+
     def testIncludesConfigGeneral(self):
         text = """\
 <<include first.conf>>
