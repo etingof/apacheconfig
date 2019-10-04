@@ -4,8 +4,6 @@
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
-
-
 from apacheconfig import make_parser
 from apacheconfig import make_lexer
 
@@ -30,10 +28,10 @@ class Node():
 
     @abc.abstractmethod
     def __str__(self):
-        raise NotImplementedError()
+        pass
 
     @property
-    def type(self):
+    def parser_type(self):
         """A typestring as defined by the apacheconfig parser.
 
         A single *Node class can have multiple possible values for this. For
@@ -48,7 +46,8 @@ class Node():
 
     @property
     def whitespace(self):
-        """Trailing or preceding whitespace.
+        """A string representing literal trailing or preceding whitespace
+        for this node.
 
         Each Item or BlockNode keeps track of the whitespace preceding it.
         For the first element in the configuration file, there could be no
@@ -57,6 +56,12 @@ class Node():
 
         ContentsNode is special in that it keeps track of the trailing white-
         space.
+
+        Some examples:
+          ItemNode('\n  option value').whitespace => "\n  "
+          ItemNode('\n  # comment').whitespace => "\n  "
+          BlockNode('\n  <a>\n</a>').whitespace => "\n  "
+          ContentsNode('\n  option value # comment\n').whitespace => "\n"
         """
         if self._whitespace is None:
             raise NotImplementedError()
@@ -70,7 +75,7 @@ class Node():
 
 
 class ItemNode(Node):
-    """Contains data for a single configuration line.
+    """Contains data for a comment or directive (or option-value store).
 
     Also manages any preceding whitespace. Can represent a key/value option,
     a comment, or an include/includeoptional directive.
@@ -141,9 +146,10 @@ class ItemNode(Node):
                 "".join([_restore_original(word) for word in self._raw]))
 
     def __repr__(self):
-        return ("ItemNode(%s)"
-                % str([self._type] +
-                      [_restore_original(word) for word in self._raw]))
+        return ("%s(%s)"
+                % (self.__class__.__name__,
+                   str([self._type] +
+                       [_restore_original(word) for word in self._raw])))
 
 
 def _create_parser(options={}, start='contents'):

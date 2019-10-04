@@ -8,7 +8,8 @@ from apacheconfig.parser import make_parser
 from apacheconfig.loader import ApacheConfigLoader
 from apacheconfig.error import ApacheConfigError
 
-from apacheconfig.wloader import parse_item, ItemNode
+from apacheconfig.wloader import parse_item  # noqa: F401
+from apacheconfig.wloader import ItemNode  # noqa: F401
 
 
 @contextmanager
@@ -20,6 +21,5 @@ def make_loader(**options):
                              **options)
 
 
-__all__ = ['parse_item', 'ItemNode',
-           'make_lexer', 'make_parser', 'make_loader',
+__all__ = ['make_lexer', 'make_parser', 'make_loader',
            'ApacheConfigLoader', 'ApacheConfigError']

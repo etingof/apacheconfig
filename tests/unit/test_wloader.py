@@ -7,7 +7,7 @@
 import os
 import sys
 
-from apacheconfig import *
+from apacheconfig import parse_item
 
 try:
     import unittest2 as unittest
@@ -52,9 +52,9 @@ class WLoaderTestCaseRead(unittest.TestCase):
             self.assertEqual(raw, str(node),
                 "Expected str(node('%s')) to be the same, but got '%s'" %
                     (repr(raw), str(node)))
-            self.assertEqual(expected_type, node.type,
-                "Expected node('%s').type to be '%s', but got '%s'" %
-                    (repr(raw), expected_type, str(node.type)))
+            self.assertEqual(expected_type, node.parser_type,
+                "Expected node('%s').parser_type to be '%s', but got '%s'" %
+                    (repr(raw), expected_type, str(node.parser_type)))
 
     def testLoadStatement(self):
         cases = [
