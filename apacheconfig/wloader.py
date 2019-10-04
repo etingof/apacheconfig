@@ -101,8 +101,10 @@ class ContentsNode(Node):
         else:
             node = ItemNode(raw)
         self._contents.insert(index, node)
-        if index + 1 < len(self._contents) and '\n' not in self._contents[index + 1].whitespace:
-            self._contents[index + 1].whitespace = '\n' + self._contents[index + 1].whitespace
+        if (index + 1 < len(self._contents) and
+           '\n' not in self._contents[index + 1].whitespace):
+            whitespace_after = self._contents[index + 1].whitespace
+            self._contents[index + 1].whitespace = '\n' + whitespace_after
         return node
 
     def remove(self, index):
@@ -122,7 +124,8 @@ class ContentsNode(Node):
         return iter(self._contents)
 
     def __str__(self):
-        return "".join([str(item) for item in self._contents]) + self.whitespace
+        return ("".join([str(item) for item in self._contents])
+                + self.whitespace)
 
 
 class ItemNode(Node):
@@ -264,7 +267,8 @@ class BlockNode(Node):
 
     Construct this using raw AST data from parser. Generally, block data looks
     like:
-        ['block', <optional whitespace>, <open tag>, <contents object>, <close tag>]
+        ['block', <optional whitespace>, <open tag>, <contents object>,
+            <close tag>]
     E.g., for the block "<block_tag block_args>
 
     <block/> is represented with an empty contents object.
@@ -311,6 +315,7 @@ class BlockNode(Node):
             return "%s<%s/>" % (self.whitespace, str(self._full_tag))
         return "%s<%s>%s</%s>" % (self.whitespace, str(self._full_tag),
                                   str(self._contents), self._close_tag)
+
 
 def _create_apache_parser(options={}, start='contents'):
     """Returns a :class:`apacheconfig.ApacheConfigParser` with default options
