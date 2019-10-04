@@ -4,10 +4,11 @@
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
-import sys
 import os
+import sys
 
-from apacheconfig import *
+from apacheconfig import ApacheConfigError
+from apacheconfig import make_loader
 
 try:
     import unittest2 as unittest
@@ -15,43 +16,110 @@ try:
 except ImportError:
     import unittest
 
-test_configs = {
-    'nested-block-test.conf': {'cops':
-                                   {'age': '25',
-                                    'appearance':
-                                        {'color': '#000000'},
-                                    'name': 'stein'}},
-    'array-content-test.conf': {'domain':
-                                    ['b0fh.org', 'l0pht.com', 'infonexus.com']},
-    'unquoted-values-with-whitespaces.conf': {'option': 'value with whitespaces'},
-    'multiline-option-test.conf': {'command': "ssh -f -g orpheus.0x49.org "
-                                              "-l azrael -L:34777samir.okir.da.ru:22 "
-                                              "-L:31773:shane.sol1.rocket.de:22 "
-                                              "'exec sleep 99999990'"},
-    'here-document-test.conf': {'header': '  <table border="0">\n  </table>'},
-    'c-style-comment-test.conf': {'passwd': 'sakkra',
-                                  'foo':  {'bar': 'baz'},
-                                  'db': {'host': 'blah.blubber'},
-                                  'user': 'tom'},
-    'combination-of-constructs.conf': {
-        'cops': {
-            'officer': [
-                {'randall': {'name': 'stein', 'age': '25'}},
-                {'gordon': {'name': 'bird', 'age': '31'}}]
-        },
-        'domain': ['nix.to', 'b0fh.org', 'foo.bar'],
-        'message': '  yes. we are not here. you\n  can reach us somewhere in\n  outerspace.',
-        'nocomment': 'Comments in a here-doc should not be treated as comments.\n/* So this should appear in the output */', 'command': "ssh -f -g orpheus.0x49.org -l azrael -L:34777samir.okir.da.ru:22 -L:31773:shane.sol1.rocket.de:22 'exec sleep 99999990'", 'user': 'tom', 'passwd': 'sakkra', 'db': {'host': 'blah.blubber'}, 'beta': [{'user1': 'hans'}, {'user2': 'max'}], 'quoted': 'this one contains whitespace at the end    ', 'quotedwithquotes': ' holy crap, it contains "masked quotes" and \'single quotes\'  '
+
+TEST_CONFIGS = {
+    "nested-block-test.conf": {
+        "cops": {
+            "age": "25",
+            "appearance": {
+                "color": "#000000"
+            },
+            "name": "stein"
+        }
     },
-    'include-file-test.conf': {'seen_first_config': 'true',
-                               'seen_second_config': 'true',
-                               'inner': {'final_include': 'true',
-                                         'seen_third_config': 'true'}},
-    'second-test.conf': {'seen_second_config': 'true',
-                         'inner': {'final_include': 'true',
-                                   'seen_third_config': 'true'}},
-    'third-test.conf': {'final_include': 'true',
-                        'seen_third_config': 'true'},
+    "array-content-test.conf": {
+        "domain": [
+            "b0fh.org",
+            "l0pht.com",
+            "infonexus.com"
+        ]
+    },
+    "unquoted-values-with-whitespaces.conf": {
+        "option": "value with whitespaces"
+    },
+    "multiline-option-test.conf": {
+        "command": "ssh -f -g orpheus.0x49.org -l azrael -L:34777samir.okir.da"
+                   ".ru:22 -L:31773:shane.sol1.rocket.de:22 'exec sleep "
+                   "99999990'"
+    },
+    "here-document-test.conf": {
+        "header": "  <table border=\"0\">\n  </table>"
+    },
+    "c-style-comment-test.conf": {
+        "passwd": "sakkra",
+        "foo": {
+            "bar": "baz"
+        },
+        "db": {
+            "host": "blah.blubber"
+        },
+        "user": "tom"
+    },
+    "combination-of-constructs.conf": {
+        "cops": {
+            "officer": [
+                {
+                    "randall": {
+                        "name": "stein",
+                        "age": "25"
+                    }
+                },
+                {
+                    "gordon": {
+                        "name": "bird",
+                        "age": "31"
+                    }
+                }
+            ]
+        },
+        "domain": [
+            "nix.to",
+            "b0fh.org",
+            "foo.bar"
+        ],
+        "message": "  yes. we are not here. you\n  can reach us somewhere in\n"
+                   "  outerspace.",
+        "nocomment": "Comments in a here-doc should not be treated as "
+                     "comments.\n/* So this should appear in the output */",
+        "command": "ssh -f -g orpheus.0x49.org -l azrael -L:34777samir.okir."
+                   "da.ru:22 -L:31773:shane.sol1.rocket.de:22 'exec sleep "
+                   "99999990'",
+        "user": "tom",
+        "passwd": "sakkra",
+        "db": {
+            "host": "blah.blubber"
+        },
+        "beta": [
+            {
+                "user1": "hans"
+            },
+            {
+                "user2": "max"
+            }
+        ],
+        "quoted": "this one contains whitespace at the end    ",
+        "quotedwithquotes": " holy crap, it contains \"masked quotes\" and "
+                            "'single quotes'  "
+    },
+    "include-file-test.conf": {
+        "seen_first_config": "true",
+        "seen_second_config": "true",
+        "inner": {
+            "final_include": "true",
+            "seen_third_config": "true"
+        }
+    },
+    "second-test.conf": {
+        "seen_second_config": "true",
+        "inner": {
+            "final_include": "true",
+            "seen_third_config": "true"
+        }
+    },
+    "third-test.conf": {
+        "final_include": "true",
+        "seen_third_config": "true"
+    }
 }
 
 
@@ -80,8 +148,8 @@ class PerlConfigGeneralTestCase(unittest.TestCase):
                     errors.append('failed to parse %s: %s' % (filepath, ex))
                     continue
 
-                if filename in test_configs:
-                    self.assertEqual(config,  test_configs[filename])
+                if filename in TEST_CONFIGS:
+                    self.assertEqual(config, TEST_CONFIGS[filename])
 
         self.assertEqual(len(errors), 2)
 
@@ -156,9 +224,15 @@ class PerlConfigGeneralTestCase(unittest.TestCase):
         with make_loader(**options) as loader:
             config = loader.load(samples_file)
 
-        self.assertEqual(config, {'seen_second_config': ['true', 'true'],
-                                  'inner': [{'final_include': 'true', 'seen_third_config': 'true'},
-                                            {'final_include': 'true', 'seen_third_config': 'true'}]})
+        self.assertEqual(
+            config, {
+                'seen_second_config': ['true', 'true'],
+                'inner': [
+                    {'final_include': 'true', 'seen_third_config': 'true'},
+                    {'final_include': 'true', 'seen_third_config': 'true'}
+                ]
+            }
+        )
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])

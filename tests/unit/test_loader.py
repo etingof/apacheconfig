@@ -7,7 +7,11 @@
 import os
 import sys
 
-from apacheconfig import *
+from apacheconfig import ApacheConfigError
+from apacheconfig import ApacheConfigLoader
+from apacheconfig import make_lexer
+from apacheconfig import make_loader
+from apacheconfig import make_parser
 
 try:
     import unittest2 as unittest
@@ -43,12 +47,17 @@ c "d d"
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()))
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a': ['b', {'block': {'a': 'b'}},
-                                        'b', {'a block': {'c': 'd d'}}]})
+        self.assertEqual(
+            config, {
+                'a': ['b', {'block': {'a': 'b'}}, 'b',
+                      {'a block': {'c': 'd d'}}]
+            }
+        )
 
     def testDumpWholeConfig(self):
         text = """\
@@ -84,7 +93,8 @@ a b
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()))
 
         config = loader.loads(text)
 
@@ -102,7 +112,8 @@ b = [1]
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         config = loader.loads(text)
 
@@ -120,7 +131,8 @@ b = 2
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()))
 
         config = loader.loads(text)
 
@@ -143,7 +155,8 @@ b = 2
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         self.assertRaises(ApacheConfigError, loader.loads, text)
 
@@ -165,7 +178,8 @@ b = 2
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         config = loader.loads(text)
 
@@ -188,7 +202,8 @@ b = 2
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         config = loader.loads(text)
 
@@ -208,7 +223,8 @@ a = 3
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         config = loader.loads(text)
 
@@ -227,7 +243,8 @@ a = 2
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         self.assertRaises(ApacheConfigError, loader.loads, text)
 
@@ -243,7 +260,8 @@ a = 2
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         config = loader.loads(text)
 
@@ -265,11 +283,16 @@ b = 2
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a': '1', 'b': ['4', '2'], 'c': '3'})
+        self.assertEqual(
+            config, {
+                'a': '1', 'b': ['4', '2'], 'c': '3'
+            }
+        )
 
     def testNamedBlocks(self):
         text = """\
@@ -288,7 +311,11 @@ d = 1
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a': [{'/': {'c': '1'}}, {'b c': {'d': '1'}}]})
+        self.assertEqual(
+            config, {
+                'a': [{'/': {'c': '1'}}, {'b c': {'d': '1'}}]
+            }
+        )
 
     def testDisabledNamedBlocks(self):
         text = """\
@@ -307,11 +334,16 @@ d = 1
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a /': {'c': '1'}, 'a b c': {'d': '1'}})
+        self.assertEqual(
+            config, {
+                'a /': {'c': '1'}, 'a b c': {'d': '1'}
+            }
+        )
 
     def testQuotedBlockTag(self):
         text = """\
@@ -330,11 +362,16 @@ j = 1
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()))
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a b': {'c': '1'}, 'd e': {'f': '1'}, 'g': {'h i': {'j': '1'}}})
+        self.assertEqual(
+            config, {
+                'a b': {'c': '1'}, 'd e': {'f': '1'}, 'g': {'h i': {'j': '1'}}
+            }
+        )
 
     def testAutoTrue(self):
         text = """\
@@ -352,11 +389,16 @@ b false
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a': ['1', '1', '1'], 'b': ['0', '0', '0']})
+        self.assertEqual(
+            config, {
+                'a': ['1', '1', '1'], 'b': ['0', '0', '0']
+            }
+        )
 
     def testFlagBits(self):
         text = """\
@@ -375,11 +417,16 @@ mode = CLEAR | UNSECURE
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'mode': {'CLEAR': 1, 'STRONG': None, 'UNSECURE': '32bit'}})
+        self.assertEqual(
+            config, {
+                'mode': {'CLEAR': 1, 'STRONG': None, 'UNSECURE': '32bit'}
+            }
+        )
 
     def testEscape(self):
         text = """\
@@ -388,7 +435,8 @@ a = \\$b
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()))
 
         config = loader.loads(text)
 
@@ -405,7 +453,8 @@ a = \\$b
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         config = loader.loads(text)
 
@@ -419,7 +468,8 @@ b
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()))
 
         config = loader.loads(text)
 
@@ -437,12 +487,16 @@ b
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()))
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a': {'b': 'abc pqr',
-                                        'c': 'value2'}})
+        self.assertEqual(
+            config, {
+                'a': {'b': 'abc pqr', 'c': 'value2'}
+            }
+        )
 
     def testLineContinuationInNestedBlock(self):
         text = """\
@@ -458,12 +512,16 @@ b
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()))
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a': {'b': 'abc pqr',
-                                        'aa': {'c': 'value2'}}})
+        self.assertEqual(
+            config, {
+                'a': {'b': 'abc pqr', 'aa': {'c': 'value2'}}
+            }
+        )
 
     def testLineContinuationOnEmptyLine(self):
         text = """\
@@ -477,11 +535,14 @@ b
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()))
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a': {'key': 'value'}})
+        self.assertEqual(
+            config, {'a': {'key': 'value'}}
+        )
 
     @mock.patch('os.path.exists')
     def testConfigPath(self, path_exists_mock):
@@ -496,7 +557,8 @@ b
         path_exists_mock.return_value = False
 
         with make_loader(**options) as loader:
-            self.assertRaises(ApacheConfigError, loader.loads, text)
+            self.assertRaises(
+                ApacheConfigError, loader.loads, text)
 
         expected_probes = ['a/t.conf', 'b/t.conf', './t.conf']
         actual_probes = [x[1][0] for x in path_exists_mock.mock_calls
@@ -588,18 +650,25 @@ e 1
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a': '1',
-                                  'b': '1',
-                                  'c': '1',
-                                  'e': '1',
-                                  'aa': {'d': '1',
-                                         'e': '2',
-                                         'f': '2 + 2',
-                                         'g': '${e}'}})
+        self.assertEqual(
+            config, {
+                'a': '1',
+                'b': '1',
+                'c': '1',
+                'e': '1',
+                'aa': {
+                    'd': '1',
+                    'e': '2',
+                    'f': '2 + 2',
+                    'g': '${e}'
+                }
+            }
+        )
 
     def testInterpolateVarsSingleQuote(self):
         text = """\
@@ -613,12 +682,17 @@ b = '${a}'
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'a': '1',
-                                  'b': '1'})
+        self.assertEqual(
+            config, {
+                'a': '1',
+                'b': '1'
+            }
+        )
 
     def testInterpolateVarsFailOnUndefined(self):
         text = """\
@@ -632,7 +706,8 @@ b = ${a}
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         self.assertRaises(ApacheConfigError, loader.loads, text)
 
@@ -648,7 +723,8 @@ b = '${a}'
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         config = loader.loads(text)
 
@@ -675,20 +751,26 @@ e 1
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         config = loader.loads(text)
 
-        self.assertEqual(config, {'b': '1',
-                                  'c': '1',
-                                  'e': '1',
-                                  'aa': {'d': '1',
-                                         'e': '2',
-                                         'f': '2 + 2',
-                                         'g': '${e}'}})
+        self.assertEqual(
+            config, {
+                'b': '1',
+                'c': '1',
+                'e': '1',
+                'aa': {
+                    'd': '1',
+                    'e': '2',
+                    'f': '2 + 2',
+                    'g': '${e}'
+                }
+            }
+        )
 
     def testHookPreOpen(self):
-
         def pre_open(filename, basedir):
             return 'blah' in filename, filename, basedir
 
@@ -701,7 +783,8 @@ e 1
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         config = loader.load('halb.conf')
 
@@ -713,6 +796,7 @@ e 1
         text = """\
 blah 1
 """
+
         def pre_read(filepath, text):
             return 'blah' in text, filepath, 'a 1\n'
 
@@ -725,7 +809,8 @@ blah 1
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         config = loader.loads(text)
 
@@ -749,7 +834,8 @@ b = 2
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
         config = loader.loads(text)
 
@@ -757,12 +843,14 @@ b = 2
 
     def testExpressionParse(self):
         text = """\
-# Compare the host name to example.com and redirect to www.example.com if it matches
+# Compare the host name to example.com and redirect to www.example.com if \
+it matches
 <If "%{HTTP_HOST} == 'example.com'">
     Redirect permanent "/" "http://www.example.com/"
 </If>
 
-# Force text/plain if requesting a file with the query string contains 'forcetext'
+# Force text/plain if requesting a file with the query string contains \
+'forcetext'
 <If "%{QUERY_STRING} =~ /forcetext/">
     ForceType text/plain
 </If>
@@ -804,7 +892,8 @@ b = 2
 Header set foo-checksum "expr=%{md5:foo}"
 
 # This delays the evaluation of the condition clause compared to <If>
-Header always set CustomHeader my-value "expr=%{REQUEST_URI} =~ m#^/special_path\.php$#"
+Header always set CustomHeader my-value "expr=%{REQUEST_URI} =~ m#^/\
+special_path\\.php$#"
 """
 
         expect_config = {
@@ -842,13 +931,16 @@ Header always set CustomHeader my-value "expr=%{REQUEST_URI} =~ m#^/special_path
             'Directory': [
                 {
                     '/foo/bar/business': {
-                        'Require': 'expr %{TIME_HOUR} -gt 9 && %{TIME_HOUR} -lt 17'
+                        'Require': 'expr %{TIME_HOUR} -gt 9 && '
+                                   '%{TIME_HOUR} -lt 17'
                     }
                 },
                 {
                     '/var/www': {
                         'AddEncoding': 'x-gzip gz', 'If': {
-                            "-f '%{REQUEST_FILENAME}.unzipme' && ! %{HTTP:Accept-Encoding} =~ /gzip/": {
+                            "-f '%{REQUEST_FILENAME}.unzipme' && ! "
+                            "%{HTTP:Accept-Encoding} "
+                            "=~ /gzip/": {
                                 'SetOutputFilter': 'INFLATE'
                             }
                         }
@@ -857,14 +949,16 @@ Header always set CustomHeader my-value "expr=%{REQUEST_URI} =~ m#^/special_path
             ],
             'Header': [
                 'set foo-checksum "expr=%{md5:foo}"',
-                'always set CustomHeader my-value "expr=%{REQUEST_URI} =~ m'  # TODO(etingof) escape hash
+                # TODO(etingof) escape hash
+                'always set CustomHeader my-value "expr=%{REQUEST_URI} =~ m'
             ]
         }
 
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()))
 
         config = loader.loads(text)
 
@@ -875,55 +969,62 @@ Header always set CustomHeader my-value "expr=%{REQUEST_URI} =~ m#^/special_path
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
-        self.assertEqual(loader._merge_lists([],[]), [])
+        self.assertEqual(loader._merge_lists([], []), [])
 
     def testMergeListWithEmptyList(self):
         options = {}
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
-        self.assertEqual(loader._merge_lists([1],[]), [1])
+        self.assertEqual(loader._merge_lists([1], []), [1])
 
     def testMergeListsWithDifferentValues(self):
         options = {}
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
-        self.assertEqual(loader._merge_lists([1],[2]), [1, 2])
+        self.assertEqual(loader._merge_lists([1], [2]), [1, 2])
 
     def testMergeListsWithSameValues(self):
         options = {}
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
-        self.assertEqual(loader._merge_lists([1],[1]), [1])
+        self.assertEqual(loader._merge_lists([1], [1]), [1])
 
     def testMergeListsWithSameAndDifferentValues(self):
         options = {}
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()), **options)
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
-        self.assertEqual(loader._merge_lists([1,2],[3,1]), [1,2,3])
+        self.assertEqual(loader._merge_lists([1, 2], [3, 1]), [1, 2, 3])
 
     def testLoadEmptyText(self):
         text = ""
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        loader = ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()))
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()))
 
         config = loader.loads(text)
         self.assertEqual(config, {})
+
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 

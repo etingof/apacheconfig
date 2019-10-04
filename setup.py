@@ -74,9 +74,11 @@ except ImportError:
 params.update(
     {
         'name': 'apacheconfig',
-        'version': open(os.path.join('apacheconfig', '__init__.py')).read().split('\'')[1],
+        'version': open(
+            os.path.join('apacheconfig', '__init__.py')).read().split('\'')[1],
         'description': 'Apache config file parser',
-        'long_description': 'Apache and Perl Config::General style configuration file parsing library',
+        'long_description': 'Apache and Perl Config::General style '
+                            'configuration file parsing library',
         'maintainer': 'Ilya Etingof <etingof@gmail.com>',
         'author': 'Ilya Etingof',
         'author_email': 'etingof@gmail.com',
