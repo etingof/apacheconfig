@@ -4,12 +4,11 @@
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
-from apacheconfig import make_parser
-from apacheconfig import make_lexer
-
 import abc
 import six
 
+from apacheconfig import make_parser
+from apacheconfig import make_lexer
 
 def _restore_original(word):
     """If the `word` is a Quoted string, restores it to original.
