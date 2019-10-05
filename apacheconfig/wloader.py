@@ -113,19 +113,37 @@ class ItemNode(Node):
         "\\n  # here is a comment"
             name: "# here is a comment", value: None, whitespace: "\\n  "
 
-    :param str raw: Raw string to parse into an ItemNode.
-    :param dict options: (optional) Additional options to pass to the parser.
+    To construct from a raw string, use the `parse` constructor. The regular
+    constructor receives data from the internal apacheconfig parser.
+
+    :param list raw: Raw data returned from ``apacheconfig.parser``.
     """
 
-    def __init__(self, raw_str, options={}):
-        parser = _create_apache_parser(options, start='startitem')
-        raw = parser.parse(raw_str)
+    def __init__(self, raw, options={}):
         self._type = raw[0]
         self._raw = tuple(raw[1:])
         self._whitespace = ""
         if len(raw) > 1 and raw[1].isspace():
             self._whitespace = raw[1]
             self._raw = tuple(raw[2:])
+
+    @staticmethod
+    def parse(raw_str, options={}, parser=None):
+        """Constructs an ItemNode by parsing it from a raw string.
+
+        :param dict options: (optional) Additional options to pass to the
+                             created parser. Ignored if another ``parser`` is
+                             supplied.
+        :param parser: (optional) To re-use an existing parser. If ``None``,
+                       creates a new one.
+        :type parser: :class:`apacheconfig.ApacheConfigParser`
+
+        :returns: an ItemNode containing metadata parsed from ``raw_str``.
+        :rtype: :class:`apacheconfig.ItemNode`
+        """
+        if not parser:
+            parser = _create_apache_parser(options, start='startitem')
+        return ItemNode(parser.parse(raw_str))
 
     @property
     def name(self):

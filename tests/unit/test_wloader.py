@@ -26,7 +26,7 @@ class WLoaderTestCaseWrite(unittest.TestCase):
              'include new/path/to/file'),
         ]
         for raw, new_value, expected in cases:
-            node = ItemNode(raw)
+            node = ItemNode.parse(raw)
             node.value = new_value
             self.assertEqual(expected, str(node))
 
@@ -34,7 +34,7 @@ class WLoaderTestCaseWrite(unittest.TestCase):
 class WLoaderTestCaseRead(unittest.TestCase):
     def _test_item_cases(self, cases, expected_type, options={}):
         for raw, expected_name, expected_value in cases:
-            node = ItemNode(raw, options)
+            node = ItemNode.parse(raw, options)
             self.assertEqual(expected_name, node.name,
                              "Expected node('%s').name to be %s, got %s" %
                              (repr(raw), expected_name, node.name))
