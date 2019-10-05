@@ -4,23 +4,14 @@
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
-import os
-import sys
-
-from apacheconfig import parse_item
-
 try:
     import unittest2 as unittest
 
 except ImportError:
     import unittest
 
-try:
-    from unittest import mock
+from apacheconfig import ItemNode
 
-except ImportError:
-
-    import mock
 
 class WLoaderTestCaseWrite(unittest.TestCase):
     def testChangeItemValue(self):
@@ -31,10 +22,11 @@ class WLoaderTestCaseWrite(unittest.TestCase):
             ('option value', 'long  value', 'option long  value'),
             ('option value', '"long  value"', 'option "long  value"'),
             ('option', 'option2', 'option option2'),
-            ('include old/path/to/file', 'new/path/to/file', 'include new/path/to/file'),
+            ('include old/path/to/file', 'new/path/to/file',
+             'include new/path/to/file'),
         ]
         for raw, new_value, expected in cases:
-            node = parse_item(raw)
+            node = ItemNode(raw)
             node.value = new_value
             self.assertEqual(expected, str(node))
 
@@ -42,19 +34,20 @@ class WLoaderTestCaseWrite(unittest.TestCase):
 class WLoaderTestCaseRead(unittest.TestCase):
     def _test_item_cases(self, cases, expected_type, options={}):
         for raw, expected_name, expected_value in cases:
-            node = parse_item(raw, options)
+            node = ItemNode(raw, options)
             self.assertEqual(expected_name, node.name,
-                "Expected node('%s').name to be %s, got %s" %
-                    (repr(raw), expected_name, node.name))
+                             "Expected node('%s').name to be %s, got %s" %
+                             (repr(raw), expected_name, node.name))
             self.assertEqual(expected_value, node.value,
-                "Expected node('%s').value to be %s, got %s" %
-                    (repr(raw), expected_value, node.value))
+                             "Expected node('%s').value to be %s, got %s" %
+                             (repr(raw), expected_value, node.value))
             self.assertEqual(raw, str(node),
-                "Expected str(node('%s')) to be the same, but got '%s'" %
-                    (repr(raw), str(node)))
+                             ("Expected str(node('%s')) to be the same, "
+                              "but got '%s'" % (repr(raw), str(node))))
             self.assertEqual(expected_type, node.parser_type,
-                "Expected node('%s').parser_type to be '%s', but got '%s'" %
-                    (repr(raw), expected_type, str(node.parser_type)))
+                             ("Expected node('%s').parser_type to be '%s', "
+                              "but got '%s'" % (repr(raw), expected_type,
+                                                str(node.parser_type))))
 
     def testLoadStatement(self):
         cases = [
@@ -84,4 +77,4 @@ class WLoaderTestCaseRead(unittest.TestCase):
             ('\ninclude path', 'include', 'path'),
         ]
         self._test_item_cases(cases, 'include',
-            options={'useapacheinclude': True})
+                              options={'useapacheinclude': True})

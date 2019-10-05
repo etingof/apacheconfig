@@ -10,6 +10,7 @@ import six
 from apacheconfig import make_parser
 from apacheconfig import make_lexer
 
+
 def _restore_original(word):
     """If the `word` is a Quoted string, restores it to original.
     """
@@ -27,17 +28,28 @@ class Node():
 
     @abc.abstractmethod
     def __str__(self):
+        """Writes this node to a raw string. To get more metadata about the
+        object, use ``repr``.
+        """
+        pass
+
+    @abc.abstractmethod
+    def __repr__(self):
+        """Returns a string containing object metadata."""
         pass
 
     @property
     def parser_type(self):
         """A typestring as defined by the apacheconfig parser.
 
-        A single *Node class can have multiple possible values for this. For
-        instance, ItemNode is a generic representation of any single directive
-        but has a couple different possible `type`s, including `comment`,
-        `statement`, and `include`-- depending on which the caller may
-        decide to treat ItemNode differently.
+        The possible values for this are:
+
+        :class:`apacheconfig.ItemNode`: ``comment``, ``statement``,
+        ``include``, ``includeoptional``
+
+        :returns: The typestring (as defined by the apacheconfig parser) for
+                  this node.
+        :rtype: `str`
         """
         if self._type is None:
             raise NotImplementedError()
@@ -46,64 +58,68 @@ class Node():
     @property
     def whitespace(self):
         """A string representing literal trailing or preceding whitespace
-        for this node.
+        for this node. Can be overwritten.
 
-        Each Item or BlockNode keeps track of the whitespace preceding it.
-        For the first element in the configuration file, there could be no
-        whitespace preceding it at all, in which case this should return the
-        empty string.
+        Each ``ItemNode`` or ``BlockNode`` keeps track of the whitespace
+        preceding it. For the first element in the configuration file, there
+        could be no whitespace preceding it at all, in which case this should
+        return the empty string.
 
-        ContentsNode is special in that it keeps track of the trailing white-
-        space.
+        ContentsNode is special in that it keeps track of the *trailing*
+        whitespace. For example::
 
-        Some examples:
-          ItemNode('\n  option value').whitespace => "\n  "
-          ItemNode('\n  # comment').whitespace => "\n  "
-          BlockNode('\n  <a>\n</a>').whitespace => "\n  "
-          ContentsNode('\n  option value # comment\n').whitespace => "\n"
-        """
+            ItemNode('\\n  option value').whitespace => "\\n  "
+            ItemNode('\\n  # comment').whitespace => "\\n  "
+            BlockNode('\\n  <a>\\n</a>').whitespace => "\\n  "
+            ContentsNode('\\n  option value # comment\\n').whitespace => "\\n"
+
+        :returns: a string containing literal preceding or trailing whitespace
+                  information for this node.
+        :rtype: `str`
+       """
         if self._whitespace is None:
             raise NotImplementedError()
         return self._whitespace
 
     @whitespace.setter
     def whitespace(self, value):
+        """A string representing literal trailing or preceding whitespace
+        for this node. Trailing for ``Contents``, preceding for ``Item`` or
+        ``Block``.
+
+        :param str value: whitespace string to set this node's whitespace.
+        """
         if self._whitespace is None:
             raise NotImplementedError()
         self._whitespace = value
 
 
 class ItemNode(Node):
-    """Contains data for a comment or directive (or option-value store).
+    """Contains data for a comment or option-value directive.
 
     Also manages any preceding whitespace. Can represent a key/value option,
     a comment, or an include/includeoptional directive.
 
-    Construct this using raw AST data from parser. Generally, block data looks
-    like:
-        ['block', <open tag>, <contents object>
-    Examples of what raw AST data might look like for an ItemNode:
-        ['statement', 'option', ' ', 'value']
-        ['include', 'include', ' ', 'relative/path/*']
-        ['statement', '\n  ', 'option', ' = ', 'value']
-        ['comment', '# here is a comment']
-        ['comment', '\n  ', '# here is a comment']
+    Examples of what ItemNode fields might look like for different directives::
 
-    Properties:
-        value: getter & setter for the final element in the raw AST. For
-               includes, this would be the path for include directives; for
-               comments, it's the comment body, and for key/value directives,
-               it's the value.
-        name:  getter only. Retrieves the first non-whitespace element in the
-               raw AST.
+        "option"
+            name: "option", value: None, whitespace: ""
+        "include relative/path/*"
+            name: "include", value: "relative/path/*", whitespace: ""
+        "\\n  option = value"
+            name: "option", value: "value", whitespace: "\\n  "
+        "# here is a comment"
+            name: "# here is a comment", value: None, whitespace: ""
+        "\\n  # here is a comment"
+            name: "# here is a comment", value: None, whitespace: "\\n  "
+
+    :param str raw: Raw string to parse into an ItemNode.
+    :param dict options: (optional) Additional options to pass to the parser.
     """
 
-    def __init__(self, raw):
-        """Initializes ItemNode with raw data from AST
-
-        Args:
-            raw: list from parser module's AST.
-        """
+    def __init__(self, raw_str, options={}):
+        parser = _create_apache_parser(options, start='startitem')
+        raw = parser.parse(raw_str)
         self._type = raw[0]
         self._raw = tuple(raw[1:])
         self._whitespace = ""
@@ -113,19 +129,30 @@ class ItemNode(Node):
 
     @property
     def name(self):
-        """Getter for the first non-whitespace token, semantically the "name"
-        of this directive.
+        """The first non-whitespace token, semantically the "name" of this
+        directive. Cannot be written. For comments, is the entire comment.
 
-        Useful for retrieving the key if this is a key/value directive.
+        :returns: The name of this node.
+        :rtype: `str`
         """
         return self._raw[0]
 
     def has_value(self):
+        """Returns whether value exists. ``ItemNode`` objects don't have to
+        have a value, like option/value directives with no value, or comments.
+
+        :returns: True if this ``ItemNode`` has a value.
+        :rtype: `bool`
+        """
         return len(self._raw) > 1
 
     @property
     def value(self):
-        """Getter for the last token, semantically the "value" of this item.
+        """Everything but the name, semantically the "value" of this item.
+        Can be overwritten.
+
+        :returns: The value of this node.
+        :rtype: `str`
         """
         if not self.has_value():
             return None
@@ -134,7 +161,10 @@ class ItemNode(Node):
     @value.setter
     def value(self, value):
         """Setter for the value of this item.
-        TODO(sydli): convert `value` to quotedstring automagically if quoted
+
+        :param str value: string to set new value to.
+
+          .. todo:: (sydneyli) convert `value` to quotedstring when quoted
         """
         if not self.has_value():
             self._raw = self._raw + (" ", value,)
@@ -151,15 +181,21 @@ class ItemNode(Node):
                        [_restore_original(word) for word in self._raw])))
 
 
-def _create_parser(options={}, start='contents'):
+def _create_apache_parser(options={}, start='contents'):
+    """Creates a ``ApacheConfigParser`` with default options that are expected
+    by Apache's native parser, to enable the writable loader to work.
+
+    Overrides options ``preservewhitespace``, ``disableemptyelementtags``, and
+    ``multilinehashcomments`` to ``True``.
+
+    :param dict options: Additional parameters to pass.
+    :param str start: Which parsing token, as defined by the apacheconfig
+                      parser, to expect at the root of strings. This is an
+                      internal flag and shouldn't need to be used.
+    """
     options['preservewhitespace'] = True
     options['disableemptyelementtags'] = True
     options['multilinehashcomments'] = True
     ApacheConfigLexer = make_lexer(**options)
     ApacheConfigParser = make_parser(**options)
     return ApacheConfigParser(ApacheConfigLexer(), start=start)
-
-
-def parse_item(raw_str, options={}):
-    parser = _create_parser(options, start='startitem')
-    return ItemNode(parser.parse(raw_str))
