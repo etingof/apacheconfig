@@ -248,6 +248,20 @@ a = 2
 
         self.assertRaises(ApacheConfigError, loader.loads, text)
 
+    def testKeyOnlyOption(self):
+        text = """\
+key2
+key value
+"""
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+
+        loader = ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()))
+
+        config = loader.loads(text)
+        self.assertEqual(config, {'key2': None, 'key': 'value'})
+
     def testDuplicateOptionsOverriden(self):
         text = """\
 a = 1

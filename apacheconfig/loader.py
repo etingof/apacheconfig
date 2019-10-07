@@ -137,6 +137,8 @@ class ApacheConfigLoader(object):
     def g_statement(self, ast):
         """Performs postprocessing on a statement. Returns an {option: value} dict.
         """
+        if len(ast) == 1:
+            return {ast[0]: None}
         option, value = ast[:2]
         value = self._interpolate_vars(option, value)
 
