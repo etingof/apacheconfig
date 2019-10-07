@@ -10,6 +10,8 @@ try:
 except ImportError:
     import unittest
 
+from apacheconfig import BlockNode
+from apacheconfig import ContentsNode
 from apacheconfig import ItemNode
 
 
@@ -36,9 +38,9 @@ class WLoaderTestCaseWrite(unittest.TestCase):
             ("<block>\n</block>", "name2", "<block name2>\n</block>"),
         ]
         for raw, new_value, expected in cases:
-            node = parse_block(raw)
+            node = BlockNode.parse(raw)
             node.arguments = new_value
-            self.assertEqual(expected, str(node))
+            self.assertEqual(expected, node.dump())
 
     def testAddToContents(self):
         cases = [
@@ -55,9 +57,9 @@ class WLoaderTestCaseWrite(unittest.TestCase):
             ("# comment\n", 0, "\n1 2", "\n1 2\n# comment\n"),
         ]
         for raw, index, to_add, expected in cases:
-            node = parse_contents(raw)
+            node = ContentsNode.parse(raw)
             node.add(index, to_add)
-            self.assertEqual(expected, str(node))
+            self.assertEqual(expected, node.dump())
 
     def testRemoveFromContents(self):
         cases = [
@@ -68,9 +70,10 @@ class WLoaderTestCaseWrite(unittest.TestCase):
             ("a # comment", 0, " # comment")
         ]
         for raw, index, expected in cases:
-            node = parse_contents(raw)
+            node = ContentsNode.parse(raw)
             node.remove(index)
-            self.assertEqual(expected, str(node))
+            self.assertEqual(expected, node.dump())
+
 
 class WLoaderTestCaseRead(unittest.TestCase):
     def _test_item_cases(self, cases, expected_type, options={}):
@@ -129,11 +132,11 @@ class WLoaderTestCaseRead(unittest.TestCase):
             ('a b\n<b>\n</b>  \n', ('a b', '\n<b>\n</b>')),
         ]
         for raw, expected in cases:
-            node = parse_contents(raw)
+            node = ContentsNode.parse(raw)
             self.assertEqual(len(node), len(expected))
             for got, expected in zip(node, expected):
-                self.assertEqual(str(got), expected)
-            self.assertEqual(raw, str(node))
+                self.assertEqual(got.dump(), expected)
+            self.assertEqual(raw, node.dump())
 
     def testLoadBlocks(self):
         cases = [
@@ -145,10 +148,10 @@ class WLoaderTestCaseRead(unittest.TestCase):
             ('\n<b>\n</b>', None),
         ]
         for (raw, value) in cases:
-            node = parse_block(raw)
+            node = BlockNode.parse(raw)
             self.assertEqual("b", node.tag)
             self.assertEqual(value, node.arguments)
-            self.assertEqual(raw, str(node))
+            self.assertEqual(raw, node.dump())
 
     def testLoadWholeConfig(self):
         text = """\
@@ -165,5 +168,5 @@ c "d d"
 </a>
 # a
 """
-        node = parse_contents(text)
-        self.assertEqual(text, str(node))
+        node = ContentsNode.parse(text)
+        self.assertEqual(text, node.dump())

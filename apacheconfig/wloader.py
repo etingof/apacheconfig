@@ -83,6 +83,25 @@ class ContentsNode(Node):
             else:
                 self._contents.append(ItemNode(elem))
 
+    @staticmethod
+    def parse(raw_str, options={}, parser=None):
+        """Factory for :class:`apacheconfig.ContentsNode` by parsing data from
+        config string.
+
+        Args:
+            raw_str (str): Config string to parse.
+            options (dict): Additional options to pass to the created parser.
+                Ignored if another ``parser`` is supplied.
+            parser (:class:`apacheconfig.ApacheConfigParser`): optional, to
+                re-use an existing parser. If ``None``, creates a new one.
+        Returns:
+            :class:`apacheconfig.ContentsNode` containing data parsed from
+            ``raw_str``.
+        """
+        if not parser:
+            parser = _create_apache_parser(options, start='contents')
+        return ContentsNode(parser.parse(raw_str))
+
     def add(self, index, raw_str):
         """Parses thing into an Item or Block Node, then adds to contents.
 
@@ -94,7 +113,7 @@ class ContentsNode(Node):
             whitespace: preceding whitespace to prepend to the item.
             index:   index of contents at which to insert the resulting node.
         """
-        parser = _create_parser({}, start='miditem')
+        parser = _create_apache_parser({}, start='miditem')
         raw = parser.parse(raw_str)
         if raw[0] == "block":
             node = BlockNode(raw)
@@ -123,9 +142,21 @@ class ContentsNode(Node):
     def __iter__(self):
         return iter(self._contents)
 
-    def __str__(self):
-        return ("".join([str(item) for item in self._contents])
+    def dump(self):
+        return ("".join([item.dump() for item in self._contents])
                 + self.whitespace)
+
+    @property
+    def ast_node_type(self):
+        return self._type
+
+    @property
+    def whitespace(self):
+        return self._whitespace
+
+    @whitespace.setter
+    def whitespace(self):
+        return self._whitespace
 
 
 class ItemNode(Node):
@@ -294,6 +325,24 @@ class BlockNode(Node):
         if len(raw[start+1]) > 0:
             self._contents = ContentsNode(raw[start + 1])
 
+    @staticmethod
+    def parse(raw_str, options={}, parser=None):
+        """Factory for :class:`apacheconfig.BlockNode` by parsing data from a
+        config string.
+
+        Args:
+            options (dict): Additional options to pass to the created parser.
+                Ignored if another ``parser`` is supplied.
+            parser (:class:`apacheconfig.ApacheConfigParser`): optional, to
+                re-use an existing parser. If ``None``, creates a new one.
+        Returns:
+            :class:`apacheconfig.BlockNode` containing data parsed from
+            ``raw_str``.
+        """
+        if not parser:
+            parser = _create_apache_parser(options, start='startitem')
+        return BlockNode(parser.parse(raw_str))
+
     @property
     def tag(self):
         return self._full_tag.name
@@ -310,11 +359,23 @@ class BlockNode(Node):
     def contents(self):
         return self._contents
 
-    def __str__(self):
+    @property
+    def ast_node_type(self):
+        return self._type
+
+    @property
+    def whitespace(self):
+        return self._whitespace
+
+    @whitespace.setter
+    def whitespace(self):
+        return self._whitespace
+
+    def dump(self):
         if self._contents is None:
-            return "%s<%s/>" % (self.whitespace, str(self._full_tag))
-        return "%s<%s>%s</%s>" % (self.whitespace, str(self._full_tag),
-                                  str(self._contents), self._close_tag)
+            return "%s<%s/>" % (self.whitespace, self._full_tag.dump())
+        return "%s<%s>%s</%s>" % (self.whitespace, self._full_tag.dump(),
+                                  self._contents.dump(), self._close_tag)
 
 
 def _create_apache_parser(options={}, start='contents'):
@@ -335,18 +396,3 @@ def _create_apache_parser(options={}, start='contents'):
     ApacheConfigLexer = make_lexer(**options)
     ApacheConfigParser = make_parser(**options)
     return ApacheConfigParser(ApacheConfigLexer(), start=start)
-
-
-def parse_contents(raw_str, options={}):
-    parser = _create_parser(options, start='contents')
-    return ContentsNode(parser.parse(raw_str))
-
-
-def parse_item(raw_str, options={}):
-    parser = _create_parser(options, start='startitem')
-    return ItemNode(parser.parse(raw_str))
-
-
-def parse_block(raw_str, options={}):
-    parser = _create_parser(options, start='startitem')
-    return BlockNode(parser.parse(raw_str))
