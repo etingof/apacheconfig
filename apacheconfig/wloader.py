@@ -22,80 +22,44 @@ def _restore_original(word):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class Node():
+class Node(object):
     """Generic class containing data that represents a node in the config AST.
     """
 
     @abc.abstractmethod
-    def __str__(self):
-        """Writes this node to a raw string. To get more metadata about the
-        object, use ``repr``.
-        """
-        pass
+    def dump(self):
+        """Dumps the contents of this node to a raw string.
 
-    @abc.abstractmethod
-    def __repr__(self):
-        """Returns a string containing object metadata."""
-        pass
-
-    @property
-    def parser_type(self):
-        """A typestring as defined by the apacheconfig parser.
-
-        The possible values for this are:
-
-        :class:`apacheconfig.ItemNode`: ``comment``, ``statement``,
-        ``include``, ``includeoptional``
-
-        :returns: The typestring (as defined by the apacheconfig parser) for
-                  this node.
+        :returns: Contents of this node as it would appear in a config file.
         :rtype: `str`
         """
-        if self._type is None:
-            raise NotImplementedError()
-        return self._type
 
-    @property
+    @abc.abstractproperty
+    def ast_node_type(self):
+        """Returns object typestring as defined by the apacheconfig parser.
+
+        :returns: a string containing literal preceding or trailing whitespace.
+        :rtype: `str`
+        """
+
+    @abc.abstractproperty
     def whitespace(self):
-        """A string representing literal trailing or preceding whitespace
-        for this node. Can be overwritten.
-
-        Each ``ItemNode`` or ``BlockNode`` keeps track of the whitespace
-        preceding it. For the first element in the configuration file, there
-        could be no whitespace preceding it at all, in which case this should
-        return the empty string.
-
-        ContentsNode is special in that it keeps track of the *trailing*
-        whitespace. For example::
-
-            ItemNode('\\n  option value').whitespace => "\\n  "
-            ItemNode('\\n  # comment').whitespace => "\\n  "
-            BlockNode('\\n  <a>\\n</a>').whitespace => "\\n  "
-            ContentsNode('\\n  option value # comment\\n').whitespace => "\\n"
-
-        :returns: a string containing literal preceding or trailing whitespace
-                  information for this node.
+        """Returns preceding or trailing whitespace for this node.
+        :returns: a string containing literal preceding or trailing whitespace.
         :rtype: `str`
        """
-        if self._whitespace is None:
-            raise NotImplementedError()
-        return self._whitespace
 
+    @abc.abstractmethod
     @whitespace.setter
     def whitespace(self, value):
-        """A string representing literal trailing or preceding whitespace
-        for this node. Trailing for ``Contents``, preceding for ``Item`` or
-        ``Block``.
+        """Set preceding or trailing whitespace for this node.
 
-        :param str value: whitespace string to set this node's whitespace.
+        :param str value: value to set whitespace to.
         """
-        if self._whitespace is None:
-            raise NotImplementedError()
-        self._whitespace = value
 
 
 class ItemNode(Node):
-    """Contains data for a comment or option-value directive.
+    """Creates object containing data for a comment or option-value directive.
 
     Also manages any preceding whitespace. Can represent a key/value option,
     a comment, or an include/includeoptional directive.
@@ -127,6 +91,41 @@ class ItemNode(Node):
             self._whitespace = raw[1]
             self._raw = tuple(raw[2:])
 
+    @property
+    def ast_node_type(self):
+        """Returns object typestring as defined by the apacheconfig parser.
+
+        :returns: The typestring (as defined by the apacheconfig parser) for
+                  this node. The possible values for this are ``comment``,
+                  ``statement``, ``include``, ``includeoptional``.
+        :rtype: `str`
+        """
+        return self._type
+
+    @property
+    def whitespace(self):
+        """Returns preceding whitespace for this node.
+
+        For example::
+
+            ItemNode('\\n  option value').whitespace => "\\n  "
+            ItemNode('option value').whitespace => ""
+            ItemNode('\\n  # comment').whitespace => "\\n  "
+
+        :returns: a string containing literal preceding or trailing whitespace
+                  information for this node.
+        :rtype: `str`
+        """
+        return self._whitespace
+
+    @whitespace.setter
+    def whitespace(self, value):
+        """Set preceding whitespace for this node.
+
+        :param str value: value to set this node's preceding whitespace.
+        """
+        self._whitespace = value
+
     @staticmethod
     def parse(raw_str, options={}, parser=None):
         """Constructs an ItemNode by parsing it from a raw string.
@@ -147,17 +146,22 @@ class ItemNode(Node):
 
     @property
     def name(self):
-        """The first non-whitespace token, semantically the "name" of this
-        directive. Cannot be written. For comments, is the entire comment.
+        """Returns the name of this node.
+
+        Returns the first non-whitespace token in the directive.
+        Cannot be written. For comments, is the entire comment.
 
         :returns: The name of this node.
         :rtype: `str`
         """
         return self._raw[0]
 
+    @property
     def has_value(self):
-        """Returns whether value exists. ``ItemNode`` objects don't have to
-        have a value, like option/value directives with no value, or comments.
+        """Returns whether value exists.
+
+        ``ItemNode`` objects don't have to have a value, like option/value
+        directives with no value, or comments.
 
         :returns: True if this ``ItemNode`` has a value.
         :rtype: `bool`
@@ -166,33 +170,34 @@ class ItemNode(Node):
 
     @property
     def value(self):
-        """Everything but the name, semantically the "value" of this item.
-        Can be overwritten.
+        """Returns the value of this item.
+
+        The "value" is anything but the name. Can be overwritten.
 
         :returns: The value of this node.
         :rtype: `str`
         """
-        if not self.has_value():
+        if not self.has_value:
             return None
         return self._raw[-1]
 
     @value.setter
     def value(self, value):
-        """Setter for the value of this item.
+        """Sets for the value of this item.
 
         :param str value: string to set new value to.
 
           .. todo:: (sydneyli) convert `value` to quotedstring when quoted
         """
-        if not self.has_value():
+        if not self.has_value:
             self._raw = self._raw + (" ", value,)
         self._raw = self._raw[0:-1] + (value,)
 
-    def __str__(self):
+    def dump(self):
         return (self.whitespace +
                 "".join([_restore_original(word) for word in self._raw]))
 
-    def __repr__(self):
+    def __str__(self):
         return ("%s(%s)"
                 % (self.__class__.__name__,
                    str([self._type] +
@@ -201,10 +206,10 @@ class ItemNode(Node):
 
 def _create_apache_parser(options={}, start='contents'):
     """Creates a ``ApacheConfigParser`` with default options that are expected
-    by Apache's native parser, to enable the writable loader to work.
+    by Apache's native parser.
 
-    Overrides options ``preservewhitespace``, ``disableemptyelementtags``, and
-    ``multilinehashcomments`` to ``True``.
+    Overrides apacheconfig options ``preservewhitespace``,
+    ``disableemptyelementtags``, and ``multilinehashcomments`` to ``True``.
 
     :param dict options: Additional parameters to pass.
     :param str start: Which parsing token, as defined by the apacheconfig

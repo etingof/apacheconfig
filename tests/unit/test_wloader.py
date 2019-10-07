@@ -28,7 +28,7 @@ class WLoaderTestCaseWrite(unittest.TestCase):
         for raw, new_value, expected in cases:
             node = ItemNode.parse(raw)
             node.value = new_value
-            self.assertEqual(expected, str(node))
+            self.assertEqual(expected, node.dump())
 
 
 class WLoaderTestCaseRead(unittest.TestCase):
@@ -41,13 +41,13 @@ class WLoaderTestCaseRead(unittest.TestCase):
             self.assertEqual(expected_value, node.value,
                              "Expected node('%s').value to be %s, got %s" %
                              (repr(raw), expected_value, node.value))
-            self.assertEqual(raw, str(node),
-                             ("Expected str(node('%s')) to be the same, "
-                              "but got '%s'" % (repr(raw), str(node))))
-            self.assertEqual(expected_type, node.parser_type,
-                             ("Expected node('%s').parser_type to be '%s', "
+            self.assertEqual(raw, node.dump(),
+                             ("Expected node('%s').dump() to be the same, "
+                              "but got '%s'" % (repr(raw), node.dump())))
+            self.assertEqual(expected_type, node.ast_node_type,
+                             ("Expected node('%s').ast_node_type to be '%s', "
                               "but got '%s'" % (repr(raw), expected_type,
-                                                str(node.parser_type))))
+                                                str(node.ast_node_type))))
 
     def testLoadStatement(self):
         cases = [
