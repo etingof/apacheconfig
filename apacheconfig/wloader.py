@@ -28,25 +28,18 @@ class Node(object):
 
     @abc.abstractmethod
     def dump(self):
-        """Dumps the contents of this node to a raw string.
-
-        :returns: Contents of this node as it would appear in a config file.
-        :rtype: `str`
+        """Returns the contents of this node as it would appear in a config
+        file.
         """
 
     @abc.abstractproperty
     def ast_node_type(self):
         """Returns object typestring as defined by the apacheconfig parser.
-
-        :returns: a string containing literal preceding or trailing whitespace.
-        :rtype: `str`
         """
 
     @abc.abstractproperty
     def whitespace(self):
-        """Returns preceding or trailing whitespace for this node.
-        :returns: a string containing literal preceding or trailing whitespace.
-        :rtype: `str`
+        """Returns preceding or trailing whitespace for this node as a string.
        """
 
     @abc.abstractmethod
@@ -54,7 +47,8 @@ class Node(object):
     def whitespace(self, value):
         """Set preceding or trailing whitespace for this node.
 
-        :param str value: value to set whitespace to.
+        Args:
+            value (str): value to set whitespace to.
         """
 
 
@@ -80,7 +74,8 @@ class ItemNode(Node):
     To construct from a raw string, use the `parse` constructor. The regular
     constructor receives data from the internal apacheconfig parser.
 
-    :param list raw: Raw data returned from ``apacheconfig.parser``.
+    Args:
+        raw (list): Raw data returned from ``apacheconfig.parser``.
     """
 
     def __init__(self, raw, options={}):
@@ -95,10 +90,10 @@ class ItemNode(Node):
     def ast_node_type(self):
         """Returns object typestring as defined by the apacheconfig parser.
 
-        :returns: The typestring (as defined by the apacheconfig parser) for
-                  this node. The possible values for this are ``comment``,
-                  ``statement``, ``include``, ``includeoptional``.
-        :rtype: `str`
+        Returns:
+            The typestring (as defined by the apacheconfig parser) for
+            this node. The possible values for this are ``"comment"``,
+            ``"statement"``, ``"include"``, ``"includeoptional"``.
         """
         return self._type
 
@@ -111,34 +106,27 @@ class ItemNode(Node):
             ItemNode('\\n  option value').whitespace => "\\n  "
             ItemNode('option value').whitespace => ""
             ItemNode('\\n  # comment').whitespace => "\\n  "
-
-        :returns: a string containing literal preceding or trailing whitespace
-                  information for this node.
-        :rtype: `str`
         """
         return self._whitespace
 
     @whitespace.setter
     def whitespace(self, value):
-        """Set preceding whitespace for this node.
-
-        :param str value: value to set this node's preceding whitespace.
-        """
+        """See base class. Operates on preceding whitespace."""
         self._whitespace = value
 
     @staticmethod
     def parse(raw_str, options={}, parser=None):
-        """Constructs an ItemNode by parsing it from a raw string.
+        """Factory for :class:`apacheconfig.ItemNode` by parsing data from a
+        config string.
 
-        :param dict options: (optional) Additional options to pass to the
-                             created parser. Ignored if another ``parser`` is
-                             supplied.
-        :param parser: (optional) To re-use an existing parser. If ``None``,
-                       creates a new one.
-        :type parser: :class:`apacheconfig.ApacheConfigParser`
-
-        :returns: an ItemNode containing metadata parsed from ``raw_str``.
-        :rtype: :class:`apacheconfig.ItemNode`
+        Args:
+            options (dict): Additional options to pass to the created parser.
+                Ignored if another ``parser`` is supplied.
+            parser (:class:`apacheconfig.ApacheConfigParser`): optional, to
+                re-use an existing parser. If ``None``, creates a new one.
+        Returns:
+            :class:`apacheconfig.ItemNode` containing metadata parsed from
+            ``raw_str``.
         """
         if not parser:
             parser = _create_apache_parser(options, start='startitem')
@@ -148,34 +136,25 @@ class ItemNode(Node):
     def name(self):
         """Returns the name of this node.
 
-        Returns the first non-whitespace token in the directive.
-        Cannot be written. For comments, is the entire comment.
-
-        :returns: The name of this node.
-        :rtype: `str`
+        The name is the first non-whitespace token in the directive. Cannot be
+        written. For comments, is the entire comment.
         """
         return self._raw[0]
 
     @property
     def has_value(self):
-        """Returns whether value exists.
+        """Returns ``true`` if this :class:`apacheconfig.ItemNode` has a value.
 
         ``ItemNode`` objects don't have to have a value, like option/value
         directives with no value, or comments.
-
-        :returns: True if this ``ItemNode`` has a value.
-        :rtype: `bool`
         """
         return len(self._raw) > 1
 
     @property
     def value(self):
-        """Returns the value of this item.
+        """Returns the value of this item as a string.
 
         The "value" is anything but the name. Can be overwritten.
-
-        :returns: The value of this node.
-        :rtype: `str`
         """
         if not self.has_value:
             return None
@@ -185,7 +164,8 @@ class ItemNode(Node):
     def value(self, value):
         """Sets for the value of this item.
 
-        :param str value: string to set new value to.
+        Args:
+            value (str): string to set new value to.
 
           .. todo:: (sydneyli) convert `value` to quotedstring when quoted
         """
@@ -205,16 +185,16 @@ class ItemNode(Node):
 
 
 def _create_apache_parser(options={}, start='contents'):
-    """Creates a ``ApacheConfigParser`` with default options that are expected
-    by Apache's native parser.
+    """Returns a :class:`apacheconfig.ApacheConfigParser` with default options
+    that are expected by Apache's native parser.
 
     Overrides apacheconfig options ``preservewhitespace``,
     ``disableemptyelementtags``, and ``multilinehashcomments`` to ``True``.
 
-    :param dict options: Additional parameters to pass.
-    :param str start: Which parsing token, as defined by the apacheconfig
-                      parser, to expect at the root of strings. This is an
-                      internal flag and shouldn't need to be used.
+    Params:
+        options (dict): Additional parameters to pass.
+        start (str): Which parsing token, as defined by the apacheconfig
+            parser, to expect at the root of strings.
     """
     options['preservewhitespace'] = True
     options['disableemptyelementtags'] = True
