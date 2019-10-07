@@ -43,6 +43,7 @@ install:
 script:
   - if [ "$TRAVIS_PYTHON_VERSION" == "3.7" ]; then flake8 ./apacheconfig ./tests ./setup.py; fi
   - PYTHONPATH=.:$PYTHONPATH python tests/__main__.py
+  - cd ./docs && make html && cd -
 after_success:
   - PYTHONPATH=.:$PYTHONPATH coverage run --omit=*test* tests/__main__.py
   - codecov
