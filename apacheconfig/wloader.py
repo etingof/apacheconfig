@@ -53,23 +53,15 @@ class Node(object):
 
 
 class ContentsNode(Node):
-    """Node representing an ordered list of BlockNodes and ItemNodes.
+    """Creates object representing an ordered list of BlockNodes and ItemNodes.
 
-    Each BlockNode contains a ContentsNode, and every configuration's root is
-    a ContentsNode.
+    Each BlockNode contains a ContentsNode, and every configuration file's
+    root should be a ContentsNode. To construct from a raw string, use the
+    `parse` factory function. The default __init__ constructor expects data
+    from the internal apacheconfig parser.
 
-    Unlike other Nodes, the `whitespace` property of ContentsNode keeps track
-    of *trailing* whitespace, since the preceding whitespace in ContentsNode
-    will already be recorded by the first Item or Block in ContentsNode.
-
-    For instance, the following valid configuration:
-        `\tkey value # comment\n`
-    will be processed into something like:
-        ContentsNode([
-            ItemNode(['\t', 'key', ' ', 'value']),
-            ItemNode([' ', '# comment']),
-            '\n'])
-    where the `whitespace` property for contents would return '\n', not '\t'.
+    Args:
+        raw (list): Raw data returned from ``apacheconfig.parser``.
     """
     def __init__(self, raw):
         self._type = raw[0]
@@ -103,15 +95,17 @@ class ContentsNode(Node):
         return ContentsNode(parser.parse(raw_str))
 
     def add(self, index, raw_str):
-        """Parses thing into an Item or Block Node, then adds to contents.
+        """Parses given string into appropriate :class:`apacheconfig.Node`
+        object, then adds to contents at specified index.
 
-        Arguments:
-            raw_str: string to parse. The parser should be able to determine
-                     whether it's a block or item. For instance:
-                       `key value`
-                       `<empty block/>`
-            whitespace: preceding whitespace to prepend to the item.
-            index:   index of contents at which to insert the resulting node.
+        Args:
+            index (int): index of contents at which to insert the node.
+            raw_str (str): string to parse. The parser will automatically
+                determine whether it's a :class:`apacheconfig.BlockNode` or
+                :class:`apacheconfig.ItemNode`.
+
+        Returns:
+            The :class:`apacheconfig.Node` created from parsing ``raw_str``.
         """
         parser = _create_apache_parser({}, start='miditem')
         raw = parser.parse(raw_str)
@@ -127,35 +121,60 @@ class ContentsNode(Node):
         return node
 
     def remove(self, index):
-        """Removes node/thing from supplied index.
+        """Removes node from supplied index.
 
-        Arguments:
-            index: index of node to remove from contents.
+        Args:
+            index (int): index of node to remove from contents.
+
+        Returns:
+            The :class:`apacheconfig.Node` that was removed.
         """
         thing = self._contents[index]
         del self._contents[index]
         return thing
 
     def __len__(self):
+        """Number of :class:`apacheconfig.Node` children."""
         return len(self._contents)
 
     def __iter__(self):
+        """Iterator over :class:`apacheconfig.Node` children."""
         return iter(self._contents)
 
     def dump(self):
+        """See base class."""
         return ("".join([item.dump() for item in self._contents])
                 + self.whitespace)
 
     @property
     def ast_node_type(self):
+        """See base class. Can only return ``"contents"`` for
+        :class:`apacheconfig.ContentsNode`.
+        """
         return self._type
 
     @property
     def whitespace(self):
+        """Returns trailing whitespace in contents.
+
+        For instance, the following valid "contents" configuration::
+
+            \\tkey value # comment\\n
+
+        will be processed into something like::
+
+            ContentsNode([
+                ItemNode(['\\t', 'key', ' ', 'value']),
+                ItemNode([' ', '# comment']),
+                '\\n'])
+
+        where the ``whitespace`` property for contents would return '\\n'.
+        """
         return self._whitespace
 
     @whitespace.setter
     def whitespace(self):
+        """Sets trailing whitespace."""
         return self._whitespace
 
 
@@ -292,24 +311,11 @@ class ItemNode(Node):
 
 
 class BlockNode(Node):
-    """Contains data for a block.
+    """Creates object containing data for a block.
 
-    Manages any preceding whitespace, and details of contents.
-
-    Construct this using raw AST data from parser. Generally, block data looks
-    like:
-        ['block', <optional whitespace>, <open tag>, <contents object>,
-            <close tag>]
-    E.g., for the block "<block_tag block_args>
-
-    <block/> is represented with an empty contents object.
-
-    The add/remove functions inherited from ContentsNode act on the contents
-    contained within this block.
-
-    Properties:
-        tag:  getter only. Retrieves the full tag name.
-        arguments:  getter & setter for block arguments.
+    Manages any preceding whitespace before the opening block tag, and
+    contains a :class:`apacheconfig.ContentsNode` object representing the
+    block contents.
     """
 
     def __init__(self, raw):
@@ -345,33 +351,52 @@ class BlockNode(Node):
 
     @property
     def tag(self):
+        """Returns tag name for this block as a string.
+
+        For instance, ``<block details>\\n</block>`` has tag ``"block"``.
+        """
         return self._full_tag.name
 
     @property
     def arguments(self):
+        """Returns arguments for this block as a literal string.
+
+        For instance, ``<block lots of details>\\n</block>`` has arguments
+         ``"lots of details"``. Can be overwritten.
+        """
         return self._full_tag.value
 
     @arguments.setter
     def arguments(self, arguments):
+        """Sets or overwrites arguments for this block."""
         self._full_tag.value = arguments
 
     @property
     def contents(self):
+        """Returns :class:`apacheconfig.ContentsNode` contained within this
+        block.
+        """
         return self._contents
 
     @property
     def ast_node_type(self):
+        """See base class. Can only return ``"block"`` for
+        :class:`apacheconfig.BlockNode`.
+        """
         return self._type
 
     @property
     def whitespace(self):
+        """Returns preceding whitespace for this node."""
         return self._whitespace
 
     @whitespace.setter
     def whitespace(self):
+        """See base class. Sets preceding whitespace."""
         return self._whitespace
 
     def dump(self):
+        """See base class."""
         if self._contents is None:
             return "%s<%s/>" % (self.whitespace, self._full_tag.dump())
         return "%s<%s>%s</%s>" % (self.whitespace, self._full_tag.dump(),
