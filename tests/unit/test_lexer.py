@@ -96,12 +96,45 @@ a = "b"
             ]
         )
 
-    def testCommentContinuations(self):
-        text = "# comment \\\n continues"
-        options = {'multilinehashcomments': True}
+    def testCommentContinuationsDisabled(self):
+        text = "# comment \\\ndoesnt continue"
+        options = { 'multilinehashcomments': False }
         ApacheConfigLexer = make_lexer(**options)
         tokens = ApacheConfigLexer().tokenize(text)
-        self.assertEqual(tokens, ['# comment \\\n continues', ])
+        self.assertEqual(tokens, ['# comment \\', '\n',
+                                  ('doesnt', ' ', 'continue')])
+
+    def testCommentContinuations(self):
+        text = "# comment \\\n continues \\\n multiple lines"
+        options = { 'multilinehashcomments': True }
+        ApacheConfigLexer = make_lexer(**options)
+        tokens = ApacheConfigLexer().tokenize(text)
+        self.assertEqual(tokens,
+                         ['# comment \\\n continues \\\n multiple lines'])
+
+    def testCommentContinuationsEmptyLine(self):
+        text = "# comment \\\n\n# comment"
+        options = { 'multilinehashcomments': True }
+        ApacheConfigLexer = make_lexer(**options)
+        tokens = ApacheConfigLexer().tokenize(text)
+        self.assertEqual(tokens, ['# comment \\\n', '\n', '# comment'])
+
+    def testCommentContinuationsWithOtherComments(self):
+        text = ("# comment \\\n continues \\\n multiple lines\n"
+                "# comment stuff\n hello there")
+        options = { 'multilinehashcomments': True }
+        ApacheConfigLexer = make_lexer(**options)
+        tokens = ApacheConfigLexer().tokenize(text)
+        self.assertEqual(tokens, [
+                         '# comment \\\n continues \\\n multiple lines',
+                         '\n', '# comment stuff', '\n ',
+                         ('hello', ' ', 'there')])
+
+    def testCommentInBlock(self):
+        text = "<block>\n# comment\n</block>"
+        ApacheConfigLexer = make_lexer()
+        tokens = ApacheConfigLexer().tokenize(text)
+        self.assertEqual(tokens, [('block',), '\n', '# comment','\n', 'block'])
 
     def testComments(self):
         text = """\
