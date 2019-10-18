@@ -98,15 +98,13 @@ a = "b"
 
     def testCommentContinuationsDisabled(self):
         text = "# comment \\\ndoesnt continue"
-        options = { 'multilinehashcomments': False }
-        ApacheConfigLexer = make_lexer(**options)
-        tokens = ApacheConfigLexer().tokenize(text)
+        tokens = self.lexer.tokenize(text)
         self.assertEqual(tokens, ['# comment \\', '\n',
                                   ('doesnt', ' ', 'continue')])
 
     def testCommentContinuations(self):
         text = "# comment \\\n continues \\\n multiple lines"
-        options = { 'multilinehashcomments': True }
+        options = {'multilinehashcomments': True}
         ApacheConfigLexer = make_lexer(**options)
         tokens = ApacheConfigLexer().tokenize(text)
         self.assertEqual(tokens,
@@ -114,7 +112,7 @@ a = "b"
 
     def testCommentContinuationsEmptyLine(self):
         text = "# comment \\\n\n# comment"
-        options = { 'multilinehashcomments': True }
+        options = {'multilinehashcomments': True}
         ApacheConfigLexer = make_lexer(**options)
         tokens = ApacheConfigLexer().tokenize(text)
         self.assertEqual(tokens, ['# comment \\\n', '\n', '# comment'])
@@ -122,7 +120,7 @@ a = "b"
     def testCommentContinuationsWithOtherComments(self):
         text = ("# comment \\\n continues \\\n multiple lines\n"
                 "# comment stuff\n hello there")
-        options = { 'multilinehashcomments': True }
+        options = {'multilinehashcomments': True}
         ApacheConfigLexer = make_lexer(**options)
         tokens = ApacheConfigLexer().tokenize(text)
         self.assertEqual(tokens, [
@@ -134,7 +132,8 @@ a = "b"
         text = "<block>\n# comment\n</block>"
         ApacheConfigLexer = make_lexer()
         tokens = ApacheConfigLexer().tokenize(text)
-        self.assertEqual(tokens, [('block',), '\n', '# comment','\n', 'block'])
+        self.assertEqual(tokens, [('block',), '\n', '# comment', '\n',
+                                  'block'])
 
     def testComments(self):
         text = """\
