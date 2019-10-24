@@ -28,19 +28,16 @@ class Node(object):
 
     @abc.abstractmethod
     def dump(self):
-        """Returns the contents of this node as it would appear in a config
-        file.
-        """
+        """Returns the contents of this node as in a config file."""
 
     @abc.abstractproperty
     def ast_node_type(self):
-        """Returns object typestring as defined by the apacheconfig parser.
-        """
+        """Returns object typestring as defined by the apacheconfig parser."""
 
     @abc.abstractproperty
     def whitespace(self):
         """Returns preceding or trailing whitespace for this node as a string.
-       """
+        """
 
     @abc.abstractmethod
     @whitespace.setter
@@ -78,7 +75,7 @@ class ItemNode(Node):
         raw (list): Raw data returned from ``apacheconfig.parser``.
     """
 
-    def __init__(self, raw, options={}):
+    def __init__(self, raw):
         self._type = raw[0]
         self._raw = tuple(raw[1:])
         self._whitespace = ""
@@ -115,22 +112,19 @@ class ItemNode(Node):
         self._whitespace = value
 
     @staticmethod
-    def parse(raw_str, options={}, parser=None):
+    def parse(raw_str, parser):
         """Factory for :class:`apacheconfig.ItemNode` by parsing data from a
         config string.
 
         Args:
-            options (dict): Additional options to pass to the created parser.
-                Ignored if another ``parser`` is supplied.
-            parser (:class:`apacheconfig.ApacheConfigParser`): optional, to
-                re-use an existing parser. If ``None``, creates a new one.
+            parser (:class:`apacheconfig.ApacheConfigParser`): specify the
+                parser to use. Can be created by ``native_apache_parser()``.
         Returns:
             :class:`apacheconfig.ItemNode` containing metadata parsed from
             ``raw_str``.
         """
-        if not parser:
-            parser = _create_apache_parser(options, start='startitem')
-        return ItemNode(parser.parse(raw_str))
+        raw = parser.parse(raw_str)
+        return ItemNode(raw[1])
 
     @property
     def name(self):
@@ -157,7 +151,7 @@ class ItemNode(Node):
         The "value" is anything but the name. Can be overwritten.
         """
         if not self.has_value:
-            return None
+            return
         return self._raw[-1]
 
     @value.setter
@@ -184,7 +178,7 @@ class ItemNode(Node):
                        [_restore_original(word) for word in self._raw])))
 
 
-def _create_apache_parser(options={}, start='contents'):
+def native_apache_parser(options=None):
     """Returns a :class:`apacheconfig.ApacheConfigParser` with default options
     that are expected by Apache's native parser.
 
@@ -193,12 +187,12 @@ def _create_apache_parser(options={}, start='contents'):
 
     Params:
         options (dict): Additional parameters to pass.
-        start (str): Which parsing token, as defined by the apacheconfig
-            parser, to expect at the root of strings.
     """
-    options['preservewhitespace'] = True
-    options['disableemptyelementtags'] = True
-    options['multilinehashcomments'] = True
+    if not options:
+        options = {}
+    options.update(preservewhitespace=True,
+                   disableemptyelementtags=True,
+                   multilinehashcomments=True)
     ApacheConfigLexer = make_lexer(**options)
     ApacheConfigParser = make_parser(**options)
-    return ApacheConfigParser(ApacheConfigLexer(), start=start)
+    return ApacheConfigParser(ApacheConfigLexer(), start="contents")

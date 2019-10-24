@@ -11,9 +11,14 @@ except ImportError:
     import unittest
 
 from apacheconfig import ItemNode
+from apacheconfig import native_apache_parser
 
 
 class WLoaderTestCaseWrite(unittest.TestCase):
+
+    def setUp(self):
+        self.parser = native_apache_parser()
+
     def testChangeItemValue(self):
         cases = [
             ('option value', 'value2', 'option value2'),
@@ -26,15 +31,37 @@ class WLoaderTestCaseWrite(unittest.TestCase):
              'include new/path/to/file'),
         ]
         for raw, new_value, expected in cases:
-            node = ItemNode.parse(raw)
+            node = ItemNode.parse(raw, self.parser)
             node.value = new_value
             self.assertEqual(expected, node.dump())
 
 
 class WLoaderTestCaseRead(unittest.TestCase):
-    def _test_item_cases(self, cases, expected_type, options={}):
+
+    def setUp(self):
+        self.parser = native_apache_parser()
+
+    def testChangeItemValue(self):
+        cases = [
+            ('option value', 'value2', 'option value2'),
+            ('\noption value', 'value2', '\noption value2'),
+            ('\noption =\\\n  value', 'value2', '\noption =\\\n  value2'),
+            ('option value', 'long  value', 'option long  value'),
+            ('option value', '"long  value"', 'option "long  value"'),
+            ('option', 'option2', 'option option2'),
+            ('include old/path/to/file', 'new/path/to/file',
+             'include new/path/to/file'),
+        ]
+        for raw, new_value, expected in cases:
+            node = ItemNode.parse(raw, self.parser)
+            node.value = new_value
+            self.assertEqual(expected, node.dump())
+
+    def _test_item_cases(self, cases, expected_type, parser=None):
+        if not parser:
+            parser = self.parser
         for raw, expected_name, expected_value in cases:
-            node = ItemNode.parse(raw, options)
+            node = ItemNode.parse(raw, self.parser)
             self.assertEqual(expected_name, node.name,
                              "Expected node('%s').name to be %s, got %s" %
                              (repr(raw), expected_name, node.name))
@@ -77,4 +104,5 @@ class WLoaderTestCaseRead(unittest.TestCase):
             ('\ninclude path', 'include', 'path'),
         ]
         self._test_item_cases(cases, 'include',
-                              options={'useapacheinclude': True})
+                              native_apache_parser(
+                                  options={'useapacheinclude': True}))
