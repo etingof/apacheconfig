@@ -10,7 +10,7 @@ try:
 except ImportError:
     import unittest
 
-from apacheconfig import ItemNode
+from apacheconfig import LeafASTNode
 from apacheconfig import native_apache_parser
 
 
@@ -31,7 +31,7 @@ class WLoaderTestCaseWrite(unittest.TestCase):
              'include new/path/to/file'),
         ]
         for raw, new_value, expected in cases:
-            node = ItemNode.parse(raw, self.parser)
+            node = LeafASTNode.parse(raw, self.parser)
             node.value = new_value
             self.assertEqual(expected, node.dump())
 
@@ -53,7 +53,7 @@ class WLoaderTestCaseRead(unittest.TestCase):
              'include new/path/to/file'),
         ]
         for raw, new_value, expected in cases:
-            node = ItemNode.parse(raw, self.parser)
+            node = LeafASTNode.parse(raw, self.parser)
             node.value = new_value
             self.assertEqual(expected, node.dump())
 
@@ -61,7 +61,7 @@ class WLoaderTestCaseRead(unittest.TestCase):
         if not parser:
             parser = self.parser
         for raw, expected_name, expected_value in cases:
-            node = ItemNode.parse(raw, self.parser)
+            node = LeafASTNode.parse(raw, self.parser)
             self.assertEqual(expected_name, node.name,
                              "Expected node('%s').name to be %s, got %s" %
                              (repr(raw), expected_name, node.name))
@@ -71,10 +71,10 @@ class WLoaderTestCaseRead(unittest.TestCase):
             self.assertEqual(raw, node.dump(),
                              ("Expected node('%s').dump() to be the same, "
                               "but got '%s'" % (repr(raw), node.dump())))
-            self.assertEqual(expected_type, node.ast_node_type,
-                             ("Expected node('%s').ast_node_type to be '%s', "
+            self.assertEqual(expected_type, node.typestring,
+                             ("Expected node('%s').typestring to be '%s', "
                               "but got '%s'" % (repr(raw), expected_type,
-                                                str(node.ast_node_type))))
+                                                str(node.typestring))))
 
     def testLoadStatement(self):
         cases = [
