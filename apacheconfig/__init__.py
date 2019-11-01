@@ -9,7 +9,6 @@ from apacheconfig.loader import ApacheConfigLoader
 from apacheconfig.error import ApacheConfigError
 
 from apacheconfig.wloader import LeafASTNode  # noqa: F401
-from apacheconfig.wloader import native_apache_parser  # noqa: F401
 
 
 @contextmanager

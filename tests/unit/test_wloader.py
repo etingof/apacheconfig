@@ -11,13 +11,17 @@ except ImportError:
     import unittest
 
 from apacheconfig import LeafASTNode
-from apacheconfig import native_apache_parser
+from apacheconfig import flavors
+from apacheconfig import make_lexer
+from apacheconfig import make_parser
 
 
 class WLoaderTestCaseWrite(unittest.TestCase):
 
     def setUp(self):
-        self.parser = native_apache_parser()
+        ApacheConfigLexer = make_lexer(**flavors.NATIVE_APACHE)
+        ApacheConfigParser = make_parser(**flavors.NATIVE_APACHE)
+        self.parser = ApacheConfigParser(ApacheConfigLexer(), start="contents")
 
     def testChangeItemValue(self):
         cases = [
@@ -39,7 +43,9 @@ class WLoaderTestCaseWrite(unittest.TestCase):
 class WLoaderTestCaseRead(unittest.TestCase):
 
     def setUp(self):
-        self.parser = native_apache_parser()
+        ApacheConfigLexer = make_lexer(**flavors.NATIVE_APACHE)
+        ApacheConfigParser = make_parser(**flavors.NATIVE_APACHE)
+        self.parser = ApacheConfigParser(ApacheConfigLexer(), start="contents")
 
     def testChangeItemValue(self):
         cases = [
@@ -103,6 +109,4 @@ class WLoaderTestCaseRead(unittest.TestCase):
             ('  include path', 'include', 'path'),
             ('\ninclude path', 'include', 'path'),
         ]
-        self._test_item_cases(cases, 'include',
-                              native_apache_parser(
-                                  options={'useapacheinclude': True}))
+        self._test_item_cases(cases, 'include', self.parser)

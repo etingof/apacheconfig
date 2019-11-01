@@ -7,9 +7,6 @@
 import abc
 import six
 
-from apacheconfig import make_parser
-from apacheconfig import make_lexer
-
 
 def _restore_original(word):
     """If the `word` is a Quoted string, restores it to original.
@@ -177,22 +174,3 @@ class LeafASTNode(AbstractASTNode):
                 % (self.__class__.__name__,
                    str([self._type] +
                        [_restore_original(word) for word in self._raw])))
-
-
-def native_apache_parser(options=None):
-    """Returns a dict of options that are expected by Apache's native parser.
-
-    Overrides apacheconfig options ``preservewhitespace``,
-    ``disableemptyelementtags``, and ``multilinehashcomments`` to ``True``.
-
-    Params:
-        options (dict): Additional parameters to pass.
-    """
-    if not options:
-        options = {}
-    options.update(preservewhitespace=True,
-                   disableemptyelementtags=True,
-                   multilinehashcomments=True)
-    ApacheConfigLexer = make_lexer(**options)
-    ApacheConfigParser = make_parser(**options)
-    return ApacheConfigParser(ApacheConfigLexer(), start="contents")
