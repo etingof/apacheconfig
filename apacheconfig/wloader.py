@@ -7,10 +7,6 @@
 import abc
 import six
 
-from apacheconfig import make_parser
-from apacheconfig import make_lexer
-
-
 def _restore_original(word):
     """If the `word` is a Quoted string, restores it to original.
     """
@@ -22,25 +18,22 @@ def _restore_original(word):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class Node(object):
+class AbstractASTNode(object):
     """Generic class containing data that represents a node in the config AST.
     """
 
     @abc.abstractmethod
     def dump(self):
-        """Returns the contents of this node as it would appear in a config
-        file.
-        """
+        """Returns the contents of this node as in a config file."""
 
     @abc.abstractproperty
-    def ast_node_type(self):
-        """Returns object typestring as defined by the apacheconfig parser.
-        """
+    def typestring(self):
+        """Returns object typestring as defined by the apacheconfig parser."""
 
     @abc.abstractproperty
     def whitespace(self):
         """Returns preceding or trailing whitespace for this node as a string.
-       """
+        """
 
     @abc.abstractmethod
     @whitespace.setter
@@ -178,13 +171,13 @@ class ContentsNode(Node):
         return self._whitespace
 
 
-class ItemNode(Node):
-    """Creates object containing data for a comment or option-value directive.
+class LeafASTNode(AbstractASTNode):
+    """Creates object containing a simple list of tokens.
 
     Also manages any preceding whitespace. Can represent a key/value option,
     a comment, or an include/includeoptional directive.
 
-    Examples of what ItemNode fields might look like for different directives::
+    Examples of what LeafASTNode might look like for different directives::
 
         "option"
             name: "option", value: None, whitespace: ""
@@ -204,7 +197,7 @@ class ItemNode(Node):
         raw (list): Raw data returned from ``apacheconfig.parser``.
     """
 
-    def __init__(self, raw, options={}):
+    def __init__(self, raw):
         self._type = raw[0]
         self._raw = tuple(raw[1:])
         self._whitespace = ""
@@ -213,7 +206,7 @@ class ItemNode(Node):
             self._raw = tuple(raw[2:])
 
     @property
-    def ast_node_type(self):
+    def typestring(self):
         """Returns object typestring as defined by the apacheconfig parser.
 
         Returns:
@@ -229,9 +222,9 @@ class ItemNode(Node):
 
         For example::
 
-            ItemNode('\\n  option value').whitespace => "\\n  "
-            ItemNode('option value').whitespace => ""
-            ItemNode('\\n  # comment').whitespace => "\\n  "
+            LeafASTNode('\\n  option value').whitespace => "\\n  "
+            LeafASTNode('option value').whitespace => ""
+            LeafASTNode('\\n  # comment').whitespace => "\\n  "
         """
         return self._whitespace
 
@@ -240,23 +233,21 @@ class ItemNode(Node):
         """See base class. Operates on preceding whitespace."""
         self._whitespace = value
 
-    @staticmethod
-    def parse(raw_str, options={}, parser=None):
-        """Factory for :class:`apacheconfig.ItemNode` by parsing data from a
+    @classmethod
+    def parse(cls, raw_str, parser):
+        """Factory for :class:`apacheconfig.LeafASTNode` by parsing data from a
         config string.
 
         Args:
-            options (dict): Additional options to pass to the created parser.
-                Ignored if another ``parser`` is supplied.
-            parser (:class:`apacheconfig.ApacheConfigParser`): optional, to
-                re-use an existing parser. If ``None``, creates a new one.
+            raw_str (string): The text to parse.
+            parser (:class:`apacheconfig.ApacheConfigParser`): specify the
+                parser to use. Can be created by ``native_apache_parser()``.
         Returns:
-            :class:`apacheconfig.ItemNode` containing metadata parsed from
+            :class:`apacheconfig.LeafASTNode` containing metadata parsed from
             ``raw_str``.
         """
-        if not parser:
-            parser = _create_apache_parser(options, start='startitem')
-        return ItemNode(parser.parse(raw_str))
+        raw = parser.parse(raw_str)
+        return cls(raw[1])
 
     @property
     def name(self):
@@ -269,9 +260,9 @@ class ItemNode(Node):
 
     @property
     def has_value(self):
-        """Returns ``true`` if this :class:`apacheconfig.ItemNode` has a value.
+        """Returns ``True`` if this :class:`apacheconfig.LeafASTNode` has a value.
 
-        ``ItemNode`` objects don't have to have a value, like option/value
+        ``LeafASTNode`` objects don't have to have a value, like option/value
         directives with no value, or comments.
         """
         return len(self._raw) > 1
@@ -283,7 +274,7 @@ class ItemNode(Node):
         The "value" is anything but the name. Can be overwritten.
         """
         if not self.has_value:
-            return None
+            return
         return self._raw[-1]
 
     @value.setter
@@ -402,22 +393,3 @@ class BlockNode(Node):
         return "%s<%s>%s</%s>" % (self.whitespace, self._full_tag.dump(),
                                   self._contents.dump(), self._close_tag)
 
-
-def _create_apache_parser(options={}, start='contents'):
-    """Returns a :class:`apacheconfig.ApacheConfigParser` with default options
-    that are expected by Apache's native parser.
-
-    Overrides apacheconfig options ``preservewhitespace``,
-    ``disableemptyelementtags``, and ``multilinehashcomments`` to ``True``.
-
-    Params:
-        options (dict): Additional parameters to pass.
-        start (str): Which parsing token, as defined by the apacheconfig
-            parser, to expect at the root of strings.
-    """
-    options['preservewhitespace'] = True
-    options['disableemptyelementtags'] = True
-    options['multilinehashcomments'] = True
-    ApacheConfigLexer = make_lexer(**options)
-    ApacheConfigParser = make_parser(**options)
-    return ApacheConfigParser(ApacheConfigLexer(), start=start)

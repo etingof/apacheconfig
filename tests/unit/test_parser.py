@@ -6,7 +6,8 @@
 #
 import sys
 
-from apacheconfig import *
+from apacheconfig import make_lexer
+from apacheconfig import make_parser
 
 try:
     import unittest2 as unittest
@@ -47,27 +48,32 @@ class ParserTestCase(unittest.TestCase):
             self.assertEqual(ast, ['contents', ['statement', 'a', 'b']])
 
     def testHashComments(self):
-            text = """\
+        text = """\
 #a
 # b
 c c# c
-c \# # c
-key value\#123
+c \\# # c
+key value\\#123
 """
-            ApacheConfigLexer = make_lexer()
-            ApacheConfigParser = make_parser()
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
 
-            parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+        parser = ApacheConfigParser(
+            ApacheConfigLexer(), start='contents')
 
-            ast = parser.parse(text)
-            self.assertEqual(ast, ['contents',
-                                   ['comment', '#a'],
-                                   ['comment', '# b'],
-                                   ['statement', 'c', 'c'],
-                                   ['comment', '# c'],
-                                   ['statement', 'c', '\#'],
-                                   ['comment', '# c'],
-                                   ['statement', 'key', 'value\#123']])
+        ast = parser.parse(text)
+        self.assertEqual(
+            ast, [
+                'contents',
+                ['comment', '#a'],
+                ['comment', '# b'],
+                ['statement', 'c', 'c'],
+                ['comment', '# c'],
+                ['statement', 'c', '\\#'],
+                ['comment', '# c'],
+                ['statement', 'key', 'value\\#123']
+            ]
+        )
 
     def testCStyleComments(self):
         text = """\
@@ -79,31 +85,42 @@ key value\#123
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+        parser = ApacheConfigParser(
+            ApacheConfigLexer(), start='contents')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, ['contents', ['comment', 'a'], ['comment', '\n# b\n']])
+        self.assertEqual(
+            ast, [
+                'contents', ['comment', 'a'],
+                ['comment', '\n# b\n']
+            ]
+        )
 
     def testCStyleCommentsDisabled(self):
-            text = """\
+        text = """\
 /*a*/
 /*
 # b
 */
         """
-            options = {
-                'ccomments': False
-            }
+        options = {
+            'ccomments': False
+        }
 
-            ApacheConfigLexer = make_lexer(**options)
-            ApacheConfigParser = make_parser(**options)
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
 
-            parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
-            self.assertEqual(parser.parse(text), ['contents',
-                                                  ['statement', '/*a*/'],
-                                                  ['statement', '/*'],
-                                                  ['comment', '# b'],
-                                                  ['statement', '*/']])
+        parser = ApacheConfigParser(
+            ApacheConfigLexer(), start='contents')
+        self.assertEqual(
+            parser.parse(text), [
+                'contents',
+                ['statement', '/*a*/'],
+                ['statement', '/*'],
+                ['comment', '# b'],
+                ['statement', '*/']
+            ]
+        )
 
     def testIncludes(self):
         text = """\
@@ -113,10 +130,16 @@ include first.conf
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+        parser = ApacheConfigParser(
+            ApacheConfigLexer(), start='contents')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, ['contents', ['include', 'first.conf'], ['include', 'second.conf']])
+        self.assertEqual(
+            ast, [
+                'contents', ['include', 'first.conf'],
+                ['include', 'second.conf']
+            ]
+        )
 
     def testApacheIncludesDisabled(self):
         text = """\
@@ -130,10 +153,16 @@ include first.conf
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+        parser = ApacheConfigParser(
+            ApacheConfigLexer(), start='contents')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, ['contents', ['include', 'first.conf'], ['include', 'second.conf']])
+        self.assertEqual(
+            ast, [
+                'contents', ['include', 'first.conf'],
+                ['include', 'second.conf']
+            ]
+        )
 
     def testOptionAndValueSet(self):
         text = """\
@@ -144,8 +173,8 @@ a= b
 a =b
 a   b
 a "b"
-   a = "b"   
-   a =        'b'   
+   a = "b"
+   a =        'b'
 """
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
@@ -153,16 +182,20 @@ a "b"
         parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, ['contents',
-                               ['statement', 'a', 'b'],
-                               ['statement', 'a', 'b'],
-                               ['statement', 'a', 'b'],
-                               ['statement', 'a', 'b'],
-                               ['statement', 'a', 'b'],
-                               ['statement', 'a', 'b'],
-                               ['statement', 'a', 'b'],
-                               ['statement', 'a', 'b'],
-                               ['statement', 'a', 'b']])
+        self.assertEqual(
+            ast, [
+                'contents',
+                ['statement', 'a', 'b'],
+                ['statement', 'a', 'b'],
+                ['statement', 'a', 'b'],
+                ['statement', 'a', 'b'],
+                ['statement', 'a', 'b'],
+                ['statement', 'a', 'b'],
+                ['statement', 'a', 'b'],
+                ['statement', 'a', 'b'],
+                ['statement', 'a', 'b']
+            ]
+        )
 
     def testBlockWithOptions(self):
         text = """\
@@ -175,35 +208,45 @@ a "b"
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        parser = ApacheConfigParser(ApacheConfigLexer(), start='block')
+        parser = ApacheConfigParser(
+            ApacheConfigLexer(), start='block')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, ['block', ('a',),
-                               ['contents',
-                                ['comment', '#a'],
-                                 ['statement', 'a', 'b b'],
-                                ['comment', '# a b'],
-                                 ['statement', 'a', 'b b']], 'a'])
+        self.assertEqual(
+            ast, [
+                'block', ('a',),
+                ['contents',
+                 ['comment', '#a'],
+                 ['statement', 'a', 'b b'],
+                 ['comment', '# a b'],
+                 ['statement', 'a', 'b b']], 'a'
+            ]
+        )
 
     def testNestedBlock(self):
-            text = """\
+        text = """\
 <a>
   <b>
      <c>
      </c>
   </b>
 </a>"""
-            ApacheConfigLexer = make_lexer()
-            ApacheConfigParser = make_parser()
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
 
-            parser = ApacheConfigParser(ApacheConfigLexer(), start='block')
+        parser = ApacheConfigParser(
+            ApacheConfigLexer(), start='block')
 
-            ast = parser.parse(text)
-            self.assertEqual(ast, ['block', ('a',),
-                                   ['contents',
-                                    ['block', ('b',),
-                                     ['contents',
-                                      ['block', ('c',), [], 'c']], 'b']], 'a'])
+        ast = parser.parse(text)
+        self.assertEqual(
+            ast, [
+                'block', ('a',),
+                ['contents',
+                 ['block', ('b',),
+                  ['contents',
+                   ['block', ('c',), [], 'c']], 'b']], 'a'
+            ]
+        )
 
     def testEmptyBlocks(self):
         text = """\
@@ -213,12 +256,17 @@ a "b"
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+        parser = ApacheConfigParser(
+            ApacheConfigLexer(), start='contents')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, ['contents',
-                               ['block', ('a',), [], 'a'],
-                               ['block', ('b',), [], 'b']])
+        self.assertEqual(
+            ast, [
+                'contents',
+                ['block', ('a',), [], 'a'],
+                ['block', ('b',), [], 'b']
+            ]
+        )
 
     def testNamedEmptyBlocks(self):
         text = """\
@@ -232,21 +280,30 @@ a "b"
         parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, ['contents',
-                               ['block', ('a', ' ', 'A'), [], 'a A'],
-                               ['block', ('b', ' ', 'B /'), [], 'b B /']])
+        self.assertEqual(
+            ast, [
+                'contents',
+                ['block', ('a', ' ', 'A'), [], 'a A'],
+                ['block', ('b', ' ', 'B /'), [], 'b B /']
+            ]
+        )
 
     def testMultilineBlocks(self):
         text = "<long \\\n bloc \\\n name\\\n/>"
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+        parser = ApacheConfigParser(
+            ApacheConfigLexer(), start='contents')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, ['contents',
-                               ['block', ('long', ' \\\n ', 'bloc \\\n name\\\n'), [], 'long \\\n bloc \\\n name\\\n']])
-
+        self.assertEqual(
+            ast, [
+                'contents', ['block', ('long', ' \\\n ',
+                                       'bloc \\\n name\\\n'),
+                             [], 'long \\\n bloc \\\n name\\\n']
+            ]
+        )
 
     def testNamedBlocksEmptyBlocksDisabled(self):
         text = """\
@@ -264,13 +321,15 @@ a "b"
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+        parser = ApacheConfigParser(
+            ApacheConfigLexer(), start='contents')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, ['contents',
-                               ['block', ('hello/',), [], 'hello/'],
-                               ['block', ('a', ' ', 'A/',), [], 'a A/'],
-                               ['block', ('b', ' ', 'B /',), [], 'b B /']])
+        self.assertEqual(
+            ast, [
+                'contents', ['block', ('hello/',), [], 'hello/'],
+                ['block', ('a', ' ', 'A/',), [], 'a A/'],
+                ['block', ('b', ' ', 'B /',), [], 'b B /']])
 
     def testLowerCaseNames(self):
         text = """\
@@ -289,19 +348,21 @@ a "b"
         parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, ['contents',
-                               ['block', ('a',), [], 'a'],
-                               ['block', ('aa',),
-                                ['contents',
-                                 ['statement', 'bb', 'Cc']],
-                                'aa']])
+        self.assertEqual(
+            ast, [
+                'contents',
+                ['block', ('a',), [], 'a'],
+                ['block', ('aa',),
+                 ['contents', ['statement', 'bb', 'Cc']], 'aa']
+            ]
+        )
 
     def testNoStripValues(self):
         text = """\
 <aA>
   Bb Cc   \
 
-  key value \# 123 \t  \
+  key value \\# 123 \t  \
 
 </aA>
 """
@@ -312,15 +373,19 @@ a "b"
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
 
-        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+        parser = ApacheConfigParser(
+            ApacheConfigLexer(), start='contents')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, ['contents',
-                               ['block', ('aA',),
-                                ['contents',
-                                 ['statement', 'Bb', 'Cc   '],
-                                 ['statement', 'key', 'value \# 123 \t  ']],
-                                'aA']])
+        self.assertEqual(
+            ast, [
+                'contents', [
+                    'block', ('aA',), [
+                        'contents', ['statement', 'Bb', 'Cc   '],
+                        ['statement', 'key', 'value \\# 123 \t  ']], 'aA'
+                ]
+            ]
+        )
 
     def testHereDoc(self):
         text = """\
@@ -335,25 +400,29 @@ a "b"
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        parser = ApacheConfigParser(ApacheConfigLexer(), start='contents')
+        parser = ApacheConfigParser(
+            ApacheConfigLexer(), start='contents')
 
         ast = parser.parse(text)
 
-        self.assertEqual(ast, ['contents',
-                               ['block', ('main',),
-                                ['contents',
-                                 ['statement',
-                                  'PYTHON', '        def a():\n            x = y\n            return'
-                                  ]
-                                 ],
-                                'main']])
+        self.assertEqual(
+            ast, [
+                'contents', ['block', ('main',), [
+                    'contents', [
+                        'statement', 'PYTHON', '        def a():\n            '
+                                               'x = y\n            return'
+                    ]
+                ], 'main']
+            ]
+        )
 
     def testEmptyConfig(self):
         text = " \n "
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        parser = ApacheConfigParser(ApacheConfigLexer(), start='config')
+        parser = ApacheConfigParser(
+            ApacheConfigLexer(), start='config')
 
         ast = parser.parse(text)
         self.assertEqual(ast, ['config', []])
@@ -379,26 +448,27 @@ a b
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
-        parser = ApacheConfigParser(ApacheConfigLexer(), start='config')
+        parser = ApacheConfigParser(
+            ApacheConfigLexer(), start='config')
 
         ast = parser.parse(text)
-        self.assertEqual(ast, [
-            'config',
-            ['contents',
-                ['comment', '# a'],
-                ['statement', 'a', 'b'],
-                ['block', ('a',),
-                 ['contents', ['statement', 'a', 'b']],
-                 'a'],
-                ['statement', 'a', 'b'],
-                ['block', ('a', ' ', 'a'),
-                 ['contents',
-                  ['statement', 'a', 'b'],
-                  ['statement', 'c', 'd'],
-                  ['comment', '# c']],
-                 'a a'],
-                ['comment', '# a']]
-        ])
+        self.assertEqual(
+            ast, [
+                'config', [
+                    'contents', ['comment', '# a'],
+                    ['statement', 'a', 'b'],
+                    ['block', ('a',), ['contents',
+                                       ['statement', 'a', 'b']], 'a'],
+                    ['statement', 'a', 'b'],
+                    ['block', ('a', ' ', 'a'), ['contents', ['statement',
+                                                             'a', 'b'],
+                                                ['statement', 'c', 'd'],
+                                                ['comment', '# c']],
+                     'a a'],
+                    ['comment', '# a']
+                ]
+            ]
+        )
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
