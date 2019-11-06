@@ -47,7 +47,7 @@ class WLoaderTestCaseWrite(unittest.TestCase):
             ("<block>\n</block>", "name2", "<block name2>\n</block>"),
         ]
         for raw, new_value, expected in cases:
-            node = BlockNode.parse(raw)
+            node = BlockNode.parse(raw, self.parser)
             node.arguments = new_value
             self.assertEqual(expected, node.dump())
 
@@ -57,7 +57,7 @@ class WLoaderTestCaseWrite(unittest.TestCase):
             ("a b\nc d", 1, "\n1 2", "a b\n1 2\nc d"),
             ("a b\nc d", 2, "\n1 2", "a b\nc d\n1 2"),
             ("a b\n", 1, " ###", "a b ###\n"),
-            ("a b # comment\n", 1, "\n1 2", "a b\n1 2\n # comment\n"),
+            ("a b # comment\n", 1, "\n1 2", "a b\n1 2 # comment\n"),
             # Inserting option/value statement at beginning
             ("a", 0, "\n1 2", "\n1 2\na"),
             ("a\n", 0, "###", "###\na\n"),
@@ -66,7 +66,7 @@ class WLoaderTestCaseWrite(unittest.TestCase):
             ("# comment\n", 0, "\n1 2", "\n1 2\n# comment\n"),
         ]
         for raw, index, to_add, expected in cases:
-            node = ContentsNode.parse(raw)
+            node = ContentsNode.parse(raw, self.parser)
             node.add(index, to_add)
             self.assertEqual(expected, node.dump())
 
@@ -79,7 +79,7 @@ class WLoaderTestCaseWrite(unittest.TestCase):
             ("a # comment", 0, " # comment")
         ]
         for raw, index, expected in cases:
-            node = ContentsNode.parse(raw)
+            node = ContentsNode.parse(raw, self.parser)
             node.remove(index)
             self.assertEqual(expected, node.dump())
 
@@ -164,7 +164,7 @@ class WLoaderTestCaseRead(unittest.TestCase):
             ('a b\n<b>\n</b>  \n', ('a b', '\n<b>\n</b>')),
         ]
         for raw, expected in cases:
-            node = ContentsNode.parse(raw)
+            node = ContentsNode.parse(raw, self.parser)
             self.assertEqual(len(node), len(expected))
             for got, expected in zip(node, expected):
                 self.assertEqual(got.dump(), expected)
@@ -180,7 +180,7 @@ class WLoaderTestCaseRead(unittest.TestCase):
             ('\n<b>\n</b>', None),
         ]
         for (raw, value) in cases:
-            node = BlockNode.parse(raw)
+            node = BlockNode.parse(raw, self.parser)
             self.assertEqual("b", node.tag)
             self.assertEqual(value, node.arguments)
             self.assertEqual(raw, node.dump())
@@ -200,5 +200,5 @@ c "d d"
 </a>
 # a
 """
-        node = ContentsNode.parse(text)
+        node = ContentsNode.parse(text, self.parser)
         self.assertEqual(text, node.dump())

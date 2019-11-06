@@ -45,8 +45,8 @@ class AbstractASTNode(object):
         """
 
 
-class ContentsNode(Node):
-    """Creates object representing an ordered list of BlockNodes and ItemNodes.
+class ContentsNode(AbstractASTNode):
+    """Creates object representing an ordered list of LeafASTNodes.
 
     Each BlockNode contains a ContentsNode, and every configuration file's
     root should be a ContentsNode. To construct from a raw string, use the
@@ -56,61 +56,65 @@ class ContentsNode(Node):
     Args:
         raw (list): Raw data returned from ``apacheconfig.parser``.
     """
-    def __init__(self, raw):
+    def __init__(self, raw, parser):
         self._type = raw[0]
         self._contents = []
         self._whitespace = ""
+        self._parser = parser
         for elem in raw[1:]:
             if isinstance(elem, str) and elem.isspace():
                 self._whitespace = elem
             elif elem[0] == "block":
-                self._contents.append(BlockNode(elem))
+                self._contents.append(BlockNode(elem, parser))
             else:
-                self._contents.append(ItemNode(elem))
+                self._contents.append(LeafASTNode(elem))
 
-    @staticmethod
-    def parse(raw_str, options={}, parser=None):
-        """Factory for :class:`apacheconfig.ContentsNode` by parsing data from
-        config string.
+    @classmethod
+    def parse(cls, raw_str, parser):
+        """Factory for :class:`apacheconfig.ListASTNode` from a config string.
 
         Args:
             raw_str (str): Config string to parse.
-            options (dict): Additional options to pass to the created parser.
-                Ignored if another ``parser`` is supplied.
-            parser (:class:`apacheconfig.ApacheConfigParser`): optional, to
-                re-use an existing parser. If ``None``, creates a new one.
+            parser (:class:`apacheconfig.ApacheConfigParser`): parser object
+                to use.
         Returns:
-            :class:`apacheconfig.ContentsNode` containing data parsed from
+            :class:`apacheconfig.ListASTNode` containing data parsed from
             ``raw_str``.
         """
-        if not parser:
-            parser = _create_apache_parser(options, start='contents')
-        return ContentsNode(parser.parse(raw_str))
+        raw = parser.parse(raw_str)
+        return cls(raw, parser)
 
     def add(self, index, raw_str):
-        """Parses given string into appropriate :class:`apacheconfig.Node`
-        object, then adds to contents at specified index.
+        """Parses and adds child element at given index.
+
+        Parses given string into an ASTNode object, then adds to contents at
+        specified index.
 
         Args:
             index (int): index of contents at which to insert the node.
             raw_str (str): string to parse. The parser will automatically
                 determine whether it's a :class:`apacheconfig.BlockNode` or
-                :class:`apacheconfig.ItemNode`.
+                :class:`apacheconfig.LeafASTNode`.
 
         Returns:
             The :class:`apacheconfig.Node` created from parsing ``raw_str``.
         """
-        parser = _create_apache_parser({}, start='miditem')
-        raw = parser.parse(raw_str)
+        raw = self._parser.parse(raw_str)[1]
         if raw[0] == "block":
-            node = BlockNode(raw)
+            node = BlockNode(raw, self._parser)
         else:
-            node = ItemNode(raw)
+            node = LeafASTNode(raw)
+
+        # If we're adding an element to the beginning of contents, the first
+        # item may not have a preceding newline-- so we add one in case.
+        # For instance, something like:
+        #   Contents("line1\nline2").add(0, "\nline0")
+        # should end up as "\nline0\nline1\nline2"
+        if (len(self._contents) >= 1 and index == 0 and
+            '\n' not in self._contents[0].whitespace):
+            whitespace_after = self._contents[0].whitespace
+            self._contents[0].whitespace = '\n' + whitespace_after
         self._contents.insert(index, node)
-        if (index + 1 < len(self._contents) and
-           '\n' not in self._contents[index + 1].whitespace):
-            whitespace_after = self._contents[index + 1].whitespace
-            self._contents[index + 1].whitespace = '\n' + whitespace_after
         return node
 
     def remove(self, index):
@@ -140,9 +144,10 @@ class ContentsNode(Node):
                 + self.whitespace)
 
     @property
-    def ast_node_type(self):
-        """See base class. Can only return ``"contents"`` for
-        :class:`apacheconfig.ContentsNode`.
+    def typestring(self):
+        """See base class.
+
+        Can only return ``"contents"`` for :class:`apacheconfig.ContentsNode`.
         """
         return self._type
 
@@ -157,8 +162,8 @@ class ContentsNode(Node):
         will be processed into something like::
 
             ContentsNode([
-                ItemNode(['\\t', 'key', ' ', 'value']),
-                ItemNode([' ', '# comment']),
+                LeafASTNode(['\\t', 'key', ' ', 'value']),
+                LeafASTNode([' ', '# comment']),
                 '\\n'])
 
         where the ``whitespace`` property for contents would return '\\n'.
@@ -166,9 +171,9 @@ class ContentsNode(Node):
         return self._whitespace
 
     @whitespace.setter
-    def whitespace(self):
+    def whitespace(self, value):
         """Sets trailing whitespace."""
-        return self._whitespace
+        self._whitespace = value
 
 
 class LeafASTNode(AbstractASTNode):
@@ -235,8 +240,7 @@ class LeafASTNode(AbstractASTNode):
 
     @classmethod
     def parse(cls, raw_str, parser):
-        """Factory for :class:`apacheconfig.LeafASTNode` by parsing data from a
-        config string.
+        """Factory for :class:`apacheconfig.LeafASTNode` from a config string.
 
         Args:
             raw_str (string): The text to parse.
@@ -301,7 +305,7 @@ class LeafASTNode(AbstractASTNode):
                        [_restore_original(word) for word in self._raw])))
 
 
-class BlockNode(Node):
+class BlockNode(LeafASTNode):
     """Creates object containing data for a block.
 
     Manages any preceding whitespace before the opening block tag, and
@@ -309,36 +313,33 @@ class BlockNode(Node):
     block contents.
     """
 
-    def __init__(self, raw):
+    def __init__(self, raw, parser):
         self._whitespace = ""
         self._type = raw[0]
         start = 1
         if isinstance(raw[start], str) and raw[start].isspace():
             self._whitespace = raw[start]
             start += 1
-        self._full_tag = ItemNode(('statement',) + raw[start])
+        self._full_tag = LeafASTNode(('statement',) + raw[start])
         self._close_tag = raw[-1]
         self._contents = None
-        if len(raw[start+1]) > 0:
-            self._contents = ContentsNode(raw[start + 1])
+        if len(raw[start + 1]) > 0:
+            self._contents = ContentsNode(raw[start + 1], parser)
 
-    @staticmethod
-    def parse(raw_str, options={}, parser=None):
-        """Factory for :class:`apacheconfig.BlockNode` by parsing data from a
-        config string.
+    @classmethod
+    def parse(cls, raw_str, parser):
+        """Factory for :class:`apacheconfig.LeafASTNode` from a config string.
 
         Args:
-            options (dict): Additional options to pass to the created parser.
-                Ignored if another ``parser`` is supplied.
-            parser (:class:`apacheconfig.ApacheConfigParser`): optional, to
-                re-use an existing parser. If ``None``, creates a new one.
+            raw_str (string): The text to parse.
+            parser (:class:`apacheconfig.ApacheConfigParser`): parser object
+                to use.
         Returns:
-            :class:`apacheconfig.BlockNode` containing data parsed from
+            :class:`apacheconfig.LeafASTNode` containing metadata parsed from
             ``raw_str``.
         """
-        if not parser:
-            parser = _create_apache_parser(options, start='startitem')
-        return BlockNode(parser.parse(raw_str))
+        raw = parser.parse(raw_str)
+        return cls(raw[1], parser)
 
     @property
     def tag(self):
@@ -370,9 +371,10 @@ class BlockNode(Node):
         return self._contents
 
     @property
-    def ast_node_type(self):
-        """See base class. Can only return ``"block"`` for
-        :class:`apacheconfig.BlockNode`.
+    def typestring(self):
+        """See base class.
+
+        Can only return ``"block"`` for :class:`apacheconfig.BlockNode`.
         """
         return self._type
 
@@ -382,9 +384,9 @@ class BlockNode(Node):
         return self._whitespace
 
     @whitespace.setter
-    def whitespace(self):
+    def whitespace(self, value):
         """See base class. Sets preceding whitespace."""
-        return self._whitespace
+        self._whitespace = value
 
     def dump(self):
         """See base class."""
