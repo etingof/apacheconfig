@@ -18,6 +18,12 @@ except ImportError:
 
 class ParserTestCase(unittest.TestCase):
 
+    def setUp(self):
+        ApacheConfigLexer = make_lexer()
+        self._parser_class = make_parser()
+        self._lexer = ApacheConfigLexer()
+        self._contents_parser = self._parser_class(self._lexer, start='contents')
+
     def testOptionAndValue(self):
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
@@ -397,13 +403,7 @@ a "b"
     MYPYTHON
 </main>
 """
-        ApacheConfigLexer = make_lexer()
-        ApacheConfigParser = make_parser()
-
-        parser = ApacheConfigParser(
-            ApacheConfigLexer(), start='contents')
-
-        ast = parser.parse(text)
+        ast = self._contents_parser.parse(text)
 
         self.assertEqual(
             ast, [
@@ -415,6 +415,21 @@ a "b"
                 ], 'main']
             ]
         )
+
+    def testHereDocEscapedNewlinePreservesWhitespace(self):
+        text = """\
+PYTHON <<MYPYTHON
+    def a():
+        x = \
+        y
+        return
+MYPYTHON
+"""
+        ast = self._contents_parser.parse(text)
+        self.assertEqual(
+            ast, ['contents', ['statement', 'PYTHON', '    def a():\n        '
+                               'x =         y\n        return' ]])
+
 
     def testEmptyConfig(self):
         text = " \n "
