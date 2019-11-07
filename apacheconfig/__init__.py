@@ -7,6 +7,8 @@ from apacheconfig.lexer import make_lexer
 from apacheconfig.parser import make_parser
 from apacheconfig.loader import ApacheConfigLoader
 from apacheconfig.error import ApacheConfigError
+from apacheconfig.wloader import make_writable_loader  # noqa: F401
+from apacheconfig import flavors  # noqa: F401
 
 
 @contextmanager

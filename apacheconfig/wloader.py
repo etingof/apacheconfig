@@ -8,8 +8,65 @@ from __future__ import unicode_literals
 
 import abc
 import six
+import contextlib
+
+from apacheconfig.lexer import make_lexer
+from apacheconfig.parser import make_parser
+from apacheconfig.reader import LocalHostReader
 
 from apacheconfig import error
+
+
+@contextlib.contextmanager
+def make_writable_loader(**options):
+    # Preserve whitespace is necessary for the writable loader to work.
+    options['preservewhitespace'] = True
+    ApacheConfigLexer = make_lexer(**options)
+    ApacheConfigParser = make_parser(**options)
+    yield ApacheConfigWritableLoader(ApacheConfigParser(ApacheConfigLexer(),
+                                                        start='contents'),
+                                     **options)
+
+
+class ApacheConfigWritableLoader(object):
+    """Manages a writable object represented by a single config file.
+    """
+
+    def __init__(self, parser, **options):
+        self._parser = parser
+        self._options = dict(options)
+        if 'reader' in self._options:
+            self._reader = self._options['reader']
+        else:
+            self._reader = LocalHostReader()
+
+    def load(self, filepath):
+        """Loads config file into a raw modifiable AST.
+
+        Args:
+            filepath (Text): path of config file to load. Expects UTF-8
+                encoding.
+
+        Returns:
+            :class:`apacheconfig.ListNode` AST containing parsed config file.
+
+        Raises:
+            IOError: If there is a problem opening the file specified.
+        """
+        with self._reader.open(filepath) as f:
+            return self.loads(f.read())
+
+    def loads(self, text):
+        """Loads config text into a raw modifiable AST.
+
+        Args:
+            text (Text): (Text) containing the configuration to load.
+
+        Returns:
+            :class:`apacheconfig.ListNode` AST containing parsed config.
+        """
+        ast = self._parser.parse(text)
+        return ListNode(ast, self._parser)
 
 
 def _restore_original(word):
@@ -109,7 +166,7 @@ class ListNode(AbstractASTNode):
         self._trailing_whitespace = ""
         self._parser = parser
         for elem in raw[1:]:
-            if isinstance(elem, six.text_type) and elem.isspace():
+            if isinstance(elem, six.string_types) and elem.isspace():
                 self._trailing_whitespace = elem
             elif elem[0] == "block":
                 self._contents.append(BlockNode(elem, parser))
@@ -439,7 +496,7 @@ class BlockNode(ListNode):
                 "``apacheconfig.parser``. First element of data is not "
                 "\"block\" typestring.")
         start = 1
-        if isinstance(raw[start], six.text_type) and raw[start].isspace():
+        if isinstance(raw[start], six.string_types) and raw[start].isspace():
             self._whitespace = raw[start]
             start += 1
         self._full_tag = LeafNode(('statement',) + raw[start])
@@ -447,6 +504,7 @@ class BlockNode(ListNode):
         self._contents = None
         if raw[start + 1]:  # If we have a list of elements to process.
             super(BlockNode, self).__init__(raw[start + 1], parser)
+        self._type = raw[0]
 
     @classmethod
     def parse(cls, raw_str, parser):
