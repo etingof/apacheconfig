@@ -8,10 +8,6 @@ from apacheconfig.parser import make_parser
 from apacheconfig.loader import ApacheConfigLoader
 from apacheconfig.error import ApacheConfigError
 
-from apacheconfig.wloader import BlockNode  # noqa: F401
-from apacheconfig.wloader import ContentsNode  # noqa: F401
-from apacheconfig.wloader import LeafASTNode  # noqa: F401
-
 
 @contextmanager
 def make_loader(**options):

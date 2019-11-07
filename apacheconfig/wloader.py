@@ -30,26 +30,12 @@ class AbstractASTNode(object):
     def typestring(self):
         """Returns object typestring as defined by the apacheconfig parser."""
 
-    @abc.abstractproperty
-    def whitespace(self):
-        """Returns preceding or trailing whitespace for this node as a string.
-        """
 
-    @abc.abstractmethod
-    @whitespace.setter
-    def whitespace(self, value):
-        """Set preceding or trailing whitespace for this node.
-
-        Args:
-            value (str): value to set whitespace to.
-        """
-
-
-class ContentsNode(AbstractASTNode):
+class ListNode(AbstractASTNode):
     """Creates object representing an ordered list of LeafASTNodes.
 
-    Each BlockNode contains a ContentsNode, and every configuration file's
-    root should be a ContentsNode. To construct from a raw string, use the
+    Each BlockNode contains a ListNode, and every configuration file's
+    root should be a ListNode. To construct from a raw string, use the
     `parse` factory function. The default __init__ constructor expects data
     from the internal apacheconfig parser.
 
@@ -59,11 +45,11 @@ class ContentsNode(AbstractASTNode):
     def __init__(self, raw, parser):
         self._type = raw[0]
         self._contents = []
-        self._whitespace = ""
+        self._trailing_whitespace = ""
         self._parser = parser
         for elem in raw[1:]:
             if isinstance(elem, str) and elem.isspace():
-                self._whitespace = elem
+                self._trailing_whitespace = elem
             elif elem[0] == "block":
                 self._contents.append(BlockNode(elem, parser))
             else:
@@ -141,18 +127,18 @@ class ContentsNode(AbstractASTNode):
     def dump(self):
         """See base class."""
         return ("".join([item.dump() for item in self._contents])
-                + self.whitespace)
+                + self.trailing_whitespace)
 
     @property
     def typestring(self):
         """See base class.
 
-        Can only return ``"contents"`` for :class:`apacheconfig.ContentsNode`.
+        Can only return ``"contents"`` for :class:`apacheconfig.ListNode`.
         """
         return self._type
 
     @property
-    def whitespace(self):
+    def trailing_whitespace(self):
         """Returns trailing whitespace in contents.
 
         For instance, the following valid "contents" configuration::
@@ -161,19 +147,19 @@ class ContentsNode(AbstractASTNode):
 
         will be processed into something like::
 
-            ContentsNode([
+            ListNode([
                 LeafASTNode(['\\t', 'key', ' ', 'value']),
                 LeafASTNode([' ', '# comment']),
                 '\\n'])
 
         where the ``whitespace`` property for contents would return '\\n'.
         """
-        return self._whitespace
+        return self._trailing_whitespace
 
-    @whitespace.setter
-    def whitespace(self, value):
+    @trailing_whitespace.setter
+    def trailing_whitespace(self, value):
         """Sets trailing whitespace."""
-        self._whitespace = value
+        self._trailing_whitespace = value
 
 
 class LeafASTNode(AbstractASTNode):
@@ -305,11 +291,11 @@ class LeafASTNode(AbstractASTNode):
                        [_restore_original(word) for word in self._raw])))
 
 
-class BlockNode(LeafASTNode):
+class BlockNode(ListNode):
     """Creates object containing data for a block.
 
     Manages any preceding whitespace before the opening block tag, and
-    contains a :class:`apacheconfig.ContentsNode` object representing the
+    contains a :class:`apacheconfig.ListNode` object representing the
     block contents.
     """
 
@@ -324,7 +310,7 @@ class BlockNode(LeafASTNode):
         self._close_tag = raw[-1]
         self._contents = None
         if len(raw[start + 1]) > 0:
-            self._contents = ContentsNode(raw[start + 1], parser)
+            super(BlockNode, self).__init__(raw[start + 1], parser)
 
     @classmethod
     def parse(cls, raw_str, parser):
@@ -365,7 +351,7 @@ class BlockNode(LeafASTNode):
 
     @property
     def contents(self):
-        """Returns :class:`apacheconfig.ContentsNode` contained within this
+        """Returns :class:`apacheconfig.ListNode` contained within this
         block.
         """
         return self._contents
@@ -392,6 +378,7 @@ class BlockNode(LeafASTNode):
         """See base class."""
         if self._contents is None:
             return "%s<%s/>" % (self.whitespace, self._full_tag.dump())
+        contents = super(BlockNode, self).dump()
         return "%s<%s>%s</%s>" % (self.whitespace, self._full_tag.dump(),
-                                  self._contents.dump(), self._close_tag)
+                                  contents, self._close_tag)
 

@@ -10,12 +10,12 @@ try:
 except ImportError:
     import unittest
 
-from apacheconfig import LeafASTNode
 from apacheconfig import flavors
 from apacheconfig import make_lexer
 from apacheconfig import make_parser
-from apacheconfig import BlockNode
-from apacheconfig import ContentsNode
+from apacheconfig.wloader import BlockNode
+from apacheconfig.wloader import LeafASTNode
+from apacheconfig.wloader import ListNode
 
 
 class WLoaderTestCaseWrite(unittest.TestCase):
@@ -66,7 +66,7 @@ class WLoaderTestCaseWrite(unittest.TestCase):
             ("# comment\n", 0, "\n1 2", "\n1 2\n# comment\n"),
         ]
         for raw, index, to_add, expected in cases:
-            node = ContentsNode.parse(raw, self.parser)
+            node = ListNode.parse(raw, self.parser)
             node.add(index, to_add)
             self.assertEqual(expected, node.dump())
 
@@ -79,7 +79,7 @@ class WLoaderTestCaseWrite(unittest.TestCase):
             ("a # comment", 0, " # comment")
         ]
         for raw, index, expected in cases:
-            node = ContentsNode.parse(raw, self.parser)
+            node = ListNode.parse(raw, self.parser)
             node.remove(index)
             self.assertEqual(expected, node.dump())
 
@@ -164,7 +164,7 @@ class WLoaderTestCaseRead(unittest.TestCase):
             ('a b\n<b>\n</b>  \n', ('a b', '\n<b>\n</b>')),
         ]
         for raw, expected in cases:
-            node = ContentsNode.parse(raw, self.parser)
+            node = ListNode.parse(raw, self.parser)
             self.assertEqual(len(node), len(expected))
             for got, expected in zip(node, expected):
                 self.assertEqual(got.dump(), expected)
@@ -200,5 +200,5 @@ c "d d"
 </a>
 # a
 """
-        node = ContentsNode.parse(text, self.parser)
+        node = ListNode.parse(text, self.parser)
         self.assertEqual(text, node.dump())
