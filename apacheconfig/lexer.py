@@ -269,8 +269,13 @@ class BaseApacheConfigLexer(object):
                 t.type = "OPEN_CLOSE_TAG"
                 value = value[:-1]
             value = value[:-1]
-        t.value = option, whitespace, value
 
+        # To match perl parser behavior, whitespace between text is normalized
+        # when a value or block name is on multiple lines.
+        if ("\\\n" in value and not
+           self.options.get('preservewhitespace', False)):
+            value = " ".join(re.split(r'(?:\s|\\\s)+', value))
+        t.value = option, whitespace, value
         return t
 
     def t_multiline_NEWLINE(self, t):

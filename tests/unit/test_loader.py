@@ -130,7 +130,7 @@ b = [1]
 PYTHON <<END
 def fn():
         print "hi"
-        return 1 + \
+        return 1 + \\
     fn2()
 
 def fn2():
@@ -139,7 +139,7 @@ END
 """
         config = self._make_loader().loads(text)
         self.assertEqual(config, {'PYTHON': 'def fn():\n        print "hi"\n'
-                                  '        return 1 +     fn2()\n\n'
+                                  '        return 1 + \\\n    fn2()\n\n'
                                   'def fn2():\n    return 3'})
 
     def testDuplicateBlocksUnmerged(self):

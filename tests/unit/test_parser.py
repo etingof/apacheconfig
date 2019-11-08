@@ -294,7 +294,7 @@ a "b"
         )
 
     def testMultilineBlocks(self):
-        text = "<long \\\n bloc \\\n name\\\n/>"
+        text = "<long \\\n bloc \\\n name\\\n>\n</long>"
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
@@ -305,8 +305,8 @@ a "b"
         self.assertEqual(
             ast, [
                 'contents', ['block', ('long', ' \\\n ',
-                                       'bloc \\\n name\\\n'),
-                             [], 'long \\\n bloc \\\n name\\\n']
+                                       'bloc name '),
+                             [], 'long']
             ]
         )
 
@@ -419,7 +419,7 @@ a "b"
         text = """\
 PYTHON <<MYPYTHON
     def a():
-        x = \
+        x = \\
         y
         return
 MYPYTHON
@@ -427,7 +427,7 @@ MYPYTHON
         ast = self._make_parser().parse(text)
         self.assertEqual(
             ast, ['contents', ['statement', 'PYTHON', '    def a():\n        '
-                               'x =         y\n        return']])
+                               'x = \\\n        y\n        return']])
 
     def testEmptyConfig(self):
         text = " \n "

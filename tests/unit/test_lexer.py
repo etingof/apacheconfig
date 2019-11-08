@@ -220,7 +220,7 @@ a "b"
         tokens = self.lexer.tokenize(text)
         self.assertEqual(
             tokens, [
-                ('long', ' \\\n ', 'bloc\\\n name\\\n     \\\n')
+                ('long', ' \\\n ', 'bloc name ')
             ]
         )
 
@@ -229,7 +229,7 @@ a "b"
         tokens = self.lexer.tokenize(text)
         self.assertEqual(
             tokens, [
-                ('long', ' \\\n ', 'bloc\\\n name\\\n     \\\n'), '\n', 'long'
+                ('long', ' \\\n ', 'bloc name '), '\n', 'long'
             ]
         )
 
