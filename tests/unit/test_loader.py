@@ -29,6 +29,12 @@ except ImportError:
 
 class LoaderTestCase(unittest.TestCase):
 
+    def _make_loader(self, **options):
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+        return ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
+
     def testLoadWholeConfig(self):
         text = """\
 
@@ -118,6 +124,23 @@ b = [1]
         config = loader.loads(text)
 
         self.assertEqual(config, {'b': ['1']})
+
+    def testHereDocPreservesWhitespace(self):
+        text = """\
+PYTHON <<END
+def fn():
+        print "hi"
+        return 1 + \\
+    fn2()
+
+def fn2():
+    return 3
+END
+"""
+        config = self._make_loader().loads(text)
+        self.assertEqual(config, {'PYTHON': 'def fn():\n        print "hi"\n'
+                                  '        return 1 + \\\n    fn2()\n\n'
+                                  'def fn2():\n    return 3'})
 
     def testDuplicateBlocksUnmerged(self):
         text = """\

@@ -18,6 +18,11 @@ except ImportError:
 
 class ParserTestCase(unittest.TestCase):
 
+    def _make_parser(self, start='contents', **options):
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+        return ApacheConfigParser(ApacheConfigLexer(), start=start)
+
     def testOptionAndValue(self):
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
@@ -289,7 +294,7 @@ a "b"
         )
 
     def testMultilineBlocks(self):
-        text = "<long \\\n bloc \\\n name\\\n/>"
+        text = "<long \\\n bloc \\\n name\\\n>\n</long>"
         ApacheConfigLexer = make_lexer()
         ApacheConfigParser = make_parser()
 
@@ -300,8 +305,8 @@ a "b"
         self.assertEqual(
             ast, [
                 'contents', ['block', ('long', ' \\\n ',
-                                       'bloc \\\n name\\\n'),
-                             [], 'long \\\n bloc \\\n name\\\n']
+                                       'bloc name '),
+                             [], 'long']
             ]
         )
 
@@ -397,13 +402,7 @@ a "b"
     MYPYTHON
 </main>
 """
-        ApacheConfigLexer = make_lexer()
-        ApacheConfigParser = make_parser()
-
-        parser = ApacheConfigParser(
-            ApacheConfigLexer(), start='contents')
-
-        ast = parser.parse(text)
+        ast = self._make_parser().parse(text)
 
         self.assertEqual(
             ast, [
@@ -415,6 +414,20 @@ a "b"
                 ], 'main']
             ]
         )
+
+    def testHereDocEscapedNewlinePreservesWhitespace(self):
+        text = """\
+PYTHON <<MYPYTHON
+    def a():
+        x = \\
+        y
+        return
+MYPYTHON
+"""
+        ast = self._make_parser().parse(text)
+        self.assertEqual(
+            ast, ['contents', ['statement', 'PYTHON', '    def a():\n        '
+                               'x = \\\n        y\n        return']])
 
     def testEmptyConfig(self):
         text = " \n "

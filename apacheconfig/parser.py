@@ -5,7 +5,6 @@
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
 import logging
-import re
 import ply.yacc as yacc
 
 from apacheconfig.error import ApacheConfigError
@@ -116,12 +115,7 @@ class BaseApacheConfigParser(object):
             p[0] += p[1]
         else:
             if len(p[1]) > 1:
-                # To match perl parser behavior, when the value is split on
-                # multiple lines, whitespace between text is normalized.
-                value = p[1][2]
-                if "\\\n" in value:
-                    value = " ".join(re.split(r'(?:\s|\\\s)+', p[1][2]))
-                p[0] += [p[1][0], value]
+                p[0] += [p[1][0], p[1][2]]
             else:
                 p[0] += p[1]
 
