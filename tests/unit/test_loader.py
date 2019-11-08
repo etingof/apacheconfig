@@ -29,11 +29,11 @@ except ImportError:
 
 class LoaderTestCase(unittest.TestCase):
 
-    def setUp(self):
-        ApacheConfigLexer = make_lexer()
-        ApacheConfigParser = make_parser()
-        self._loader = ApacheConfigLoader(
-            ApacheConfigParser(ApacheConfigLexer()))
+    def _make_loader(self, **options):
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+        return ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
     def testLoadWholeConfig(self):
         text = """\
@@ -137,7 +137,7 @@ def fn2():
     return 3
 END
 """
-        config = self._loader.loads(text)
+        config = self._make_loader().loads(text)
         self.assertEqual(config, {'PYTHON': 'def fn():\n        print "hi"\n'
                                   '        return 1 +     fn2()\n\n'
                                   'def fn2():\n    return 3'})

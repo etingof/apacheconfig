@@ -18,11 +18,10 @@ except ImportError:
 
 class ParserTestCase(unittest.TestCase):
 
-    def setUp(self):
-        ApacheConfigLexer = make_lexer()
-        self._parser_class = make_parser()
-        self._lexer = ApacheConfigLexer()
-        self._contents_parser = self._parser_class(self._lexer, start='contents')
+    def _make_parser(self, start='contents', **options):
+        ApacheConfigLexer = make_lexer(**options)
+        ApacheConfigParser = make_parser(**options)
+        return ApacheConfigParser(ApacheConfigLexer(), start=start)
 
     def testOptionAndValue(self):
         ApacheConfigLexer = make_lexer()
@@ -403,7 +402,7 @@ a "b"
     MYPYTHON
 </main>
 """
-        ast = self._contents_parser.parse(text)
+        ast = self._make_parser().parse(text)
 
         self.assertEqual(
             ast, [
@@ -425,11 +424,10 @@ PYTHON <<MYPYTHON
         return
 MYPYTHON
 """
-        ast = self._contents_parser.parse(text)
+        ast = self._make_parser().parse(text)
         self.assertEqual(
             ast, ['contents', ['statement', 'PYTHON', '    def a():\n        '
-                               'x =         y\n        return' ]])
-
+                               'x =         y\n        return']])
 
     def testEmptyConfig(self):
         text = " \n "
