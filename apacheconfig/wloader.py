@@ -21,27 +21,73 @@ def _restore_original(word):
 @six.add_metaclass(abc.ABCMeta)
 class AbstractASTNode(object):
     """Generic class containing data that represents a node in the config AST.
+
+    There are three subclasses: :class:`apacheconfig.ListNode`,
+    :class:`apacheconfig.BlockNode`, and :class:`apacheconfig.LeafASTNode`.
+
+    Every AST should have a :class:`apacheconfig.ListNode` at its root. A
+    :class:`apacheconfig.ListNode` or :class:`apacheconfig.BlockNode` can have
+    other :class:`apacheconfig.BlockNode`s and
+    :class:`apacheconfig.LeafASTNode`s as children.
+
+    In general, a tree might look like::
+
+                      +----------+
+                      | ListNode |
+                      +----------+
+                       |        |
+                       v        v
+               +---------+    +-----------+
+               |BlockNode|    |LeafASTNode|
+               +---------+    +-----------+
+                |       |
+                v       v
+        +---------+   +-----------+
+        |BlockNode|   |LeafASTNode|
+        +---------+   +-----------+
+           |
+           v
+          etc...
+
+    Both :class:`apacheconfig.ListNode` and :class:`apacheconfig.BlockNode`
+    may contain an ordered list of other nodes, but
+    :class:`apacheconfig.LeafASTNode`s are terminal.
+
+    Each :class:`apacheconfig.AbstractASTNode` class also has their own
+    properties and functions. In general, :class:`apacheconfig.LeafASTNode`
+    corresponds with scalar data such as directives/options or comments.
+    :class:`apacheconfig.BlockNode` corresponds with an open/close tag and
+    its contents.
     """
 
     @abc.abstractmethod
     def dump(self):
-        """Returns the contents of this node as in a config file."""
+        """Dumps contents of this node.
+
+        Returns:
+            String containing the contents of this node, as in a config file.
+        """
 
     @abc.abstractproperty
     def typestring(self):
-        """Returns object typestring as defined by the apacheconfig parser."""
+        """Object typestring as defined by the apacheconfig parser.
+
+        Returns:
+            String containing internal typestring information from the
+            apacheconfig parser. See subclass documentation for possible
+            values.
+        """
 
 
 class ListNode(AbstractASTNode):
     """Creates object representing an ordered list of LeafASTNodes.
 
-    Each BlockNode contains a ListNode, and every configuration file's
-    root should be a ListNode. To construct from a raw string, use the
-    `parse` factory function. The default __init__ constructor expects data
-    from the internal apacheconfig parser.
+    Every configuration file's root should be a ListNode.
 
     Args:
-        raw (list): Raw data returned from ``apacheconfig.parser``.
+        raw (list): Data returned from ``apacheconfig.parser``. To construct
+            from a string containing config directives, use the `parse` factory
+            function.
     """
     def __init__(self, raw, parser):
         self._type = raw[0]
@@ -58,14 +104,14 @@ class ListNode(AbstractASTNode):
 
     @classmethod
     def parse(cls, raw_str, parser):
-        """Factory for :class:`apacheconfig.ListASTNode` from a config string.
+        """Factory for :class:`apacheconfig.ListNode` from a config string.
 
         Args:
             raw_str (str): Config string to parse.
             parser (:class:`apacheconfig.ApacheConfigParser`): parser object
                 to use.
         Returns:
-            :class:`apacheconfig.ListASTNode` containing data parsed from
+            :class:`apacheconfig.ListNode` containing data parsed from
             ``raw_str``.
         """
         raw = parser.parse(raw_str)
@@ -74,8 +120,8 @@ class ListNode(AbstractASTNode):
     def add(self, index, raw_str):
         """Parses and adds child element at given index.
 
-        Parses given string into an ASTNode object, then adds to list at
-        specified index.
+        Parses given string into an :class:`apacheconfig.AbstractASTNode`
+        object, then adds to list at specified index.
 
         Args:
             index (int): index of list at which to insert the node.
@@ -84,7 +130,8 @@ class ListNode(AbstractASTNode):
                 :class:`apacheconfig.LeafASTNode`.
 
         Returns:
-            The :class:`apacheconfig.Node` created from parsing ``raw_str``.
+            The :class:`apacheconfig.AbstractASTNode` created from parsing
+                ``raw_str``.
         """
         raw = self._parser.parse(raw_str)[1]
         if raw[0] == "block":
@@ -97,7 +144,7 @@ class ListNode(AbstractASTNode):
         # For instance, something like:
         #   Contents("line1\nline2").add(0, "\nline0")
         # should end up as "\nline0\nline1\nline2"
-        if (len(self._contents) >= 1 and index == 0 and
+        if (index == 0 and self._contents and
            '\n' not in self._contents[0].whitespace):
             whitespace_after = self._contents[0].whitespace
             self._contents[0].whitespace = '\n' + whitespace_after
@@ -111,11 +158,9 @@ class ListNode(AbstractASTNode):
             index (int): index of node to remove from list.
 
         Returns:
-            The :class:`apacheconfig.Node` that was removed.
+            The :class:`apacheconfig.AbstractASTNode` that was removed.
         """
-        thing = self._contents[index]
-        del self._contents[index]
-        return thing
+        return self._contents.pop(index)
 
     def __len__(self):
         """Number of :class:`apacheconfig.ASTNode` children."""
@@ -133,13 +178,14 @@ class ListNode(AbstractASTNode):
     def typestring(self):
         """See base class.
 
-        Can only return ``"contents"`` for :class:`apacheconfig.ListNode`.
+        Returns:
+            ``"contents"`` for :class:`apacheconfig.ListNode`.
         """
         return self._type
 
     @property
     def trailing_whitespace(self):
-        """Returns trailing whitespace after this list of config items.
+        """Trailing whitespace after this list of config items.
 
         For instance, the following valid configuration::
 
@@ -153,12 +199,20 @@ class ListNode(AbstractASTNode):
                 '\\n'])
 
         where the ``trailing_whitespace`` property would return '\\n'.
+
+        Returns:
+            String containing trailing whitespace after this list in the
+            config file.
         """
         return self._trailing_whitespace
 
     @trailing_whitespace.setter
     def trailing_whitespace(self, value):
-        """Sets trailing whitespace."""
+        """Sets trailing whitespace after this list of config items.
+
+        Args:
+            value (str): New trailing whitespace for this list of config items.
+        """
         self._trailing_whitespace = value
 
 
@@ -198,7 +252,7 @@ class LeafASTNode(AbstractASTNode):
 
     @property
     def typestring(self):
-        """Returns object typestring as defined by the apacheconfig parser.
+        """See base class.
 
         Returns:
             The typestring (as defined by the apacheconfig parser) for
@@ -209,19 +263,26 @@ class LeafASTNode(AbstractASTNode):
 
     @property
     def whitespace(self):
-        """Returns preceding whitespace for this node.
+        """Whitespace preceding this element in the config file.
 
         For example::
 
             LeafASTNode('\\n  option value').whitespace => "\\n  "
             LeafASTNode('option value').whitespace => ""
             LeafASTNode('\\n  # comment').whitespace => "\\n  "
+
+        Returns:
+            String containing preceding whitespace for this node.
         """
         return self._whitespace
 
     @whitespace.setter
     def whitespace(self, value):
-        """See base class. Operates on preceding whitespace."""
+        """Sets whitespace preceding this element in the config file.
+
+        Args:
+            value (str): New whitespace to set.
+        """
         self._whitespace = value
 
     @classmethod
@@ -229,7 +290,7 @@ class LeafASTNode(AbstractASTNode):
         """Factory for :class:`apacheconfig.LeafASTNode` from a config string.
 
         Args:
-            raw_str (string): The text to parse.
+            raw_str (str): The text to parse.
             parser (:class:`apacheconfig.ApacheConfigParser`): specify the
                 parser to use. Can be created by ``native_apache_parser()``.
         Returns:
@@ -309,7 +370,7 @@ class BlockNode(ListNode):
         self._full_tag = LeafASTNode(('statement',) + raw[start])
         self._close_tag = raw[-1]
         self._contents = None
-        if len(raw[start + 1]) > 0:
+        if raw[start + 1]:  # If we have a list of elements to process.
             super(BlockNode, self).__init__(raw[start + 1], parser)
 
     @classmethod
@@ -317,7 +378,7 @@ class BlockNode(ListNode):
         """Factory for :class:`apacheconfig.BlockNode` from a config string.
 
         Args:
-            raw_str (string): The text to parse.
+            raw_str (str): The text to parse.
             parser (:class:`apacheconfig.ApacheConfigParser`): parser object
                 to use.
         Returns:
@@ -329,42 +390,59 @@ class BlockNode(ListNode):
 
     @property
     def tag(self):
-        """Returns tag name for this block as a string.
+        """Tag name for this block.
 
-        For instance, ``<block details>\\n</block>`` has tag ``"block"``.
+        Returns:
+            Tag name for this blog as a string. For instance,
+            ``<block details>\\n</block>`` has tag ``"block"``.
         """
         return self._full_tag.name
 
     @property
     def arguments(self):
-        """Returns arguments for this block as a literal string.
+        """Arguments of this block.
 
-        For instance, ``<block lots of details>\\n</block>`` has arguments
-         ``"lots of details"``. Can be overwritten.
+        Returns:
+            Arguments for this block as a string. For instance,
+            ``<block lots of \tdetails>\\n</block>`` returns arguments
+            ``"lots of \tdetails"``. Can be overwritten.
         """
         return self._full_tag.value
 
     @arguments.setter
     def arguments(self, arguments):
-        """Sets or overwrites arguments for this block."""
+        """Sets or overwrites arguments for this block.
+
+        Args:
+            arguments (str): New arguments for this block.
+        """
         self._full_tag.value = arguments
 
     @property
     def typestring(self):
         """See base class.
 
-        Can only return ``"block"`` for :class:`apacheconfig.BlockNode`.
+        Returns:
+            ``"block"`` for :class:`apacheconfig.BlockNode`.
         """
         return self._type
 
     @property
     def whitespace(self):
-        """Returns preceding whitespace for this node."""
+        """Whitespace preceding this element in the config file.
+
+        Returns:
+            String containing preceding whitespace for this node.
+        """
         return self._whitespace
 
     @whitespace.setter
     def whitespace(self, value):
-        """Sets preceding whitespace."""
+        """Sets whitespace preceding this element in the config file.
+
+        Args:
+            value (str): New whitespace to set.
+        """
         self._whitespace = value
 
     def dump(self):
