@@ -7,6 +7,8 @@
 import abc
 import six
 
+from apacheconfig import error
+
 
 def _restore_original(word):
     """If the `word` is a Quoted string, restores it to original.
@@ -88,9 +90,23 @@ class ListNode(AbstractASTNode):
         raw (list): Data returned from ``apacheconfig.parser``. To construct
             from a string containing config directives, use the `parse` factory
             function.
+
+    Raises:
+        ApacheConfigError: If `raw` is not formed as expected. In particular,
+            if `raw` is too short, or has the wrong `typestring`, or if
+            one of this list's children is not formed as expected.
     """
     def __init__(self, raw, parser):
+        if len(raw) < 2:
+            raise error.ApacheConfigError(
+                "Expected properly-formatted `contents` data returned from "
+                "``apacheconfig.parser``. Got a list that is too short.")
         self._type = raw[0]
+        if self._type != "contents":
+            raise error.ApacheConfigError(
+                "Expected properly-formatted `contents` data returned from "
+                "``apacheconfig.parser``. First element of data is not "
+                "\"contents\" typestring.")
         self._contents = []
         self._trailing_whitespace = ""
         self._parser = parser
@@ -99,6 +115,11 @@ class ListNode(AbstractASTNode):
                 self._trailing_whitespace = elem
             elif elem[0] == "block":
                 self._contents.append(BlockNode(elem, parser))
+            elif elem[0] == "contents":
+                raise error.ApacheConfigError(
+                    "Expected properly-formatted `contents` data returned "
+                    "from ``apacheconfig.parser``. Got `contents` data as "
+                    "a child of this `contents` data.")
             else:
                 self._contents.append(LeafASTNode(elem))
 
@@ -132,7 +153,19 @@ class ListNode(AbstractASTNode):
         Returns:
             The :class:`apacheconfig.AbstractASTNode` created from parsing
                 ``raw_str``.
+
+        Raises:
+            ApacheConfigError: If `raw_str` cannot be parsed into a
+                :class:`apacheconfig.BlockNode` or
+                :class:`apacheconfigLeafASTNode`.
+            IndexError: If `index` is not within bounds [0, len(self)].
         """
+        if index < 0 or index > len(self):
+            raise IndexError("supplied index is out of range")
+        raw = self._parser.parse(raw_str)
+        if len(raw) != 2:
+            raise error.ApacheConfigError("Given raw_str should be "
+                                          "parsable into a single node.")
         raw = self._parser.parse(raw_str)[1]
         if raw[0] == "block":
             node = BlockNode(raw, self._parser)
@@ -159,7 +192,12 @@ class ListNode(AbstractASTNode):
 
         Returns:
             The :class:`apacheconfig.AbstractASTNode` that was removed.
+
+        Raises:
+            IndexError: If `index` is not within bounds [0, len(self)).
         """
+        if index < 0 or index >= len(self):
+            raise IndexError("supplied index is out of range")
         return self._contents.pop(index)
 
     def __len__(self):
@@ -240,10 +278,23 @@ class LeafASTNode(AbstractASTNode):
 
     Args:
         raw (list): Raw data returned from ``apacheconfig.parser``.
+
+    Raises:
+        ApacheConfigError: If `raw` is not formed as expected. In particular,
+            if `raw` is too short or has the wrong `typestring`.
     """
 
     def __init__(self, raw):
+        if len(raw) < 2:
+            raise error.ApacheConfigError(
+                "Expected properly-formatted data returned from "
+                "``apacheconfig.parser``. Got a list that is too short.")
         self._type = raw[0]
+        if self._type == "contents" or self._type == "block":
+            raise error.ApacheConfigError(
+                "Expected properly-formatted data returned from "
+                "``apacheconfig.parser``. First element of data cannot "
+                "be \"contents\" or \"block\" typestring.")
         self._raw = tuple(raw[1:])
         self._whitespace = ""
         if len(raw) > 1 and raw[1].isspace():
@@ -356,13 +407,33 @@ class BlockNode(ListNode):
     """Creates object containing data for a block.
 
     Manages any preceding whitespace before the opening block tag, and
-    corresponding :class:`apacheconfig.ListNode` methods will manipulate
+    superclass :class:`apacheconfig.ListNode` methods will manipulate
     block contents.
+
+    Args:
+        raw (list): Data returned from ``apacheconfig.parser``. To construct
+            from a string containing a config block, use the `parse` factory
+            function.
+
+    Raises:
+        ApacheConfigError: If `raw` is not formed as expected. In particular,
+            if `raw` is too short, or has the wrong `typestring`, or if
+            data for this block or one of this block's children is not formed
+            as expected.
     """
 
     def __init__(self, raw, parser):
+        if len(raw) < 4:
+            raise error.ApacheConfigError(
+                "Expected properly-formatted data returned from "
+                "``apacheconfig.parser``. Got a list that is too short.")
         self._whitespace = ""
         self._type = raw[0]
+        if self._type != "block":
+            raise error.ApacheConfigError(
+                "Expected properly-formatted data returned from "
+                "``apacheconfig.parser``. First element of data is not "
+                "\"block\" typestring.")
         start = 1
         if isinstance(raw[start], str) and raw[start].isspace():
             self._whitespace = raw[start]

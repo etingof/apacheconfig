@@ -16,6 +16,7 @@ from apacheconfig import make_parser
 from apacheconfig.wloader import BlockNode
 from apacheconfig.wloader import LeafASTNode
 from apacheconfig.wloader import ListNode
+from apacheconfig.error import ApacheConfigError
 
 
 class WLoaderTestCaseWrite(unittest.TestCase):
@@ -169,6 +170,60 @@ class WLoaderTestCaseRead(unittest.TestCase):
             for got, expected in zip(node, expected):
                 self.assertEqual(got.dump(), expected)
             self.assertEqual(raw, node.dump())
+
+    def testMalformedContents(self):
+        cases = [
+            (["block", ("b",), [], "b"], "Wrong typestring."),
+            (["statement", "option", " ", "value"], "Wrong typestring."),
+            (["contents", ["contents", []]], "Malformed contents."),
+            (["contents", ["block", ("b",), []]], "Malformed contents."),
+        ]
+        for case in cases:
+            self.assertRaises(ApacheConfigError, ListNode, case[0],
+                              self.parser)
+
+    def testModifyListIndexError(self):
+        cases = [
+            ('a b\nc d', "add", 4),
+            ('a b\nc d', "add", -1),
+            ('a b\nc d', "remove", 3),
+            ('a b\nc d', "remove", -1),
+            ('\n', "remove", 0),
+            ('\n', "add", 1),
+        ]
+        for raw, fn, index in cases:
+            node = ListNode.parse(raw, self.parser)
+            self.assertEqual(raw, node.dump())
+            if fn == "add":
+                self.assertRaises(IndexError, node.add, index, " # comment")
+            else:
+                self.assertRaises(IndexError, node.remove, index)
+
+    def testListAddParsingError(self):
+        node = ListNode.parse("a b\nc d", self.parser)
+        cases = ["a b\nc d", ""]
+        for case in cases:
+            self.assertRaises(ApacheConfigError, node.add, 0, case)
+
+    def testMalformedBlocks(self):
+        cases = [
+            (["contents", []], "Wrong typestring."),
+            (["statement", "option", " ", "value"], "Wrong typestring."),
+            (["block", ("b",), []], "Raw data too short."),
+            (["block", ("b",), ["contents"], "b"], "Malformed contents."),
+        ]
+        for case in cases:
+            self.assertRaises(ApacheConfigError, BlockNode, case[0],
+                              self.parser)
+
+    def testMalformedItem(self):
+        cases = [
+            (["contents", []], "Wrong typestring."),
+            (["block", ("b",), [], "b"], "Wrong typestring."),
+            (["statement"], "Too short."),
+        ]
+        for case in cases:
+            self.assertRaises(ApacheConfigError, LeafASTNode, case[0])
 
     def testLoadBlocks(self):
         cases = [
