@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
 #
 # This file is part of apacheconfig software.
 #
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
+from __future__ import unicode_literals
+
 import sys
 
 from apacheconfig import make_lexer
@@ -22,6 +25,14 @@ class ParserTestCase(unittest.TestCase):
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
         return ApacheConfigParser(ApacheConfigLexer(), start=start)
+
+    def testUnicodeSupport(self):
+        ApacheConfigLexer = make_lexer()
+        ApacheConfigParser = make_parser()
+        parser = ApacheConfigParser(ApacheConfigLexer(), start='statement')
+
+        ast = parser.parse('a = 三')
+        self.assertEqual(ast, ['statement', 'a', '三'])
 
     def testOptionAndValue(self):
         ApacheConfigLexer = make_lexer()

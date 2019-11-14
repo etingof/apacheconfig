@@ -4,8 +4,11 @@
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
+from __future__ import unicode_literals
+
 import logging
 import ply.yacc as yacc
+import six
 
 from apacheconfig.error import ApacheConfigError
 
@@ -174,7 +177,7 @@ class BaseApacheConfigParser(object):
         """
         n = len(p)
         if n == 3:
-            if isinstance(p[2], str) and p[2].isspace():
+            if isinstance(p[2], six.text_type) and p[2].isspace():
                 # contents whitespace
                 if self._preserve_whitespace:
                     p[0] = p[1] + [p[2]]
@@ -185,7 +188,7 @@ class BaseApacheConfigParser(object):
                 p[0] = p[1] + [p[2]]
         else:
             if (not self._preserve_whitespace and
-               isinstance(p[1], str) and p[1].isspace()):
+               isinstance(p[1], six.text_type) and p[1].isspace()):
                 # whitespace
                 # (if contents only consists of whitespace)
                 p[0] = []
@@ -199,7 +202,7 @@ class BaseApacheConfigParser(object):
         """
         n = len(p)
         if n == 4:
-            if isinstance(p[2], str) and p[2].isspace():
+            if isinstance(p[2], six.text_type) and p[2].isspace():
                 p[2] = []
             p[0] = ['block', p[1], p[2], p[3]]
         else:
@@ -229,20 +232,20 @@ def make_parser(**options):
     parser_class = BaseApacheConfigParser
 
     if options.get('ccomments', True):
-        parser_class = type('ApacheConfigParser',
+        parser_class = type(six.binary_type('ApacheConfigParser'),
                             (parser_class, CStyleCommentsParser),
                             {'options': options})
     else:
-        parser_class = type('ApacheConfigParser',
+        parser_class = type(six.binary_type('ApacheConfigParser'),
                             (parser_class, HashCommentsParser),
                             {'options': options})
 
     if options.get('useapacheinclude', True):
-        parser_class = type('ApacheConfigParser',
+        parser_class = type(six.binary_type('ApacheConfigParser'),
                             (parser_class, ApacheIncludesParser),
                             {'options': options})
     else:
-        parser_class = type('ApacheConfigParser',
+        parser_class = type(six.binary_type('ApacheConfigParser'),
                             (parser_class, IncludesParser),
                             {'options': options})
 

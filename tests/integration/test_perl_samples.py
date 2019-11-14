@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
 #
 # This file is part of apacheconfig software.
 #
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
+from __future__ import unicode_literals
+
 import os
 import sys
 
@@ -75,8 +78,9 @@ TEST_CONFIGS = {
         "domain": [
             "nix.to",
             "b0fh.org",
-            "foo.bar"
+            "foo.bar",
         ],
+        "域名": "unicode.example.com",
         "message": "  yes. we are not here. you\n  can reach us somewhere in\n"
                    "  outerspace.",
         "nocomment": "Comments in a here-doc should not be treated as "

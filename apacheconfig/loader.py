@@ -4,11 +4,14 @@
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
+from __future__ import unicode_literals
+
 import glob
 import logging
 import re
 import os
 import tempfile
+import six
 
 from apacheconfig import error
 from apacheconfig.reader import LocalHostReader
@@ -145,7 +148,7 @@ class ApacheConfigLoader(object):
         def remove_escapes(value):
             if self._options.get('noescape'):
                 return value
-            if not isinstance(value, str):
+            if not isinstance(value, six.text_type):
                 return value
             return re.sub(r'\\([$\\"#])', lambda x: x.groups()[0], value)
         if isinstance(value, list):
@@ -279,7 +282,7 @@ class ApacheConfigLoader(object):
                     and not self._options.get('mergeduplicateoptions', False):
                 raise error.ApacheConfigError(
                     'Duplicate option "%s" prohibited'
-                    % '.'.join(path + [str(key)]))
+                    % '.'.join(path + [six.text_type(key)]))
             if self._options.get('mergeduplicateoptions', False):
                 contents[key] = value
             else:
@@ -393,7 +396,7 @@ class ApacheConfigLoader(object):
         spacing = ' ' * indent
 
         for key, val in obj.items():
-            if isinstance(val, str):
+            if isinstance(val, six.text_type):
                 if val.isalnum():
                     text += '%s%s %s\n' % (spacing, key, val)
                 else:
@@ -401,7 +404,7 @@ class ApacheConfigLoader(object):
 
             elif isinstance(val, list):
                 for dup in val:
-                    if isinstance(dup, str):
+                    if isinstance(dup, six.text_type):
                         if dup.isalnum():
                             text += '%s%s %s\n' % (spacing, key, dup)
                         else:

@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
 #
 # This file is part of apacheconfig software.
 #
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
+from __future__ import unicode_literals
+
 import os
 import sys
 
@@ -40,6 +43,7 @@ class LoaderTestCase(unittest.TestCase):
 
 # a
 a = b
+b = 三
 
 <a block>
   a = b
@@ -60,6 +64,7 @@ c "d d"
 
         self.assertEqual(
             config, {
+                'b': '三',
                 'a': ['b', {'block': {'a': 'b'}}, 'b',
                       {'a block': {'c': 'd d'}}]
             }

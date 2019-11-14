@@ -4,6 +4,8 @@
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
+from __future__ import unicode_literals
+
 import abc
 import six
 
@@ -172,5 +174,6 @@ class LeafASTNode(AbstractASTNode):
     def __str__(self):
         return ("%s(%s)"
                 % (self.__class__.__name__,
-                   str([self._type] +
+                   six.text_type(
+                       [self._type] +
                        [_restore_original(word) for word in self._raw])))

@@ -1,4 +1,5 @@
 import os
+import io
 
 
 class LocalHostReader(object):
@@ -21,5 +22,5 @@ class LocalHostReader(object):
     def listdir(self, filepath):
         return self._os.listdir(filepath)
 
-    def open(self, filename, mode='r', bufsize=-1):
-        return open(filename, mode, bufsize)
+    def open(self, filename, mode='r', encoding='utf-8', bufsize=-1):
+        return io.open(filename, mode, bufsize, encoding=encoding)

@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
 #
 # This file is part of apacheconfig software.
 #
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
+from __future__ import unicode_literals
+
 import sys
 
 from apacheconfig import ApacheConfigError
@@ -25,6 +28,12 @@ class LexerTestCase(unittest.TestCase):
         space = '   \t\t  \t \r  \n\n'
         tokens = self.lexer.tokenize(space)
         self.assertEqual(tokens, [space])
+
+    def testUnicodeSupport(self):
+        text = 'a = 三\n'
+        tokens = self.lexer.tokenize(text)
+        self.assertEqual(
+            tokens, [('a', ' = ', '三'), '\n'])
 
     def testOptionAndValueWeirdQuotes(self):
         text = """\

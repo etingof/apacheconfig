@@ -4,6 +4,10 @@
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
+from __future__ import unicode_literals
+
+import six
+
 try:
     import unittest2 as unittest
 
@@ -79,8 +83,9 @@ class WLoaderTestCaseRead(unittest.TestCase):
                               "but got '%s'" % (repr(raw), node.dump())))
             self.assertEqual(expected_type, node.typestring,
                              ("Expected node('%s').typestring to be '%s', "
-                              "but got '%s'" % (repr(raw), expected_type,
-                                                str(node.typestring))))
+                              "but got '%s'" %
+                              (repr(raw), expected_type,
+                               six.text_type(node.typestring))))
 
     def testLoadStatement(self):
         cases = [
