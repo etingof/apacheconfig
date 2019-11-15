@@ -353,6 +353,15 @@ class ApacheConfigLoader(object):
         return self._ast_cache[source]
 
     def load(self, filepath, initialize=True):
+        """Loads config file into a dictionary object.
+
+        Args:
+            filepath (Text): path of config file to load. Expects UTF-8
+                encoding.
+
+        Returns:
+            dict containing configuration information loaded from file.
+        """
         if initialize:
             self._stack = []
             self._includes = set()
@@ -449,7 +458,7 @@ class ApacheConfigLoader(object):
         return text
 
     def dumps(self, dct):
-        """Dumps the configuration file in `dict` to a unicode string.
+        """Dumps the configuration in `dct` to a unicode string.
 
         Args:
             dct (dict): Configuration represented as a dictionary.
@@ -460,6 +469,12 @@ class ApacheConfigLoader(object):
         return self._dumpdict(dct)
 
     def dump(self, filepath, dct):
+        """Dumps the configuration in `dct` to a file.
+
+        Args:
+            filepath (Text): Filepath to write config to, in UTF-8 encoding.
+            dct (dict): Configuration represented as a dictionary.
+        """
         tmpf = tempfile.NamedTemporaryFile(dir=os.path.dirname(filepath),
                                            delete=False)
 

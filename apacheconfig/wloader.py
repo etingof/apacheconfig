@@ -35,7 +35,7 @@ class AbstractASTNode(object):
 
     @abc.abstractproperty
     def whitespace(self):
-        """Returns preceding or trailing whitespace for this node as a string.
+        """Returns preceding or trailing whitespace as a unicode string.
         """
 
     @abc.abstractmethod
@@ -44,7 +44,7 @@ class AbstractASTNode(object):
         """Set preceding or trailing whitespace for this node.
 
         Args:
-            value (str): value to set whitespace to.
+            value (Text): value to set whitespace to.
         """
 
 
@@ -146,7 +146,7 @@ class LeafASTNode(AbstractASTNode):
 
     @property
     def value(self):
-        """Returns the value of this item as a string.
+        """Returns the value of this item as a unicode string.
 
         The "value" is anything but the name. Can be overwritten.
         """
@@ -159,7 +159,7 @@ class LeafASTNode(AbstractASTNode):
         """Sets for the value of this item.
 
         Args:
-            value (str): string to set new value to.
+            value (Text): string to set new value to.
 
           .. todo:: (sydneyli) convert `value` to quotedstring when quoted
         """
