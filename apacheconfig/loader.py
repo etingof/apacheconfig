@@ -7,6 +7,7 @@
 from __future__ import unicode_literals
 
 import glob
+import io
 import logging
 import re
 import os
@@ -319,6 +320,14 @@ class ApacheConfigLoader(object):
         return handler(ast[1:])
 
     def loads(self, text, initialize=True, source=None):
+        """Loads config text into a dictionary object.
+
+        Args:
+            text (Text): Unicode string containing the configuration to load.
+
+        Returns:
+            dict containing configuration information loaded from text.
+        """
         if not text:
             self._ast_cache[source] = {}
             return {}
@@ -440,6 +449,14 @@ class ApacheConfigLoader(object):
         return text
 
     def dumps(self, dct):
+        """Dumps the configuration file in `dict` to a unicode string.
+
+        Args:
+            dct (dict): Configuration represented as a dictionary.
+
+        Returns:
+            Unicode string containing the configuration in given dictionary.
+        """
         return self._dumpdict(dct)
 
     def dump(self, filepath, dct):
@@ -447,7 +464,7 @@ class ApacheConfigLoader(object):
                                            delete=False)
 
         try:
-            with open(tmpf.name, 'w') as f:
+            with io.open(tmpf.name, mode='w', encoding='utf-8') as f:
                 f.write(self.dumps(dct))
 
             os.rename(tmpf.name, filepath)

@@ -82,6 +82,7 @@ a = b
 a b
 <a a block>
 c "d d"
+b = 三
 </a>
 # a
 """
@@ -97,6 +98,7 @@ a b
 <a>
   <a block>
     c "d d"
+    b 三
   </a block>
 </a>
 """

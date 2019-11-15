@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # This file is part of apacheconfig software.
 #
@@ -115,3 +116,18 @@ class WLoaderTestCaseRead(unittest.TestCase):
             ('\ninclude path', 'include', 'path'),
         ]
         self._test_item_cases(cases, 'include', self.parser)
+
+    def testDumpUnicodeSupport(self):
+        text = "\n value is 三"
+        node = LeafASTNode.parse(text, self.parser)
+        dump = node.dump()
+        self.assertTrue(isinstance(dump, six.text_type))
+        self.assertEquals(dump, text)
+
+    def testStrUnicodeBuiltIns(self):
+        node = LeafASTNode.parse("\n option value", self.parser)
+        self.assertTrue(isinstance(str(node), str))
+        self.assertTrue(isinstance(node.__unicode__(), six.text_type))
+        self.assertEquals(
+            "LeafASTNode([u'statement', u'option', u' ', u'value'])",
+            six.text_type(node))

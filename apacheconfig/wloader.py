@@ -27,7 +27,7 @@ class AbstractASTNode(object):
 
     @abc.abstractmethod
     def dump(self):
-        """Returns the contents of this node as in a config file."""
+        """Dumps contents of this node to a unicode string."""
 
     @abc.abstractproperty
     def typestring(self):
@@ -116,7 +116,7 @@ class LeafASTNode(AbstractASTNode):
         config string.
 
         Args:
-            raw_str (string): The text to parse.
+            raw_str (Text): The text to parse, as a unicode string.
             parser (:class:`apacheconfig.ApacheConfigParser`): specify the
                 parser to use. Can be created by ``native_apache_parser()``.
         Returns:
@@ -172,8 +172,13 @@ class LeafASTNode(AbstractASTNode):
                 "".join([_restore_original(word) for word in self._raw]))
 
     def __str__(self):
+        contents = [_restore_original(word) for word in self._raw]
         return ("%s(%s)"
-                % (self.__class__.__name__,
-                   six.text_type(
-                       [self._type] +
-                       [_restore_original(word) for word in self._raw])))
+                % (str(self.__class__.__name__),
+                   str([self._type] + contents)))
+
+    def __unicode__(self):
+        contents = [_restore_original(word) for word in self._raw]
+        return ("%s(%s)"
+                % (six.text_type(self.__class__.__name__),
+                   six.text_type([self._type] + contents)))
