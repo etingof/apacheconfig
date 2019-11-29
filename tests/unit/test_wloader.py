@@ -14,7 +14,7 @@ from apacheconfig import flavors
 from apacheconfig import make_lexer
 from apacheconfig import make_parser
 from apacheconfig.wloader import BlockNode
-from apacheconfig.wloader import LeafASTNode
+from apacheconfig.wloader import LeafNode
 from apacheconfig.wloader import ListNode
 from apacheconfig.error import ApacheConfigError
 
@@ -38,7 +38,7 @@ class WLoaderTestCaseWrite(unittest.TestCase):
              'include new/path/to/file'),
         ]
         for raw, new_value, expected in cases:
-            node = LeafASTNode.parse(raw, self.parser)
+            node = LeafNode.parse(raw, self.parser)
             node.value = new_value
             self.assertEqual(expected, node.dump())
 
@@ -104,7 +104,7 @@ class WLoaderTestCaseRead(unittest.TestCase):
              'include new/path/to/file'),
         ]
         for raw, new_value, expected in cases:
-            node = LeafASTNode.parse(raw, self.parser)
+            node = LeafNode.parse(raw, self.parser)
             node.value = new_value
             self.assertEqual(expected, node.dump())
 
@@ -112,7 +112,7 @@ class WLoaderTestCaseRead(unittest.TestCase):
         if not parser:
             parser = self.parser
         for raw, expected_name, expected_value in cases:
-            node = LeafASTNode.parse(raw, self.parser)
+            node = LeafNode.parse(raw, self.parser)
             self.assertEqual(expected_name, node.name,
                              "Expected node('%s').name to be %s, got %s" %
                              (repr(raw), expected_name, node.name))
@@ -223,7 +223,7 @@ class WLoaderTestCaseRead(unittest.TestCase):
             (["statement"], "Too short."),
         ]
         for case in cases:
-            self.assertRaises(ApacheConfigError, LeafASTNode, case[0])
+            self.assertRaises(ApacheConfigError, LeafNode, case[0])
 
     def testLoadBlocks(self):
         cases = [
