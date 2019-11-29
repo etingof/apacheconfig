@@ -464,7 +464,7 @@ class ApacheConfigLoader(object):
             dct (dict): Configuration represented as a dictionary.
 
         Returns:
-            Unicode string containing the configuration in given dictionary.
+            (Text) containing the configuration in given dictionary.
         """
         return self._dumpdict(dct)
 

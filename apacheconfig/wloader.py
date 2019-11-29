@@ -69,7 +69,7 @@ class AbstractASTNode(object):
         """Dumps contents of this node.
 
         Returns:
-            Unicode string with the contents of this node, as in a config file.
+            (Text) with the contents of this node, as in a config file.
         """
 
     @abc.abstractproperty
