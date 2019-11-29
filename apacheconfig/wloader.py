@@ -82,9 +82,10 @@ class AbstractASTNode(object):
 
 
 class ListNode(AbstractASTNode):
-    """Creates object representing an ordered list of LeafNode.
+    """Creates object for an ordered list of ``apacheconfig.AbstractASTNode``s.
 
-    Every configuration file's root should be a ListNode.
+    Every configuration file's root should be a ``apacheconfig.ListNode``.
+    Children can be ``apacheconfig.BlockNode`` or ``apacheconfig.LeafNode``.
 
     Args:
         raw (list): Data returned from ``apacheconfig.parser``. To construct
