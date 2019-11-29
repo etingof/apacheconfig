@@ -27,12 +27,12 @@ class AbstractASTNode(object):
     """Generic class containing data that represents a node in the config AST.
 
     There are three subclasses: :class:`apacheconfig.ListNode`,
-    :class:`apacheconfig.BlockNode`, and :class:`apacheconfig.LeafASTNode`.
+    :class:`apacheconfig.BlockNode`, and :class:`apacheconfig.LeafNode`.
 
     Every AST should have a :class:`apacheconfig.ListNode` at its root. A
     :class:`apacheconfig.ListNode` or :class:`apacheconfig.BlockNode` can have
     other :class:`apacheconfig.BlockNode`s and
-    :class:`apacheconfig.LeafASTNode`s as children.
+    :class:`apacheconfig.LeafNode`s as children.
 
     In general, a tree might look like::
 
@@ -41,24 +41,24 @@ class AbstractASTNode(object):
                       +----------+
                        |        |
                        v        v
-               +---------+    +-----------+
-               |BlockNode|    |LeafASTNode|
-               +---------+    +-----------+
+               +---------+    +--------+
+               |BlockNode|    |LeafNode|
+               +---------+    +--------+
                 |       |
                 v       v
-        +---------+   +-----------+
-        |BlockNode|   |LeafASTNode|
-        +---------+   +-----------+
+        +---------+   +--------+
+        |BlockNode|   |LeafNode|
+        +---------+   +--------+
            |
            v
           etc...
 
     Both :class:`apacheconfig.ListNode` and :class:`apacheconfig.BlockNode`
     may contain an ordered list of other nodes, but
-    :class:`apacheconfig.LeafASTNode`s are terminal.
+    :class:`apacheconfig.LeafNode`s are terminal.
 
     Each :class:`apacheconfig.AbstractASTNode` class also has their own
-    properties and functions. In general, :class:`apacheconfig.LeafASTNode`
+    properties and functions. In general, :class:`apacheconfig.LeafNode`
     corresponds with scalar data such as directives/options or comments.
     :class:`apacheconfig.BlockNode` corresponds with an open/close tag and
     its contents.
@@ -79,9 +79,10 @@ class AbstractASTNode(object):
 
 
 class ListNode(AbstractASTNode):
-    """Creates object representing an ordered list of LeafASTNodes.
+    """Creates object for an ordered list of ``apacheconfig.AbstractASTNode``s.
 
-    Every configuration file's root should be a ListNode.
+    Every configuration file's root should be a ``apacheconfig.ListNode``.
+    Children can be ``apacheconfig.BlockNode`` or ``apacheconfig.LeafNode``.
 
     Args:
         raw (list): Data returned from ``apacheconfig.parser``. To construct
@@ -118,7 +119,7 @@ class ListNode(AbstractASTNode):
                     "from ``apacheconfig.parser``. Got `contents` data as "
                     "a child of this `contents` data.")
             else:
-                self._contents.append(LeafASTNode(elem))
+                self._contents.append(LeafNode(elem))
 
     @classmethod
     def parse(cls, raw_str, parser):
@@ -145,7 +146,7 @@ class ListNode(AbstractASTNode):
             index (int): index of list at which to insert the node.
             raw_str (str): string to parse. The parser will automatically
                 determine whether it's a :class:`apacheconfig.BlockNode` or
-                :class:`apacheconfig.LeafASTNode`.
+                :class:`apacheconfig.LeafNode`.
 
         Returns:
             The :class:`apacheconfig.AbstractASTNode` created from parsing
@@ -154,7 +155,7 @@ class ListNode(AbstractASTNode):
         Raises:
             ApacheConfigError: If `raw_str` cannot be parsed into a
                 :class:`apacheconfig.BlockNode` or
-                :class:`apacheconfigLeafASTNode`.
+                :class:`apacheconfig.LeafNode`.
             IndexError: If `index` is not within bounds [0, len(self)].
         """
         if index < 0 or index > len(self):
@@ -167,7 +168,7 @@ class ListNode(AbstractASTNode):
         if raw[0] == "block":
             node = BlockNode(raw, self._parser)
         else:
-            node = LeafASTNode(raw)
+            node = LeafNode(raw)
 
         # If we're adding an element to the beginning of list, the first
         # item may not have a preceding newline-- so we add one in case.
@@ -229,8 +230,8 @@ class ListNode(AbstractASTNode):
         will be processed into something like::
 
             ListNode([
-                LeafASTNode(['\\t', 'key', ' ', 'value']),
-                LeafASTNode([' ', '# comment']),
+                LeafNode(['\\t', 'key', ' ', 'value']),
+                LeafNode([' ', '# comment']),
                 '\\n'])
 
         where the ``trailing_whitespace`` property would return '\\n'.
@@ -251,13 +252,13 @@ class ListNode(AbstractASTNode):
         self._trailing_whitespace = value
 
 
-class LeafASTNode(AbstractASTNode):
+class LeafNode(AbstractASTNode):
     """Creates object containing a simple list of tokens.
 
     Also manages any preceding whitespace. Can represent a key/value option,
     a comment, or an include/includeoptional directive.
 
-    Examples of what LeafASTNode might look like for different directives::
+    Examples of what LeafNode might look like for different directives::
 
         "option"
             name: "option", value: None, whitespace: ""
@@ -315,9 +316,9 @@ class LeafASTNode(AbstractASTNode):
 
         For example::
 
-            LeafASTNode('\\n  option value').whitespace => "\\n  "
-            LeafASTNode('option value').whitespace => ""
-            LeafASTNode('\\n  # comment').whitespace => "\\n  "
+            LeafNode('\\n  option value').whitespace => "\\n  "
+            LeafNode('option value').whitespace => ""
+            LeafNode('\\n  # comment').whitespace => "\\n  "
 
         Returns:
             String containing preceding whitespace for this node.
@@ -335,14 +336,14 @@ class LeafASTNode(AbstractASTNode):
 
     @classmethod
     def parse(cls, raw_str, parser):
-        """Factory for :class:`apacheconfig.LeafASTNode` from a config string.
+        """Factory for :class:`apacheconfig.LeafNode` from a config string.
 
         Args:
             raw_str (Text): The text to parse, as a unicode string.
             parser (:class:`apacheconfig.ApacheConfigParser`): specify the
                 parser to use. Can be created by ``native_apache_parser()``.
         Returns:
-            :class:`apacheconfig.LeafASTNode` containing metadata parsed from
+            :class:`apacheconfig.LeafNode` containing metadata parsed from
             ``raw_str``.
         """
         raw = parser.parse(raw_str)
@@ -359,9 +360,9 @@ class LeafASTNode(AbstractASTNode):
 
     @property
     def has_value(self):
-        """Returns ``True`` if this :class:`apacheconfig.LeafASTNode` has a value.
+        """Returns ``True`` if this :class:`apacheconfig.LeafNode` has a value.
 
-        ``LeafASTNode`` objects don't have to have a value, like option/value
+        ``LeafNode`` objects don't have to have a value, like option/value
         directives with no value, or comments.
         """
         return len(self._raw) > 1
@@ -441,7 +442,7 @@ class BlockNode(ListNode):
         if isinstance(raw[start], six.text_type) and raw[start].isspace():
             self._whitespace = raw[start]
             start += 1
-        self._full_tag = LeafASTNode(('statement',) + raw[start])
+        self._full_tag = LeafNode(('statement',) + raw[start])
         self._close_tag = raw[-1]
         self._contents = None
         if raw[start + 1]:  # If we have a list of elements to process.
