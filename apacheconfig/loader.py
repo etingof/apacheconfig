@@ -4,11 +4,15 @@
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
+from __future__ import unicode_literals
+
 import glob
+import io
 import logging
 import re
 import os
 import tempfile
+import six
 
 from apacheconfig import error
 from apacheconfig.reader import LocalHostReader
@@ -145,7 +149,7 @@ class ApacheConfigLoader(object):
         def remove_escapes(value):
             if self._options.get('noescape'):
                 return value
-            if not isinstance(value, str):
+            if not isinstance(value, six.text_type):
                 return value
             return re.sub(r'\\([$\\"#])', lambda x: x.groups()[0], value)
         if isinstance(value, list):
@@ -279,7 +283,7 @@ class ApacheConfigLoader(object):
                     and not self._options.get('mergeduplicateoptions', False):
                 raise error.ApacheConfigError(
                     'Duplicate option "%s" prohibited'
-                    % '.'.join(path + [str(key)]))
+                    % '.'.join(path + [six.text_type(key)]))
             if self._options.get('mergeduplicateoptions', False):
                 contents[key] = value
             else:
@@ -316,6 +320,14 @@ class ApacheConfigLoader(object):
         return handler(ast[1:])
 
     def loads(self, text, initialize=True, source=None):
+        """Loads config text into a dictionary object.
+
+        Args:
+            text (Text): (Text) containing the configuration to load.
+
+        Returns:
+            (dict) containing configuration information loaded from text.
+        """
         if not text:
             self._ast_cache[source] = {}
             return {}
@@ -341,6 +353,15 @@ class ApacheConfigLoader(object):
         return self._ast_cache[source]
 
     def load(self, filepath, initialize=True):
+        """Loads config file into a dictionary object.
+
+        Args:
+            filepath (Text): path of config file to load. Expects UTF-8
+                encoding.
+
+        Returns:
+            dict containing configuration information loaded from file.
+        """
         if initialize:
             self._stack = []
             self._includes = set()
@@ -393,7 +414,7 @@ class ApacheConfigLoader(object):
         spacing = ' ' * indent
 
         for key, val in obj.items():
-            if isinstance(val, str):
+            if isinstance(val, six.text_type):
                 if val.isalnum():
                     text += '%s%s %s\n' % (spacing, key, val)
                 else:
@@ -401,7 +422,7 @@ class ApacheConfigLoader(object):
 
             elif isinstance(val, list):
                 for dup in val:
-                    if isinstance(dup, str):
+                    if isinstance(dup, six.text_type):
                         if dup.isalnum():
                             text += '%s%s %s\n' % (spacing, key, dup)
                         else:
@@ -437,14 +458,28 @@ class ApacheConfigLoader(object):
         return text
 
     def dumps(self, dct):
+        """Dumps the configuration in `dct` to a unicode string.
+
+        Args:
+            dct (dict): Configuration represented as a dictionary.
+
+        Returns:
+            (Text) containing the configuration in given dictionary.
+        """
         return self._dumpdict(dct)
 
     def dump(self, filepath, dct):
+        """Dumps the configuration in `dct` to a file.
+
+        Args:
+            filepath (Text): Filepath to write config to, in UTF-8 encoding.
+            dct (dict): Configuration represented as a dictionary.
+        """
         tmpf = tempfile.NamedTemporaryFile(dir=os.path.dirname(filepath),
                                            delete=False)
 
         try:
-            with open(tmpf.name, 'w') as f:
+            with io.open(tmpf.name, mode='w', encoding='utf-8') as f:
                 f.write(self.dumps(dct))
 
             os.rename(tmpf.name, filepath)

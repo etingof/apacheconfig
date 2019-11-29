@@ -2,6 +2,7 @@
 Revision 0.2.9, released XX-10-2019
 -----------------------------------
 
+- Added unicode support: library can parse unicode files
 - Added line number to the exception message on parsing error
 - Fixed the issue of not collapsing trailing whitespaces into
   one in line continuation (as Perl parser does)

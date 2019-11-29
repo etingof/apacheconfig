@@ -1,9 +1,14 @@
+# -*- coding: utf-8 -*-
 #
 # This file is part of apacheconfig software.
 #
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
+from __future__ import unicode_literals
+
+import six
+
 try:
     import unittest2 as unittest
 
@@ -124,8 +129,9 @@ class WLoaderTestCaseRead(unittest.TestCase):
                               "but got '%s'" % (repr(raw), node.dump())))
             self.assertEqual(expected_type, node.typestring,
                              ("Expected node('%s').typestring to be '%s', "
-                              "but got '%s'" % (repr(raw), expected_type,
-                                                str(node.typestring))))
+                              "but got '%s'" %
+                              (repr(raw), expected_type,
+                               six.text_type(node.typestring))))
 
     def testLoadStatement(self):
         cases = [
@@ -155,6 +161,21 @@ class WLoaderTestCaseRead(unittest.TestCase):
             ('\ninclude path', 'include', 'path'),
         ]
         self._test_item_cases(cases, 'include', self.parser)
+
+    def testDumpUnicodeSupport(self):
+        text = "\n value is 三"
+        node = LeafASTNode.parse(text, self.parser)
+        dump = node.dump()
+        self.assertTrue(isinstance(dump, six.text_type))
+        self.assertEquals(dump, text)
+
+    def testStrUnicodeBuiltIns(self):
+        node = LeafASTNode.parse("\n option value", self.parser)
+        self.assertTrue(isinstance(str(node), str))
+        self.assertTrue(isinstance(node.__unicode__(), six.text_type))
+        self.assertEquals(
+            "LeafASTNode([u'statement', u'option', u' ', u'value'])",
+            six.text_type(node))
 
     def testLoadContents(self):
         cases = [

@@ -4,8 +4,11 @@
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
+from __future__ import unicode_literals
+
 import logging
 import re
+import six
 import ply.lex as lex
 
 from apacheconfig.error import ApacheConfigError
@@ -13,11 +16,11 @@ from apacheconfig.error import ApacheConfigError
 log = logging.getLogger(__name__)
 
 
-class SingleQuotedString(str):
+class SingleQuotedString(six.text_type):
     is_single_quoted = True
 
 
-class DoubleQuotedString(str):
+class DoubleQuotedString(six.text_type):
     is_double_quoted = True
 
 
@@ -360,7 +363,7 @@ def make_lexer(**options):
     if options.get('nostripvalues'):
         lexer_class = NoStripLexer
 
-    lexer_class = type('ApacheConfigLexer',
+    lexer_class = type(six.binary_type('ApacheConfigLexer'),
                        (lexer_class, HashCommentsLexer),
                        {'tokens': lexer_class.tokens +
                         HashCommentsLexer.tokens,
@@ -369,7 +372,7 @@ def make_lexer(**options):
                         'options': options})
 
     if options.get('ccomments', True):
-        lexer_class = type('ApacheConfigLexer',
+        lexer_class = type(six.binary_type('ApacheConfigLexer'),
                            (lexer_class, CStyleCommentsLexer),
                            {'tokens': lexer_class.tokens +
                             CStyleCommentsLexer.tokens,
@@ -378,7 +381,7 @@ def make_lexer(**options):
                             'options': options})
 
     if options.get('useapacheinclude', True):
-        lexer_class = type('ApacheConfigLexer',
+        lexer_class = type(six.binary_type('ApacheConfigLexer'),
                            (lexer_class, ApacheIncludesLexer),
                            {'tokens': lexer_class.tokens +
                             ApacheIncludesLexer.tokens,

@@ -1,11 +1,17 @@
+# -*- coding: utf-8 -*-
 #
 # This file is part of apacheconfig software.
 #
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
+from __future__ import unicode_literals
+
+import io
 import os
+import shutil
 import sys
+import tempfile
 
 from apacheconfig import ApacheConfigError
 from apacheconfig import ApacheConfigLoader
@@ -40,6 +46,7 @@ class LoaderTestCase(unittest.TestCase):
 
 # a
 a = b
+b = 三
 
 <a block>
   a = b
@@ -60,6 +67,7 @@ c "d d"
 
         self.assertEqual(
             config, {
+                'b': '三',
                 'a': ['b', {'block': {'a': 'b'}}, 'b',
                       {'a block': {'c': 'd d'}}]
             }
@@ -77,6 +85,7 @@ a = b
 a b
 <a a block>
 c "d d"
+b = 三
 </a>
 # a
 """
@@ -92,6 +101,7 @@ a b
 <a>
   <a block>
     c "d d"
+    b 三
   </a block>
 </a>
 """
@@ -103,10 +113,17 @@ a b
             ApacheConfigParser(ApacheConfigLexer()))
 
         config = loader.loads(text)
-
         gen_text = loader.dumps(config)
-
         self.assertEqual(expect_text, gen_text)
+
+        # Testing dump(filepath, config)
+        tmpd = tempfile.mkdtemp()
+        filepath = os.path.join(tmpd, "config")
+        loader.dump(filepath, config)
+        with io.open(filepath, mode='r', encoding='utf-8') as f:
+            text = f.read()
+        shutil.rmtree(tmpd)
+        self.assertEqual(expect_text, text)
 
     def testForceArray(self):
         text = """\

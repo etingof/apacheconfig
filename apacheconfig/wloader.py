@@ -4,6 +4,8 @@
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
+from __future__ import unicode_literals
+
 import abc
 import six
 
@@ -67,17 +69,12 @@ class AbstractASTNode(object):
         """Dumps contents of this node.
 
         Returns:
-            String containing the contents of this node, as in a config file.
+            (Text) with the contents of this node, as in a config file.
         """
 
     @abc.abstractproperty
     def typestring(self):
         """Object typestring as defined by the apacheconfig parser.
-
-        Returns:
-            String containing internal typestring information from the
-            apacheconfig parser. See subclass documentation for possible
-            values.
         """
 
 
@@ -111,7 +108,7 @@ class ListNode(AbstractASTNode):
         self._trailing_whitespace = ""
         self._parser = parser
         for elem in raw[1:]:
-            if isinstance(elem, str) and elem.isspace():
+            if isinstance(elem, six.text_type) and elem.isspace():
                 self._trailing_whitespace = elem
             elif elem[0] == "block":
                 self._contents.append(BlockNode(elem, parser))
@@ -249,7 +246,7 @@ class ListNode(AbstractASTNode):
         """Sets trailing whitespace after this list of config items.
 
         Args:
-            value (str): New trailing whitespace for this list of config items.
+            value (Text): Trailing whitespace for this list of config items.
         """
         self._trailing_whitespace = value
 
@@ -341,7 +338,7 @@ class LeafASTNode(AbstractASTNode):
         """Factory for :class:`apacheconfig.LeafASTNode` from a config string.
 
         Args:
-            raw_str (str): The text to parse.
+            raw_str (Text): The text to parse, as a unicode string.
             parser (:class:`apacheconfig.ApacheConfigParser`): specify the
                 parser to use. Can be created by ``native_apache_parser()``.
         Returns:
@@ -371,7 +368,7 @@ class LeafASTNode(AbstractASTNode):
 
     @property
     def value(self):
-        """Returns the value of this item as a string.
+        """Returns the value of this item as a unicode string.
 
         The "value" is anything but the name. Can be overwritten.
         """
@@ -384,7 +381,7 @@ class LeafASTNode(AbstractASTNode):
         """Sets for the value of this item.
 
         Args:
-            value (str): string to set new value to.
+            value (Text): string to set new value to.
 
           .. todo:: (sydneyli) convert `value` to quotedstring when quoted
         """
@@ -397,10 +394,16 @@ class LeafASTNode(AbstractASTNode):
                 "".join([_restore_original(word) for word in self._raw]))
 
     def __str__(self):
+        contents = [_restore_original(word) for word in self._raw]
         return ("%s(%s)"
-                % (self.__class__.__name__,
-                   str([self._type] +
-                       [_restore_original(word) for word in self._raw])))
+                % (str(self.__class__.__name__),
+                   str([self._type] + contents)))
+
+    def __unicode__(self):
+        contents = [_restore_original(word) for word in self._raw]
+        return ("%s(%s)"
+                % (six.text_type(self.__class__.__name__),
+                   six.text_type([self._type] + contents)))
 
 
 class BlockNode(ListNode):
@@ -435,7 +438,7 @@ class BlockNode(ListNode):
                 "``apacheconfig.parser``. First element of data is not "
                 "\"block\" typestring.")
         start = 1
-        if isinstance(raw[start], str) and raw[start].isspace():
+        if isinstance(raw[start], six.text_type) and raw[start].isspace():
             self._whitespace = raw[start]
             start += 1
         self._full_tag = LeafASTNode(('statement',) + raw[start])
