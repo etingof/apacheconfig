@@ -323,10 +323,10 @@ class ApacheConfigLoader(object):
         """Loads config text into a dictionary object.
 
         Args:
-            text (Text): Unicode string containing the configuration to load.
+            text (Text): (Text) containing the configuration to load.
 
         Returns:
-            dict containing configuration information loaded from text.
+            (dict) containing configuration information loaded from text.
         """
         if not text:
             self._ast_cache[source] = {}
