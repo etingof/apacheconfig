@@ -15,10 +15,13 @@ try:
 except ImportError:
     import unittest
 
-from apacheconfig import LeafASTNode
 from apacheconfig import flavors
 from apacheconfig import make_lexer
 from apacheconfig import make_parser
+from apacheconfig.wloader import BlockNode
+from apacheconfig.wloader import LeafASTNode
+from apacheconfig.wloader import ListNode
+from apacheconfig.error import ApacheConfigError
 
 
 class WLoaderTestCaseWrite(unittest.TestCase):
@@ -42,6 +45,48 @@ class WLoaderTestCaseWrite(unittest.TestCase):
         for raw, new_value, expected in cases:
             node = LeafASTNode.parse(raw, self.parser)
             node.value = new_value
+            self.assertEqual(expected, node.dump())
+
+    def testChangeBlockValue(self):
+        cases = [
+            ("<block name>\n</block>", "name2", "<block name2>\n</block>"),
+            ("<block>\n</block>", "name2", "<block name2>\n</block>"),
+        ]
+        for raw, new_value, expected in cases:
+            node = BlockNode.parse(raw, self.parser)
+            node.arguments = new_value
+            self.assertEqual(expected, node.dump())
+
+    def testAddToContents(self):
+        cases = [
+            # Inserting statement middle or end
+            ("a b\nc d", 1, "\n1 2", "a b\n1 2\nc d"),
+            ("a b\nc d", 2, "\n1 2", "a b\nc d\n1 2"),
+            ("a b\n", 1, " ###", "a b ###\n"),
+            ("a b # comment\n", 1, "\n1 2", "a b\n1 2 # comment\n"),
+            # Inserting option/value statement at beginning
+            ("a", 0, "\n1 2", "\n1 2\na"),
+            ("a\n", 0, "###", "###\na\n"),
+            ("  a b", 0, "\n1 2", "\n1 2\n  a b"),
+            ("\n", 0, "\n1 2", "\n1 2\n"),
+            ("# comment\n", 0, "\n1 2", "\n1 2\n# comment\n"),
+        ]
+        for raw, index, to_add, expected in cases:
+            node = ListNode.parse(raw, self.parser)
+            node.add(index, to_add)
+            self.assertEqual(expected, node.dump())
+
+    def testRemoveFromContents(self):
+        cases = [
+            ("a b\nc d", 1, "a b"),
+            ("a b\nc d", 0, "\nc d"),
+            ("\na\n", 0, "\n"),
+            ("a # comment", 1, "a"),
+            ("a # comment", 0, " # comment")
+        ]
+        for raw, index, expected in cases:
+            node = ListNode.parse(raw, self.parser)
+            node.remove(index)
             self.assertEqual(expected, node.dump())
 
 
@@ -131,3 +176,105 @@ class WLoaderTestCaseRead(unittest.TestCase):
         self.assertEquals(
             "LeafASTNode([u'statement', u'option', u' ', u'value'])",
             six.text_type(node))
+
+    def testLoadContents(self):
+        cases = [
+            ('a b\nc d', ('a b', '\nc d')),
+            ('  \n', tuple()),
+            ('a b  \n', ('a b',)),
+            ('a b # comment', ('a b', ' # comment')),
+            ('a b\n<b>\n</b>  \n', ('a b', '\n<b>\n</b>')),
+        ]
+        for raw, expected in cases:
+            node = ListNode.parse(raw, self.parser)
+            self.assertEqual(len(node), len(expected))
+            for got, expected in zip(node, expected):
+                self.assertEqual(got.dump(), expected)
+            self.assertEqual(raw, node.dump())
+
+    def testMalformedContents(self):
+        cases = [
+            (["block", ("b",), [], "b"], "Wrong typestring."),
+            (["statement", "option", " ", "value"], "Wrong typestring."),
+            (["contents", ["contents", []]], "Malformed contents."),
+            (["contents", ["block", ("b",), []]], "Malformed contents."),
+        ]
+        for case in cases:
+            self.assertRaises(ApacheConfigError, ListNode, case[0],
+                              self.parser)
+
+    def testModifyListIndexError(self):
+        cases = [
+            ('a b\nc d', "add", 4),
+            ('a b\nc d', "add", -1),
+            ('a b\nc d', "remove", 3),
+            ('a b\nc d', "remove", -1),
+            ('\n', "remove", 0),
+            ('\n', "add", 1),
+        ]
+        for raw, fn, index in cases:
+            node = ListNode.parse(raw, self.parser)
+            self.assertEqual(raw, node.dump())
+            if fn == "add":
+                self.assertRaises(IndexError, node.add, index, " # comment")
+            else:
+                self.assertRaises(IndexError, node.remove, index)
+
+    def testListAddParsingError(self):
+        node = ListNode.parse("a b\nc d", self.parser)
+        cases = ["a b\nc d", ""]
+        for case in cases:
+            self.assertRaises(ApacheConfigError, node.add, 0, case)
+
+    def testMalformedBlocks(self):
+        cases = [
+            (["contents", []], "Wrong typestring."),
+            (["statement", "option", " ", "value"], "Wrong typestring."),
+            (["block", ("b",), []], "Raw data too short."),
+            (["block", ("b",), ["contents"], "b"], "Malformed contents."),
+        ]
+        for case in cases:
+            self.assertRaises(ApacheConfigError, BlockNode, case[0],
+                              self.parser)
+
+    def testMalformedItem(self):
+        cases = [
+            (["contents", []], "Wrong typestring."),
+            (["block", ("b",), [], "b"], "Wrong typestring."),
+            (["statement"], "Too short."),
+        ]
+        for case in cases:
+            self.assertRaises(ApacheConfigError, LeafASTNode, case[0])
+
+    def testLoadBlocks(self):
+        cases = [
+            ('<b>\nhello there\nit me\n</b>', None),
+            ('<b name/>\n</b>', 'name/'),
+            ('<b>\n</b>', None),
+            ('<b  name>\n</b name>', 'name'),
+            ('<b>\n</b>', None),
+            ('\n<b>\n</b>', None),
+        ]
+        for (raw, value) in cases:
+            node = BlockNode.parse(raw, self.parser)
+            self.assertEqual("b", node.tag)
+            self.assertEqual(value, node.arguments)
+            self.assertEqual(raw, node.dump())
+
+    def testLoadWholeConfig(self):
+        text = """\
+
+# a
+a = b
+
+<a block>
+  a = b
+</a>
+a b
+<a a block>
+c "d d"
+</a>
+# a
+"""
+        node = ListNode.parse(text, self.parser)
+        self.assertEqual(text, node.dump())
