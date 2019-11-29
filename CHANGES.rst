@@ -19,6 +19,8 @@ Revision 0.2.9, released XX-10-2019
 - Fixed the issue of key-only statements parsing
 - Added `disableemptyelementstags` option to disable parsing of
   empty element tags.
+- Added interfaces and implementation for writable loader, which
+  loads a configuration file into an AST.
 
 Revision 0.2.8, released 29-12-2018
 -----------------------------------
