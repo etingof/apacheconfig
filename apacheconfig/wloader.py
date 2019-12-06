@@ -65,6 +65,7 @@ class ApacheConfigWritableLoader(object):
         Returns:
             :class:`apacheconfig.ListNode` AST containing parsed config.
         """
+        print text
         ast = self._parser.parse(text)
         return ListNode(ast, self._parser)
 
