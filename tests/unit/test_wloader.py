@@ -20,8 +20,6 @@ import shutil
 import tempfile
 
 from apacheconfig import flavors
-from apacheconfig import make_lexer
-from apacheconfig import make_parser
 from apacheconfig.wloader import make_writable_loader
 from apacheconfig.error import ApacheConfigError
 
