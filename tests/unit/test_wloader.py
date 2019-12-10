@@ -20,14 +20,14 @@ import shutil
 import tempfile
 
 from apacheconfig import flavors
-from apacheconfig.wloader import make_writable_loader
+from apacheconfig import make_loader
 from apacheconfig.error import ApacheConfigError
 
 
 class WLoaderTestCaseWrite(unittest.TestCase):
 
     def setUp(self):
-        context = make_writable_loader(**flavors.NATIVE_APACHE)
+        context = make_loader(writable=True, **flavors.NATIVE_APACHE)
         self.loader = context.__enter__()
         self.addCleanup(context.__exit__, None, None, None)
 
@@ -93,7 +93,7 @@ class WLoaderTestCaseWrite(unittest.TestCase):
 class WLoaderTestCaseRead(unittest.TestCase):
 
     def setUp(self):
-        context = make_writable_loader(**flavors.NATIVE_APACHE)
+        context = make_loader(writable=True, **flavors.NATIVE_APACHE)
         self.loader = context.__enter__()
         self.addCleanup(context.__exit__, None, None, None)
 

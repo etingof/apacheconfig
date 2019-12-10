@@ -17,19 +17,14 @@ from apacheconfig.reader import LocalHostReader
 from apacheconfig import error
 
 
-@contextlib.contextmanager
-def make_writable_loader(**options):
-    # Preserve whitespace is necessary for the writable loader to work.
-    options['preservewhitespace'] = True
-    ApacheConfigLexer = make_lexer(**options)
-    ApacheConfigParser = make_parser(**options)
-    yield ApacheConfigWritableLoader(ApacheConfigParser(ApacheConfigLexer(),
-                                                        start='contents'),
-                                     **options)
-
-
 class ApacheConfigWritableLoader(object):
     """Manages a writable object represented by a single config file.
+
+    Args:
+        parser (:class:`apacheconfig.ApacheConfigParser`): compiled parser
+            to use when loading configuration directives.
+        options (dict): keyword args of options to set for loader. Should be
+            same set of options passed to parser.
     """
 
     def __init__(self, parser, **options):
@@ -65,7 +60,6 @@ class ApacheConfigWritableLoader(object):
         Returns:
             :class:`apacheconfig.ListNode` AST containing parsed config.
         """
-        print text
         ast = self._parser.parse(text)
         return ListNode(ast, self._parser)
 
