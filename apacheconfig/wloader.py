@@ -8,10 +8,7 @@ from __future__ import unicode_literals
 
 import abc
 import six
-import contextlib
 
-from apacheconfig.lexer import make_lexer
-from apacheconfig.parser import make_parser
 from apacheconfig.reader import LocalHostReader
 
 from apacheconfig import error
