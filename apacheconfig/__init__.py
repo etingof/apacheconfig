@@ -6,7 +6,6 @@ from contextlib import contextmanager
 from apacheconfig.lexer import make_lexer
 from apacheconfig.parser import make_parser
 from apacheconfig.loader import ApacheConfigLoader
-from apacheconfig.wloader import ApacheConfigWritableLoader
 from apacheconfig.error import ApacheConfigError
 from apacheconfig import flavors  # noqa: F401
 
@@ -18,9 +17,9 @@ def make_loader(writable=False, **options):
 
     if writable:
         options["preservewhitespace"] = True
-        yield ApacheConfigWritableLoader(
+        yield ApacheConfigLoader(
                 ApacheConfigParser(ApacheConfigLexer(), start='contents'),
-                **options)
+                writable=True, **options)
     else:
         yield ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()),
                                  **options)

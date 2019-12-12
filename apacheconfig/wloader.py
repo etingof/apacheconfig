@@ -9,56 +9,7 @@ from __future__ import unicode_literals
 import abc
 import six
 
-from apacheconfig.reader import LocalHostReader
-
 from apacheconfig import error
-
-
-class ApacheConfigWritableLoader(object):
-    """Manages a writable object represented by a single config file.
-
-    Args:
-        parser (:class:`apacheconfig.ApacheConfigParser`): compiled parser
-            to use when loading configuration directives.
-        options (dict): keyword args of options to set for loader. Should be
-            same set of options passed to parser.
-    """
-
-    def __init__(self, parser, **options):
-        self._parser = parser
-        self._options = dict(options)
-        if 'reader' in self._options:
-            self._reader = self._options['reader']
-        else:
-            self._reader = LocalHostReader()
-
-    def load(self, filepath):
-        """Loads config file into a raw modifiable AST.
-
-        Args:
-            filepath (Text): path of config file to load. Expects UTF-8
-                encoding.
-
-        Returns:
-            :class:`apacheconfig.ListNode` AST containing parsed config file.
-
-        Raises:
-            IOError: If there is a problem opening the file specified.
-        """
-        with self._reader.open(filepath) as f:
-            return self.loads(f.read())
-
-    def loads(self, text):
-        """Loads config text into a raw modifiable AST.
-
-        Args:
-            text (Text): (Text) containing the configuration to load.
-
-        Returns:
-            :class:`apacheconfig.ListNode` AST containing parsed config.
-        """
-        ast = self._parser.parse(text)
-        return ListNode(ast, self._parser)
 
 
 def _restore_original(word):

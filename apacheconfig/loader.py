@@ -16,13 +16,25 @@ import six
 
 from apacheconfig import error
 from apacheconfig.reader import LocalHostReader
+from apacheconfig.wloader import ListNode
 
 log = logging.getLogger(__name__)
 
 
 class ApacheConfigLoader(object):
+    """Manages an object by a single config file.
 
-    def __init__(self, parser, debug=False, **options):
+    Args:
+        parser (:class:`apacheconfig.ApacheConfigParser`): compiled parser
+            to use when loading configuration directives.
+        writable (bool): If set, `load` and `loads` will return a mutable
+            :class:`apacheconfig.ListNode` object rather than a dictionary.
+        debug (bool): If set, will perform parsing in debug mode.
+        options (dict): keyword args of options to set for loader. Should be
+            same set of options passed to parser.
+    """
+
+    def __init__(self, parser, writable=False, debug=False, **options):
         self._parser = parser
         self._debug = debug
         self._options = dict(options)
@@ -33,6 +45,7 @@ class ApacheConfigLoader(object):
         self._stack = []
         self._includes = set()
         self._ast_cache = {}
+        self._writable = writable
 
     # Code generation rules
 
@@ -326,8 +339,14 @@ class ApacheConfigLoader(object):
             text (Text): (Text) containing the configuration to load.
 
         Returns:
-            (dict) containing configuration information loaded from text.
+            (dict) containing configuration information loaded from text; if
+            `writable` is set on this object, returns a mutable
+            :class:`apacheconfig.ListNode` AST containing parsed config file.
         """
+        if self._writable:
+            ast = self._parser.parse(text)
+            return ListNode(ast, self._parser)
+
         if not text:
             self._ast_cache[source] = {}
             return {}
@@ -360,8 +379,14 @@ class ApacheConfigLoader(object):
                 encoding.
 
         Returns:
-            dict containing configuration information loaded from file.
+            (dict) containing configuration information loaded from file; if
+            `writable` is set on this object, returns a mutable
+            :class:`apacheconfig.ListNode` AST containing parsed config file.
         """
+        if self._writable:
+            with self._reader.open(filepath) as f:
+                return self.loads(f.read())
+
         if initialize:
             self._stack = []
             self._includes = set()
