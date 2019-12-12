@@ -15,21 +15,21 @@ try:
 except ImportError:
     import unittest
 
+import os
+import shutil
+import tempfile
+
 from apacheconfig import flavors
-from apacheconfig import make_lexer
-from apacheconfig import make_parser
-from apacheconfig.wloader import BlockNode
-from apacheconfig.wloader import LeafNode
-from apacheconfig.wloader import ListNode
+from apacheconfig import make_loader
 from apacheconfig.error import ApacheConfigError
 
 
 class WLoaderTestCaseWrite(unittest.TestCase):
 
     def setUp(self):
-        ApacheConfigLexer = make_lexer(**flavors.NATIVE_APACHE)
-        ApacheConfigParser = make_parser(**flavors.NATIVE_APACHE)
-        self.parser = ApacheConfigParser(ApacheConfigLexer(), start="contents")
+        context = make_loader(writable=True, **flavors.NATIVE_APACHE)
+        self.loader = context.__enter__()
+        self.addCleanup(context.__exit__, None, None, None)
 
     def testChangeItemValue(self):
         cases = [
@@ -43,7 +43,7 @@ class WLoaderTestCaseWrite(unittest.TestCase):
              'include new/path/to/file'),
         ]
         for raw, new_value, expected in cases:
-            node = LeafNode.parse(raw, self.parser)
+            node = next(iter(self.loader.loads(raw)))
             node.value = new_value
             self.assertEqual(expected, node.dump())
 
@@ -53,7 +53,7 @@ class WLoaderTestCaseWrite(unittest.TestCase):
             ("<block>\n</block>", "name2", "<block name2>\n</block>"),
         ]
         for raw, new_value, expected in cases:
-            node = BlockNode.parse(raw, self.parser)
+            node = next(iter(self.loader.loads(raw)))
             node.arguments = new_value
             self.assertEqual(expected, node.dump())
 
@@ -72,7 +72,7 @@ class WLoaderTestCaseWrite(unittest.TestCase):
             ("# comment\n", 0, "\n1 2", "\n1 2\n# comment\n"),
         ]
         for raw, index, to_add, expected in cases:
-            node = ListNode.parse(raw, self.parser)
+            node = self.loader.loads(raw)
             node.add(index, to_add)
             self.assertEqual(expected, node.dump())
 
@@ -85,7 +85,7 @@ class WLoaderTestCaseWrite(unittest.TestCase):
             ("a # comment", 0, " # comment")
         ]
         for raw, index, expected in cases:
-            node = ListNode.parse(raw, self.parser)
+            node = self.loader.loads(raw)
             node.remove(index)
             self.assertEqual(expected, node.dump())
 
@@ -93,9 +93,9 @@ class WLoaderTestCaseWrite(unittest.TestCase):
 class WLoaderTestCaseRead(unittest.TestCase):
 
     def setUp(self):
-        ApacheConfigLexer = make_lexer(**flavors.NATIVE_APACHE)
-        ApacheConfigParser = make_parser(**flavors.NATIVE_APACHE)
-        self.parser = ApacheConfigParser(ApacheConfigLexer(), start="contents")
+        context = make_loader(writable=True, **flavors.NATIVE_APACHE)
+        self.loader = context.__enter__()
+        self.addCleanup(context.__exit__, None, None, None)
 
     def testChangeItemValue(self):
         cases = [
@@ -109,15 +109,13 @@ class WLoaderTestCaseRead(unittest.TestCase):
              'include new/path/to/file'),
         ]
         for raw, new_value, expected in cases:
-            node = LeafNode.parse(raw, self.parser)
+            node = next(iter(self.loader.loads(raw)))
             node.value = new_value
             self.assertEqual(expected, node.dump())
 
-    def _test_item_cases(self, cases, expected_type, parser=None):
-        if not parser:
-            parser = self.parser
+    def _test_item_cases(self, cases, expected_type):
         for raw, expected_name, expected_value in cases:
-            node = LeafNode.parse(raw, self.parser)
+            node = next(iter(self.loader.loads(raw)))
             self.assertEqual(expected_name, node.name,
                              "Expected node('%s').name to be %s, got %s" %
                              (repr(raw), expected_name, node.name))
@@ -160,17 +158,17 @@ class WLoaderTestCaseRead(unittest.TestCase):
             ('  include path', 'include', 'path'),
             ('\ninclude path', 'include', 'path'),
         ]
-        self._test_item_cases(cases, 'include', self.parser)
+        self._test_item_cases(cases, 'include')
 
     def testDumpUnicodeSupport(self):
         text = "\n value is 三"
-        node = LeafNode.parse(text, self.parser)
+        node = next(iter(self.loader.loads(text)))
         dump = node.dump()
         self.assertTrue(isinstance(dump, six.text_type))
         self.assertEquals(dump, text)
 
     def testStrUnicodeBuiltIns(self):
-        node = LeafNode.parse("\n option value", self.parser)
+        node = next(iter(self.loader.loads("\n option value")))
         self.assertTrue(isinstance(str(node), str))
         self.assertTrue(isinstance(node.__unicode__(), six.text_type))
         self.assertEquals(
@@ -186,13 +184,14 @@ class WLoaderTestCaseRead(unittest.TestCase):
             ('a b\n<b>\n</b>  \n', ('a b', '\n<b>\n</b>')),
         ]
         for raw, expected in cases:
-            node = ListNode.parse(raw, self.parser)
+            node = self.loader.loads(raw)
             self.assertEqual(len(node), len(expected))
             for got, expected in zip(node, expected):
                 self.assertEqual(got.dump(), expected)
             self.assertEqual(raw, node.dump())
 
     def testMalformedContents(self):
+        from apacheconfig.wloader import ListNode
         cases = [
             (["block", ("b",), [], "b"], "Wrong typestring."),
             (["statement", "option", " ", "value"], "Wrong typestring."),
@@ -201,7 +200,7 @@ class WLoaderTestCaseRead(unittest.TestCase):
         ]
         for case in cases:
             self.assertRaises(ApacheConfigError, ListNode, case[0],
-                              self.parser)
+                              None)
 
     def testModifyListIndexError(self):
         cases = [
@@ -213,7 +212,7 @@ class WLoaderTestCaseRead(unittest.TestCase):
             ('\n', "add", 1),
         ]
         for raw, fn, index in cases:
-            node = ListNode.parse(raw, self.parser)
+            node = self.loader.loads(raw)
             self.assertEqual(raw, node.dump())
             if fn == "add":
                 self.assertRaises(IndexError, node.add, index, " # comment")
@@ -221,12 +220,13 @@ class WLoaderTestCaseRead(unittest.TestCase):
                 self.assertRaises(IndexError, node.remove, index)
 
     def testListAddParsingError(self):
-        node = ListNode.parse("a b\nc d", self.parser)
+        node = self.loader.loads("a b\nc d")
         cases = ["a b\nc d", ""]
         for case in cases:
             self.assertRaises(ApacheConfigError, node.add, 0, case)
 
     def testMalformedBlocks(self):
+        from apacheconfig.wloader import BlockNode
         cases = [
             (["contents", []], "Wrong typestring."),
             (["statement", "option", " ", "value"], "Wrong typestring."),
@@ -235,9 +235,10 @@ class WLoaderTestCaseRead(unittest.TestCase):
         ]
         for case in cases:
             self.assertRaises(ApacheConfigError, BlockNode, case[0],
-                              self.parser)
+                              None)
 
     def testMalformedItem(self):
+        from apacheconfig.wloader import LeafNode
         cases = [
             (["contents", []], "Wrong typestring."),
             (["block", ("b",), [], "b"], "Wrong typestring."),
@@ -256,12 +257,12 @@ class WLoaderTestCaseRead(unittest.TestCase):
             ('\n<b>\n</b>', None),
         ]
         for (raw, value) in cases:
-            node = BlockNode.parse(raw, self.parser)
+            node = next(iter(self.loader.loads(raw)))
             self.assertEqual("b", node.tag)
             self.assertEqual(value, node.arguments)
             self.assertEqual(raw, node.dump())
 
-    def testLoadWholeConfig(self):
+    def testLoadWholeConfigFromFile(self):
         text = """\
 
 # a
@@ -275,6 +276,13 @@ a b
 c "d d"
 </a>
 # a
+
+
 """
-        node = ListNode.parse(text, self.parser)
+        t = tempfile.mkdtemp()
+        filepath = os.path.join(t, "config")
+        with open(filepath, "w") as f:
+            f.write(text)
+        node = self.loader.load(filepath)
         self.assertEqual(text, node.dump())
+        shutil.rmtree(t)
