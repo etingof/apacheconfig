@@ -1,15 +1,24 @@
 
-Revision 0.2.9, released XX-10-2019
+Revision 0.3.0, released 13-12-2019
 -----------------------------------
 
-- Added unicode support: library can parse unicode files
+- Added the ability to preserve the exact layout of the config
+  file upon loading/dumping (to ensure the validity of possible
+  signatures).
+- Added unicode support: library can load/dump unicode config files.
 - Added line number to the exception message on parsing error
-- Fixed the issue of not collapsing trailing whitespaces into
-  one in line continuation (as Perl parser does)
 - Added `preservewhitespace` option to control parser behaviour
   concerning insignificant whitespaces. When this option is
   enabled, the parser would collect all whitespaces into AST
-  and (potentially) use them for codegeneration.
+  and (potentially) use them for code generation.
+- Added `disableemptyelementstags` option to disable parsing of
+  empty element tags.
+- Added interfaces and implementation for writable loader, which
+  loads a configuration file into an AST.
+- Added Sphinx documentation infrastructure (the docs are still
+  to be moved from README).
+- Fixed the issue of not collapsing trailing whitespaces into
+  one in line continuation (as Perl parser does)
 - Fixed the issue of not preserving escaped hashes (\#)
 - Fixed the issue of not respecting a comment that follows
   an escaped hash
@@ -18,10 +27,6 @@ Revision 0.2.9, released XX-10-2019
 - Fixed the issue of not operational `allowmultioptions` option
   when the statement spans multiple lines
 - Fixed the issue of key-only statements parsing
-- Added `disableemptyelementstags` option to disable parsing of
-  empty element tags.
-- Added interfaces and implementation for writable loader, which
-  loads a configuration file into an AST.
 
 Revision 0.2.8, released 29-12-2018
 -----------------------------------
