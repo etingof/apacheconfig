@@ -363,7 +363,7 @@ def make_lexer(**options):
     if options.get('nostripvalues'):
         lexer_class = NoStripLexer
 
-    lexer_class = type(six.binary_type('ApacheConfigLexer'),
+    lexer_class = type(str('ApacheConfigLexer'),
                        (lexer_class, HashCommentsLexer),
                        {'tokens': lexer_class.tokens +
                         HashCommentsLexer.tokens,
@@ -372,7 +372,7 @@ def make_lexer(**options):
                         'options': options})
 
     if options.get('ccomments', True):
-        lexer_class = type(six.binary_type('ApacheConfigLexer'),
+        lexer_class = type(str('ApacheConfigLexer'),
                            (lexer_class, CStyleCommentsLexer),
                            {'tokens': lexer_class.tokens +
                             CStyleCommentsLexer.tokens,
@@ -381,7 +381,7 @@ def make_lexer(**options):
                             'options': options})
 
     if options.get('useapacheinclude', True):
-        lexer_class = type(six.binary_type('ApacheConfigLexer'),
+        lexer_class = type(str('ApacheConfigLexer'),
                            (lexer_class, ApacheIncludesLexer),
                            {'tokens': lexer_class.tokens +
                             ApacheIncludesLexer.tokens,
