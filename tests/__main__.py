@@ -18,7 +18,7 @@ suite = unittest.TestLoader().loadTestsFromNames(
 
 if __name__ == '__main__':
     result = unittest.TextTestRunner(verbosity=2).run(suite)
-    if result.wasSucccessful():
+    if result.wasSuccessful():
         exit(0)
     else:
         exit(1)
