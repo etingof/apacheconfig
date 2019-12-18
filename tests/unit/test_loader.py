@@ -78,12 +78,11 @@ c "d d"
 
 # a
 a = b
-c "d d"
 
 <a block>
   a = b
 </a>
-a b
+a "b b"
 <a a block>
 b = 三
 </a>
@@ -97,13 +96,12 @@ a b
     a b
   </block>
 </a>
-a b
+a "b b"
 <a>
   <a block>
     b 三
   </a block>
 </a>
-c "d d"
 """
 
         ApacheConfigLexer = make_lexer()
