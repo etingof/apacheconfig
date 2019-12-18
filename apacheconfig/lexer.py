@@ -92,13 +92,13 @@ class ApacheIncludesLexer(object):
     states = ()
 
     def t_APACHEINCLUDE(self, t):
-        r'(?i)include[\t ]+[^\n\r]+'
+        r'include[\t ]+[^\n\r]+'
         include, whitespace, value = re.split(r'([ \t]+)', t.value, maxsplit=1)
         t.value = include, whitespace, value
         return t
 
     def t_APACHEINCLUDEOPTIONAL(self, t):
-        r'(?i)includeoptional[\t ]+[^\n\r]+'
+        r'includeoptional[\t ]+[^\n\r]+'
         include, whitespace, value = re.split(r'([ \t]+)', t.value, maxsplit=1)
         t.value = include, whitespace, value
         return t
@@ -131,7 +131,7 @@ class BaseApacheConfigLexer(object):
     def reset(self):
         self.engine = lex.lex(
             module=self,
-            reflags=re.DOTALL,
+            reflags=re.DOTALL | re.IGNORECASE,
             outputdir=self._tempdir,
             debuglog=log if self._debug else None,
             errorlog=log if self._debug else None
@@ -153,7 +153,7 @@ class BaseApacheConfigLexer(object):
     # Tokenizer rules
 
     def t_INCLUDE(self, t):
-        r'<<(?i)include[\t ]+[^\n\r\t]+>>'
+        r'<<include[\t ]+[^\n\r\t]+>>'
         include, whitespace, value = re.split(r'([ \t]+)',
                                               t.value[2:-2], maxsplit=1)
         t.value = '<<', include, whitespace, value, '>>'
