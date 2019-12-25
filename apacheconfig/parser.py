@@ -86,9 +86,9 @@ class BaseApacheConfigParser(object):
             start=self._start,
             outputdir=self._tempdir,
             write_tables=bool(self._tempdir),
-            debug=False,
-            debuglog=log if self._debug else None,
-            errorlog=log if self._debug else None
+            debug=self._debug,
+            debuglog=log if self._debug else yacc.NullLogger(),
+            errorlog=log if self._debug else yacc.NullLogger(),
         )
 
     def parse(self, text):
