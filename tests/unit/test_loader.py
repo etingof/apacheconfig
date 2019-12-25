@@ -117,7 +117,7 @@ a b
 
         try:
             self.assertEqual(expect_text, gen_text)
-        except:
+        except AssertionError:
             # Account for non-deterministic ordering of dict items;
             # swap lines `b 三` and `c "d d"`
             lines = expect_text.split('\n')
