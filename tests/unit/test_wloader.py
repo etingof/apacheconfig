@@ -171,11 +171,11 @@ class WLoaderTestCaseRead(unittest.TestCase):
         node = next(iter(self.loader.loads("\n option value")))
         self.assertTrue(isinstance(str(node), str))
         self.assertTrue(isinstance(node.__unicode__(), six.text_type))
-        # Make test compatible with both u'string' and 'string'
-        node_str = six.text_type(node).replace("u'", "'")
+        if six.PY2:
+            # Make test compatible with both u'string' and 'string'
+            node_str = six.text_type(node).replace("u'", "'")
         self.assertEqual(
-            "LeafNode(['statement', 'option', ' ', 'value'])",
-            node_str)
+            "LeafNode(['statement', 'option', ' ', 'value'])", node_str)
 
     def testLoadContents(self):
         cases = [
