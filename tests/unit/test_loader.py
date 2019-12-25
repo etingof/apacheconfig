@@ -114,7 +114,16 @@ a b
 
         config = loader.loads(text)
         gen_text = loader.dumps(config)
-        self.assertEqual(expect_text, gen_text)
+
+        try:
+            self.assertEqual(expect_text, gen_text)
+        except AssertionError:
+            # Account for non-deterministic ordering of dict items;
+            # swap lines `b 三` and `c "d d"`
+            lines = expect_text.split('\n')
+            lines[9], lines[10] = lines[10], lines[9]
+            expect_text = "\n".join(lines)
+            self.assertEqual(expect_text, gen_text)
 
         # Testing dump(filepath, config)
         tmpd = tempfile.mkdtemp()

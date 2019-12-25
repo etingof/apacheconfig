@@ -232,20 +232,20 @@ def make_parser(**options):
     parser_class = BaseApacheConfigParser
 
     if options.get('ccomments', True):
-        parser_class = type(six.binary_type('ApacheConfigParser'),
+        parser_class = type(str('ApacheConfigParser'),
                             (parser_class, CStyleCommentsParser),
                             {'options': options})
     else:
-        parser_class = type(six.binary_type('ApacheConfigParser'),
+        parser_class = type(str('ApacheConfigParser'),
                             (parser_class, HashCommentsParser),
                             {'options': options})
 
     if options.get('useapacheinclude', True):
-        parser_class = type(six.binary_type('ApacheConfigParser'),
+        parser_class = type(str('ApacheConfigParser'),
                             (parser_class, ApacheIncludesParser),
                             {'options': options})
     else:
-        parser_class = type(six.binary_type('ApacheConfigParser'),
+        parser_class = type(str('ApacheConfigParser'),
                             (parser_class, IncludesParser),
                             {'options': options})
 

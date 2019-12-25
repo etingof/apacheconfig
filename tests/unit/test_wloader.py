@@ -165,15 +165,17 @@ class WLoaderTestCaseRead(unittest.TestCase):
         node = next(iter(self.loader.loads(text)))
         dump = node.dump()
         self.assertTrue(isinstance(dump, six.text_type))
-        self.assertEquals(dump, text)
+        self.assertEqual(dump, text)
 
     def testStrUnicodeBuiltIns(self):
         node = next(iter(self.loader.loads("\n option value")))
         self.assertTrue(isinstance(str(node), str))
         self.assertTrue(isinstance(node.__unicode__(), six.text_type))
-        self.assertEquals(
-            "LeafNode([u'statement', u'option', u' ', u'value'])",
-            six.text_type(node))
+        if six.PY2:
+            # Make test compatible with both u'string' and 'string'
+            node_str = six.text_type(node).replace("u'", "'")
+        self.assertEqual(
+            "LeafNode(['statement', 'option', ' ', 'value'])", node_str)
 
     def testLoadContents(self):
         cases = [
