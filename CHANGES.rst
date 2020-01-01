@@ -1,4 +1,11 @@
 
+Revision 0.3.1, released 01-01-2020
+-----------------------------------
+
+- Fixed some apprently broken unit tests
+- Fixed Ply warnings from use of flags in regexes
+
+
 Revision 0.3.0, released 13-12-2019
 -----------------------------------
 
