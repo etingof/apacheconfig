@@ -12,7 +12,9 @@ except ImportError:
 
 suite = unittest.TestLoader().loadTestsFromNames(
     ['tests.unit.test_loader.suite',
+     'tests.unit.test_wloader.suite',
      'tests.unit.test_parser.suite',
+     'tests.unit.test_parser_whitespace.suite',
      'tests.unit.test_lexer.suite']
 )
 

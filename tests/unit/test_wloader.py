@@ -17,6 +17,7 @@ except ImportError:
 
 import os
 import shutil
+import sys
 import tempfile
 
 from apacheconfig import flavors
@@ -27,9 +28,11 @@ from apacheconfig.error import ApacheConfigError
 class WLoaderTestCaseWrite(unittest.TestCase):
 
     def setUp(self):
-        context = make_loader(writable=True, **flavors.NATIVE_APACHE)
-        self.loader = context.__enter__()
-        self.addCleanup(context.__exit__, None, None, None)
+        self._context = make_loader(writable=True, **flavors.NATIVE_APACHE)
+        self.loader = self._context.__enter__()
+
+    def tearDown(self):
+        self._context.__exit__(None, None, None)
 
     def testChangeItemValue(self):
         cases = [
@@ -93,9 +96,11 @@ class WLoaderTestCaseWrite(unittest.TestCase):
 class WLoaderTestCaseRead(unittest.TestCase):
 
     def setUp(self):
-        context = make_loader(writable=True, **flavors.NATIVE_APACHE)
-        self.loader = context.__enter__()
-        self.addCleanup(context.__exit__, None, None, None)
+        self._context = make_loader(writable=True, **flavors.NATIVE_APACHE)
+        self.loader = self._context.__enter__()
+
+    def tearDown(self):
+        self._context.__exit__(None, None, None)
 
     def testChangeItemValue(self):
         cases = [
@@ -171,9 +176,10 @@ class WLoaderTestCaseRead(unittest.TestCase):
         node = next(iter(self.loader.loads("\n option value")))
         self.assertTrue(isinstance(str(node), str))
         self.assertTrue(isinstance(node.__unicode__(), six.text_type))
+        node_str = six.text_type(node)
         if six.PY2:
             # Make test compatible with both u'string' and 'string'
-            node_str = six.text_type(node).replace("u'", "'")
+            node_str = node_str.replace("u'", "'")
         self.assertEqual(
             "LeafNode(['statement', 'option', ' ', 'value'])", node_str)
 
@@ -288,3 +294,9 @@ c "d d"
         node = self.loader.load(filepath)
         self.assertEqual(text, node.dump())
         shutil.rmtree(t)
+
+
+suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
+
+if __name__ == '__main__':
+    unittest.TextTestRunner(verbosity=2).run(suite)
