@@ -9,8 +9,7 @@ from __future__ import unicode_literals
 
 import sys
 
-from apacheconfig import make_lexer
-from apacheconfig import make_parser
+from apacheconfig import make_lexer, make_parser
 
 try:
     import unittest2 as unittest

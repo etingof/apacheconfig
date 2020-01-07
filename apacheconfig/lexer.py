@@ -8,8 +8,9 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import six
+
 import ply.lex as lex
+import six
 
 from apacheconfig.error import ApacheConfigError
 

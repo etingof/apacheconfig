@@ -13,11 +13,8 @@ import shutil
 import sys
 import tempfile
 
-from apacheconfig import ApacheConfigError
-from apacheconfig import ApacheConfigLoader
-from apacheconfig import make_lexer
-from apacheconfig import make_loader
-from apacheconfig import make_parser
+from apacheconfig import (ApacheConfigError, ApacheConfigLoader, make_lexer,
+                          make_loader, make_parser)
 
 try:
     import unittest2 as unittest

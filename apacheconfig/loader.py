@@ -9,9 +9,10 @@ from __future__ import unicode_literals
 import glob
 import io
 import logging
-import re
 import os
+import re
 import tempfile
+
 import six
 
 from apacheconfig import error

@@ -10,8 +10,7 @@ from __future__ import unicode_literals
 import os
 import sys
 
-from apacheconfig import ApacheConfigError
-from apacheconfig import make_loader
+from apacheconfig import ApacheConfigError, make_loader
 
 try:
     import unittest2 as unittest
