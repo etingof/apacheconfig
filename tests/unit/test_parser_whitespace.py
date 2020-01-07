@@ -133,6 +133,7 @@ class WhitespaceParserTestCase(unittest.TestCase):
         tests = [(" \n", ['config', ['contents', ' \n']])]
         self._test_cases(tests, tag='config')
 
+
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
 if __name__ == '__main__':

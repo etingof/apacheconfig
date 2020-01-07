@@ -291,6 +291,7 @@ c "d d"
         self.assertEqual(text, node.dump())
         shutil.rmtree(t)
 
+
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
 if __name__ == '__main__':
