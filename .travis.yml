@@ -2,30 +2,23 @@ language: python
 cache: pip
 matrix:
   include:
-  - os: linux
-    dist: trusty
+  - dist: trusty
     python: '2.6'
-  - os: linux
-    dist: trusty
-    python: '2.7'
-  - os: linux
-    dist: trusty
+  - python: '2.7'
+    env: TEST_OLDEST_DEPS=true
+  - python: '2.7'
+  - dist: trusty
     python: '3.2'
-  - os: linux
-    dist: trusty
+  - dist: trusty
     python: '3.3'
-  - os: linux
-    dist: trusty
-    python: '3.4'
-  - os: linux
-    dist: trusty
-    python: '3.5'
-  - os: linux
-    dist: trusty
-    python: '3.6'
-  - os: linux
-    dist: xenial
-    python: '3.7'
+  - python: '3.4'
+  - python: '3.5'
+  - python: '3.6'
+  - python: '3.7'
+  - python: '3.8'
+    env: TEST_OLDEST_DEPS=true
+  - python: '3.8'
+    env: LINT=true DOCS=true
   - os: linux
     dist: trusty
     python: 'nightly'
@@ -36,13 +29,14 @@ matrix:
     dist: trusty
     python: 'pypy3'
 install:
-  - if [ "$TRAVIS_PYTHON_VERSION" == "3.7" ]; then pip install flake8; fi
+  - if [ "$LINT" == "true" ]; then pip install flake8; fi
   - pip install codecov
   - pip install -r requirements.txt -r test-requirements.txt
+  - if [ "$TEST_OLDEST_DEPS" == "true" ]; then pip install -r oldest-requirements.txt; fi
   - pip install -e .
 script:
-  - if [ "$TRAVIS_PYTHON_VERSION" == "3.7" ]; then flake8 ./apacheconfig ./tests ./setup.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" == "3.7" ]; then cd ./docs && make html && cd -; fi
+  - if [ "$LINT" == "true" ]; then flake8 ./apacheconfig ./tests ./setup.py; fi
+  - if [ "$DOCS" == "true" ]; then cd ./docs && make html && cd -; fi
   - PYTHONPATH=.:$PYTHONPATH python tests/__main__.py
 after_success:
   - PYTHONPATH=.:$PYTHONPATH coverage run --omit=*test* tests/__main__.py

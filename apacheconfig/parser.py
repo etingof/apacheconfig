@@ -167,7 +167,7 @@ class BaseApacheConfigParser(object):
             else:
                 p[0] = p[2]
         else:
-            p[0] = p[1:][0]
+            p[0] = p[1]
 
     def p_contents(self, p):
         """contents : contents whitespace
