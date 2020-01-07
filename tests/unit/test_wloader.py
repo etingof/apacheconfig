@@ -28,9 +28,11 @@ from apacheconfig.error import ApacheConfigError
 class WLoaderTestCaseWrite(unittest.TestCase):
 
     def setUp(self):
-        context = make_loader(writable=True, **flavors.NATIVE_APACHE)
-        self.loader = context.__enter__()
-        self.addCleanup(context.__exit__, None, None, None)
+        self._context = make_loader(writable=True, **flavors.NATIVE_APACHE)
+        self.loader = self._context.__enter__()
+
+    def tearDown(self):
+        self._context.__exit__(None, None, None)
 
     def testChangeItemValue(self):
         cases = [
