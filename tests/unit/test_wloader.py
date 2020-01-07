@@ -17,6 +17,7 @@ except ImportError:
 
 import os
 import shutil
+import sys
 import tempfile
 
 from apacheconfig import flavors
@@ -171,9 +172,10 @@ class WLoaderTestCaseRead(unittest.TestCase):
         node = next(iter(self.loader.loads("\n option value")))
         self.assertTrue(isinstance(str(node), str))
         self.assertTrue(isinstance(node.__unicode__(), six.text_type))
+        node_str = six.text_type(node)
         if six.PY2:
             # Make test compatible with both u'string' and 'string'
-            node_str = six.text_type(node).replace("u'", "'")
+            node_str = node_str.replace("u'", "'")
         self.assertEqual(
             "LeafNode(['statement', 'option', ' ', 'value'])", node_str)
 
@@ -288,3 +290,8 @@ c "d d"
         node = self.loader.load(filepath)
         self.assertEqual(text, node.dump())
         shutil.rmtree(t)
+
+suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
+
+if __name__ == '__main__':
+    unittest.TextTestRunner(verbosity=2).run(suite)

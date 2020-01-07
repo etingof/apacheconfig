@@ -7,6 +7,8 @@
 from apacheconfig import make_lexer
 from apacheconfig import make_parser
 
+import sys
+
 try:
     import unittest2 as unittest
 
@@ -130,3 +132,8 @@ class WhitespaceParserTestCase(unittest.TestCase):
     def testEmptyConfig(self):
         tests = [(" \n", ['config', ['contents', ' \n']])]
         self._test_cases(tests, tag='config')
+
+suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
+
+if __name__ == '__main__':
+    unittest.TextTestRunner(verbosity=2).run(suite)
