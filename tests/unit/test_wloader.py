@@ -7,22 +7,21 @@
 #
 from __future__ import unicode_literals
 
+import os
+import shutil
+import sys
+import tempfile
+
 import six
+
+from apacheconfig import flavors, make_loader
+from apacheconfig.error import ApacheConfigError
 
 try:
     import unittest2 as unittest
 
 except ImportError:
     import unittest
-
-import os
-import shutil
-import sys
-import tempfile
-
-from apacheconfig import flavors
-from apacheconfig import make_loader
-from apacheconfig.error import ApacheConfigError
 
 
 class WLoaderTestCaseWrite(unittest.TestCase):

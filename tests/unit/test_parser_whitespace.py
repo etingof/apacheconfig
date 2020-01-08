@@ -4,10 +4,9 @@
 # Copyright (c) 2018-2019, Ilya Etingof <etingof@gmail.com>
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
-from apacheconfig import make_lexer
-from apacheconfig import make_parser
-
 import sys
+
+from apacheconfig import make_lexer, make_parser
 
 try:
     import unittest2 as unittest

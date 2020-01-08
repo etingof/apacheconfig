@@ -5,12 +5,11 @@
 # License: https://github.com/etingof/apacheconfig/LICENSE.rst
 #
 import argparse
-import sys
-import os
 import json
+import os
+import sys
 
-from apacheconfig import make_loader, ApacheConfigError
-from apacheconfig import __version__
+from apacheconfig import ApacheConfigError, __version__, make_loader
 
 
 def main():

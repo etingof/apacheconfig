@@ -7,11 +7,11 @@
 from __future__ import unicode_literals
 
 import abc
+
 import six
 
-from apacheconfig.reader import LocalHostReader
-
 from apacheconfig import error
+from apacheconfig.reader import LocalHostReader
 
 
 class ApacheConfigWritableLoader(object):

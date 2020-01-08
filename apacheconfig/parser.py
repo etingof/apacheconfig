@@ -7,6 +7,7 @@
 from __future__ import unicode_literals
 
 import logging
+
 import ply.yacc as yacc
 import six
 

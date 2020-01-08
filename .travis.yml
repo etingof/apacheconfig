@@ -29,13 +29,14 @@ matrix:
     dist: trusty
     python: 'pypy3'
 install:
-  - if [ "$LINT" == "true" ]; then pip install flake8; fi
+  - if [ "$LINT" == "true" ]; then pip install flake8 isort; fi
   - pip install codecov
   - pip install -r requirements.txt -r test-requirements.txt
   - if [ "$TEST_OLDEST_DEPS" == "true" ]; then pip install -r oldest-requirements.txt; fi
   - pip install -e .
 script:
   - if [ "$LINT" == "true" ]; then flake8 ./apacheconfig ./tests ./setup.py; fi
+  - if [ "$LINT" == "true" ]; then isort --check-only -rc apacheconfig tests setup.py; fi
   - if [ "$DOCS" == "true" ]; then cd ./docs && make html && cd -; fi
   - PYTHONPATH=.:$PYTHONPATH python tests/__main__.py
 after_success:

@@ -3,12 +3,12 @@ __version__ = '0.3.1'
 
 from contextlib import contextmanager
 
-from apacheconfig.lexer import make_lexer
-from apacheconfig.parser import make_parser
-from apacheconfig.loader import ApacheConfigLoader
-from apacheconfig.wloader import ApacheConfigWritableLoader
-from apacheconfig.error import ApacheConfigError
 from apacheconfig import flavors  # noqa: F401
+from apacheconfig.error import ApacheConfigError
+from apacheconfig.lexer import make_lexer
+from apacheconfig.loader import ApacheConfigLoader
+from apacheconfig.parser import make_parser
+from apacheconfig.wloader import ApacheConfigWritableLoader
 
 
 @contextmanager
