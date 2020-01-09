@@ -1,4 +1,11 @@
 
+Revision 0.3.2, released 10-01-2020
+-----------------------------------
+
+- Bumped ply dependency (3.4) and fixed slicing failure
+- Improved test suites
+- Minor PEP8 improvements
+
 Revision 0.3.1, released 01-01-2020
 -----------------------------------
 
