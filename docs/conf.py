@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = u'apacheconfig'
-copyright = u'2019, etingof'
+copyright = u'2018-2020, etingof'
 author = u'etingof'
 
 # The short X.Y version
