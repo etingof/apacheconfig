@@ -2,6 +2,7 @@
 Revision 0.3.3, released XX-01-2020
 -----------------------------------
 
+- Added tox runner with some basic jobs
 - Copyright notice extended to the year 2020
 
 Revision 0.3.2, released 10-01-2020
