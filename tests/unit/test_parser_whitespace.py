@@ -122,8 +122,8 @@ class WhitespaceParserTestCase(unittest.TestCase):
             ('<a> #comment\n a b #comment2\n</a>', [
                 'block', ('a',), ['contents', [
                     'comment', ' ', '#comment'],
-                                  ['statement', '\n ', 'a', ' ', 'b'],
-                                  ['comment', ' ', '#comment2'], '\n'], 'a'])
+                    ['statement', '\n ', 'a', ' ', 'b'],
+                    ['comment', ' ', '#comment2'], '\n'], 'a'])
         ]
 
         self._test_cases(tests, tag='block')

@@ -15,7 +15,7 @@ from apacheconfig import ApacheConfigError, __version__, make_loader
 def main():
 
     parser = argparse.ArgumentParser(
-                description='Dump Apache config files into JSON')
+        description='Dump Apache config files into JSON')
 
     parser.add_argument(
         '-v', '--version', action='version', version='%(prog)s ' + __version__

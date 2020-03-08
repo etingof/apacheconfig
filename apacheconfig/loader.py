@@ -476,8 +476,8 @@ class ApacheConfigLoader(object):
             filepath (Text): Filepath to write config to, in UTF-8 encoding.
             dct (dict): Configuration represented as a dictionary.
         """
-        tmpf = tempfile.NamedTemporaryFile(dir=os.path.dirname(filepath),
-                                           delete=False)
+        tmpf = tempfile.NamedTemporaryFile(
+            dir=os.path.dirname(filepath), delete=False)
 
         try:
             with io.open(tmpf.name, mode='w', encoding='utf-8') as f:
@@ -486,11 +486,8 @@ class ApacheConfigLoader(object):
             os.rename(tmpf.name, filepath)
 
         except IOError as ex:
-            try:
+            if os.path.exists(tmpf.name):
                 os.unlink(tmpf.name)
 
-            except Exception:
-                pass
-
-            raise error.ApacheConfigError('File %s can\'t be written: %s'
-                                          % (filepath, ex))
+            raise error.ApacheConfigError(
+                'File %s can\'t be written: %s' % (filepath, ex))

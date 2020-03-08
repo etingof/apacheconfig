@@ -19,11 +19,11 @@ def make_loader(writable=False, **options):
     if writable:
         options["preservewhitespace"] = True
         yield ApacheConfigWritableLoader(
-                ApacheConfigParser(ApacheConfigLexer(), start='contents'),
-                **options)
+            ApacheConfigParser(ApacheConfigLexer(), start='contents'),
+            **options)
     else:
-        yield ApacheConfigLoader(ApacheConfigParser(ApacheConfigLexer()),
-                                 **options)
+        yield ApacheConfigLoader(
+            ApacheConfigParser(ApacheConfigLexer()), **options)
 
 
 __all__ = ['make_lexer', 'make_parser', 'make_loader',

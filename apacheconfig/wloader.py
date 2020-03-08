@@ -256,8 +256,8 @@ class ListNode(AbstractASTNode):
         return iter(self._contents)
 
     def dump(self):
-        return ("".join([item.dump() for item in self._contents])
-                + self.trailing_whitespace)
+        return ("".join([item.dump() for item in self._contents]) +
+                self.trailing_whitespace)
 
     @property
     def typestring(self):

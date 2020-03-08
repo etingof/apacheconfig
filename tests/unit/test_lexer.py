@@ -288,8 +288,7 @@ Include second.conf
         self.assertEqual(tokens, [
             ('include', ' ', 'first.conf'), '\n', ('a',), '\n',
             ('Include', ' ', 'second.conf'), '\n', 'a', '\n'
-        ]
-                         )
+        ])
 
     def testMultilineOption(self):
         text = """\
