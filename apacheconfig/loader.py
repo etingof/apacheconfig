@@ -416,7 +416,7 @@ class ApacheConfigLoader(object):
 
         for key, val in obj.items():
             if isinstance(val, six.text_type):
-                if val.isalnum():
+                if val.isalnum() or ' ' in val:
                     text += '%s%s %s\n' % (spacing, key, val)
                 else:
                     text += '%s%s "%s"\n' % (spacing, key, val)
